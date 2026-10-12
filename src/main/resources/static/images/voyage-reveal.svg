@@ -1,12 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
   <defs>
-    <linearGradient id="fade" x1="0" y1="0" x2=".46" y2="0">
+    <linearGradient id="across" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="white" stop-opacity="0"/>
-      <stop offset=".20" stop-color="white" stop-opacity=".02"/>
-      <stop offset=".45" stop-color="white" stop-opacity=".28"/>
-      <stop offset=".72" stop-color="white" stop-opacity=".78"/>
-      <stop offset="1" stop-color="white" stop-opacity="1"/>
+      <stop offset=".10" stop-color="white" stop-opacity=".015"/>
+      <stop offset=".25" stop-color="white" stop-opacity=".10"/>
+      <stop offset=".42" stop-color="white" stop-opacity=".28"/>
+      <stop offset=".58" stop-color="white" stop-opacity=".68"/>
+      <stop offset=".72" stop-color="white" stop-opacity="1"/>
+      <stop offset=".91" stop-color="white" stop-opacity="1"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
     </linearGradient>
+    <linearGradient id="vertical" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="white" stop-opacity="0"/>
+      <stop offset=".09" stop-color="white" stop-opacity="1"/>
+      <stop offset=".85" stop-color="white" stop-opacity="1"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="soft-ends" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000">
+      <rect width="1000" height="1000" fill="url(#vertical)"/>
+    </mask>
+    <filter id="feather" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
   </defs>
-  <path fill="url(#fade)" d="M 190 0 C 220 105 48 110 90 245 C 125 345 24 395 48 520 C 72 640 156 654 101 782 C 52 898 161 925 125 1000 L 1000 1000 L 1000 0 Z"/>
+  <g mask="url(#soft-ends)">
+    <path fill="url(#across)" filter="url(#feather)" d="M 110 0 C 145 120 15 185 44 320 C 78 470 0 525 37 655 C 60 782 113 877 70 1000 L 884 1000 C 979 996 1000 926 991 828 C 978 704 1000 617 993 480 C 984 345 1009 201 981 93 Q 956 0 872 0 Z"/>
+  </g>
 </svg>

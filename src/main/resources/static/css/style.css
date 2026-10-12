@@ -11,7 +11,7 @@ nav { display: flex; gap: 28px; font-size: 14px; }
 nav a { padding: 10px 0; }
 nav a[aria-current="page"] { border-bottom: 2px solid var(--ink); }
 main { max-width: 1280px; margin: auto; padding: 0 48px; }
-.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 0; align-items: center; padding: 32px 0 48px; isolation: isolate; }
+.hero { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: 0; align-items: center; min-height: 650px; padding: 64px 0; isolation: isolate; }
 .hero-copy { position: relative; z-index: 1; padding-right: 12px; }
 .eyebrow { font-size: 11px; font-weight: bold; letter-spacing: 2px; }
 h1 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(44px, 5.4vw, 74px); line-height: 1.06; font-weight: normal; letter-spacing: -2px; margin: 25px 0; }
@@ -19,12 +19,12 @@ h1 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(44px, 5.4v
 .button { margin-top: 20px; display: inline-flex; gap: 40px; padding: 18px 24px; background: var(--ink); color: white; font-size: 14px; }
 .button:hover { background: #355b4e; }
 .small-note { font-size: 12px; color: var(--muted); margin-top: 22px; }
-/* Only the left edge is shaped and faded; the right edge stays rectangular.
-   The image extends into the column gap without covering the text layer. */
-.hero-art { position: relative; margin-left: -96px; width: calc(100% + 96px); min-width: 0; }
-.hero-voyage { display: block; width: 100%; height: auto;
-    -webkit-mask-image: url('/images/voyage-reveal.svg');
-    mask-image: url('/images/voyage-reveal.svg');
+/* Broad image layer under the heading; a feathered organic mask dissolves
+   the perimeter into the page rather than showing a rectangular photo card. */
+.hero-art { position: absolute; top: 0; right: -24px; bottom: 0; width: 94%; pointer-events: none; z-index: 0; }
+.hero-voyage { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 54%;
+    -webkit-mask-image: url('/images/voyage-reveal.svg?v=soft-2');
+    mask-image: url('/images/voyage-reveal.svg?v=soft-2');
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
 }
@@ -50,8 +50,8 @@ h3 { font-size: 20px; font-weight: 500; }
 .product-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 10px; }
 .product-heading h3 { margin: 0; font-size: 17px; }
 .price { font-size: 15px; white-space: nowrap; }
-@media (max-width: 900px) { .hero-art { margin-left: -48px; width: calc(100% + 48px); } .product-grid { grid-template-columns: repeat(2, 1fr); } .site-footer { margin: 0 32px; } }
-@media (max-width: 600px) { .site-header { padding: 20px; flex-wrap: wrap; } main { padding-left: 20px; padding-right: 20px; } .hero { grid-template-columns: 1fr; gap: 22px; padding: 36px 0; } .hero-art { margin-left: 0; width: 100%; } .hero-copy { padding-right: 0; } .category-grid, .product-grid { grid-template-columns: 1fr; } .section-heading { align-items: flex-start; flex-direction: column; gap: 0; } .site-footer { margin: 0 20px; flex-direction: column; } nav { gap: 22px; } .catalogue { padding-top: 35px; } }
+@media (max-width: 900px) { .hero { min-height: 610px; } .hero-art { right: -16px; width: 96%; } .product-grid { grid-template-columns: repeat(2, 1fr); } .site-footer { margin: 0 32px; } }
+@media (max-width: 600px) { .site-header { padding: 20px; flex-wrap: wrap; } main { padding-left: 20px; padding-right: 20px; } .hero { grid-template-columns: 1fr; gap: 12px; min-height: 0; padding: 36px 0; } .hero-art { position: relative; inset: auto; width: 100%; aspect-ratio: 1 / 1; } .hero-voyage { object-fit: contain; } .hero-copy { padding-right: 0; } .category-grid, .product-grid { grid-template-columns: 1fr; } .section-heading { align-items: flex-start; flex-direction: column; gap: 0; } .site-footer { margin: 0 20px; flex-direction: column; } nav { gap: 22px; } .catalogue { padding-top: 35px; } }
 
 /* Brand story: quiet editorial layout with comfortable reading width. */
 .brand-story { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 80px; padding: 64px 0 80px; border-top: 1px solid var(--line); }
