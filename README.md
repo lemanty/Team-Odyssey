@@ -110,6 +110,12 @@ Team-Odyssey/
 
 后续按功能需要增加类，不必先创建大量空类或空方法。
 
+### 品牌标志
+
+页头的 O 由四段等长弧线组成，代表四位成员共同构成 Odyssey。紫色、陶土色、金色和松绿色体现不同成员的独立贡献；中心留白保持字母 O 的辨识度。标语为 **FOUR MINDS. ONE JOURNEY.**，与项目名 Odyssey 呼应。
+
+标志使用 `src/main/resources/static/images/odyssey-mark.svg`，可无损缩放；字标和布局由 `fragments/layout.html` 与 `static/css/style.css` 控制。
+
 ## 4. 推荐分工：A / B / C / D
 
 每位成员都负责自己模块的页面、后端、测试和说明文档。下面是建议分工，团队应共同确认；它不是已完成贡献的声明。
