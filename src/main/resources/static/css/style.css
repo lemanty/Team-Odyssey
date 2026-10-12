@@ -5,7 +5,7 @@ a { color: inherit; text-decoration: none; }
 a:focus-visible { outline: 3px solid #ad622e; outline-offset: 6px; }
 .site-header { max-width: 1280px; margin: auto; min-height: 100px; padding: 24px 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 13px; flex-shrink: 0; }
-.brand-mark { display: block; width: 52px; height: 52px; flex-shrink: 0; }
+.brand-mark { display: block; width: 80px; height: 80px; flex-shrink: 0; }
 .brand-type { display: flex; flex-direction: column; gap: 6px; }
 .brand-name { color: #302d3d; font-size: 24px; font-weight: 750; line-height: 1; letter-spacing: 3px; }
 .brand-tagline { color: #66616e; font-size: 8px; font-weight: 600; line-height: 1.4; letter-spacing: 1.35px; }

@@ -112,9 +112,9 @@ Team-Odyssey/
 
 ### 品牌标志
 
-页头的 O 由四段等长弧线组成，代表四位成员共同构成 Odyssey。紫色、陶土色、金色和松绿色体现不同成员的独立贡献；中心留白保持字母 O 的辨识度。标语为 **FOUR MINDS. ONE JOURNEY.**，与项目名 Odyssey 呼应。
+当前 `logo-shop-3d` 设计以倾斜的立体 O 作为外圈，使用渐变和偏移轮廓形成厚度；内部按两行排列 **S H / O P** 四个手绘风格字母，分别采用陶土、紫、青绿和金色，代表四位成员。标语为 **FOUR MINDS. ONE JOURNEY.**。
 
-标志使用 `src/main/resources/static/images/odyssey-mark.svg`，可无损缩放；字标和布局由 `fragments/layout.html` 与 `static/css/style.css` 控制。
+当前图标为 `src/main/resources/static/images/odyssey-shop-3d.svg`，字母也是矢量路径，不依赖电脑安装字体。上一版四段圆环保留为 `odyssey-mark.svg`；页面引用在 `fragments/layout.html`，尺寸在 `static/css/style.css`。
 
 ## 4. 推荐分工：A / B / C / D
 
