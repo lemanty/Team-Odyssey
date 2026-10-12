@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Our catalogue | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('products')}"></header>
+<main class="catalogue">
+    <p class="eyebrow">THE EVERYDAY COLLECTION</p>
+    <h1>Find your everyday.</h1>
+    <p class="intro">Clothing and household favourites, all in one place.</p>
+    <p class="catalogue-notice">Sample catalogue — prices are illustrative in EUR. Purchasing and live stock are not available yet.</p>
+    <div class="section-heading"><h2>All products</h2><span th:text="${#lists.size(products)} + ' items'">0 items</span></div>
+    <div class="product-grid">
+        <article class="product-card" th:each="product : ${products}">
+            <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}" aria-hidden="true">
+                <span th:text="${product.category == 'Clothing' ? 'WEAR' : 'LIVE'}">GOODS</span>
+            </div>
+            <div class="product-copy">
+                <span class="eyebrow" th:text="${product.category}">Category</span>
+                <div class="product-heading"><h3 th:text="${product.name}">Product</h3><span class="price" th:text="'€' + ${product.price}">€0.00</span></div>
+                <p th:text="${product.description}">Description</p>
+            </div>
+        </article>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

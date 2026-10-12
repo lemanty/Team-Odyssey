@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Odyssey | Local goods, everyday living</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('home')}"></header>
+<main>
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">YOUR NEIGHBOURHOOD, ONLINE</p>
+            <h1>Good things.<br>Everyday living.</h1>
+            <p class="intro">Clothing to live in. Little comforts for home. Discover the everyday essentials from your local shop.</p>
+            <a class="button" th:href="@{/products}">Explore our catalogue <span aria-hidden="true">↗</span></a>
+            <p class="small-note">Catalogue preview · Online ordering is coming later.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+            <div class="art-circle"></div><div class="vase"></div><div class="stem"></div>
+            <div class="art-label">THE EVERYDAY<br>COLLECTION <span>01 / ODYSSEY</span></div>
+        </div>
+    </section>
+    <section class="category-section" aria-labelledby="categories-title">
+        <div class="section-heading"><h2 id="categories-title">A little of what you need.</h2><span>Two collections. One local shop.</span></div>
+        <div class="category-grid">
+            <article class="category-card"><span class="eyebrow">01 / CLOTHING</span><h3>Made for everyday.</h3><p>Simple pieces for your daily wardrobe.</p></article>
+            <article class="category-card"><span class="eyebrow">02 / HOUSEHOLD</span><h3>Make yourself at home.</h3><p>Thoughtful essentials for your favourite spaces.</p></article>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

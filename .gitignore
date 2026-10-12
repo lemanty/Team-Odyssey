@@ -1,0 +1,7 @@
+/target/
+/.idea/
+*.iml
+.DS_Store
+.env
+/src/main/resources/application-local.properties
+*.log
