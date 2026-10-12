@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=brand-story-1)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=voyage-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
@@ -17,9 +17,10 @@
             <a class="button" th:href="@{/products}">Explore our catalogue <span aria-hidden="true">↗</span></a>
             <p class="small-note">Catalogue preview · Online ordering is coming later.</p>
         </div>
-        <div class="hero-art" aria-hidden="true">
-            <div class="art-circle"></div><div class="vase"></div><div class="stem"></div>
-            <div class="art-label">THE EVERYDAY<br>COLLECTION <span>01 / ODYSSEY</span></div>
+        <div class="hero-art">
+            <img class="hero-voyage" th:src="@{/images/odyssey-voyage.png}"
+                 alt="An ivory arch opening onto the Aegean Sea, with a distant sailboat, terracotta pottery and linen."
+                 width="1254" height="1254" fetchpriority="high">
         </div>
     </section>
     <section class="category-section" aria-labelledby="categories-title">
