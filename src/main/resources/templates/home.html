@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=brand-story-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
@@ -27,6 +27,20 @@
         <div class="category-grid">
             <article class="category-card"><span class="eyebrow">01 / CLOTHING</span><h3>Made for everyday.</h3><p>Simple pieces for your daily wardrobe.</p></article>
             <article class="category-card"><span class="eyebrow">02 / HOUSEHOLD</span><h3>Make yourself at home.</h3><p>Thoughtful essentials for your favourite spaces.</p></article>
+        </div>
+    </section>
+    <section class="brand-story" id="our-story" aria-labelledby="story-title">
+        <div class="story-heading">
+            <p class="eyebrow">OUR STORY</p>
+            <h2 id="story-title">Four minds.<br>One extraordinary journey.</h2>
+            <p class="story-caption">Inspired by an epic.<br>Created for your everyday.</p>
+        </div>
+        <div class="story-copy">
+            <p>Every great journey begins with a sense of possibility. Ours begins with a name: <strong>Odyssey</strong>.</p>
+            <p>Inspired by Homer&rsquo;s epic poem, <em>The Odyssey</em>, our name speaks to curiosity, discovery, and the courage to venture beyond the familiar. We bring that spirit to shopping, with a vision of making every visit feel like the beginning of something new.</p>
+            <p>Founded by four people with different perspectives and a shared ambition, Odyssey was created to offer a fresh way to discover the things you wear, use, and welcome into your home. We believe the best finds do more than fill a wardrobe or a room: they express who you are and bring something meaningful to everyday life.</p>
+            <p>Our ambition is to become one of the world&rsquo;s leading shopping brands. That journey starts close to home, with thoughtful choices, personal connections, and an experience designed around you. As we grow, we want to keep the care of a local shop while opening the door to a wider world of possibilities.</p>
+            <p class="story-signoff">Four founders. A shared vision. A new journey in shopping.<br><strong>Welcome to Odyssey. Your next discovery starts here.</strong></p>
         </div>
     </section>
 </main>

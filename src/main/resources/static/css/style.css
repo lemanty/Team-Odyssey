@@ -49,3 +49,14 @@ h3 { font-size: 20px; font-weight: 500; }
 .price { font-size: 15px; white-space: nowrap; }
 @media (max-width: 900px) { .hero { gap: 30px; } .hero-art { height: 400px; } .product-grid { grid-template-columns: repeat(2, 1fr); } .site-footer { margin: 0 32px; } }
 @media (max-width: 600px) { .site-header { padding: 20px; flex-wrap: wrap; } main { padding-left: 20px; padding-right: 20px; } .hero { grid-template-columns: 1fr; padding: 36px 0; } .hero-art { height: 330px; } .category-grid, .product-grid { grid-template-columns: 1fr; } .section-heading { align-items: flex-start; flex-direction: column; gap: 0; } .site-footer { margin: 0 20px; flex-direction: column; } nav { gap: 22px; } .catalogue { padding-top: 35px; } }
+
+/* Brand story: quiet editorial layout with comfortable reading width. */
+.brand-story { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 80px; padding: 64px 0 80px; border-top: 1px solid var(--line); }
+.story-heading h2 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.15; letter-spacing: -1px; margin: 22px 0; }
+.story-caption { color: var(--muted); font-size: 14px; line-height: 1.8; }
+.story-copy { max-width: 620px; }
+.story-copy p { color: var(--muted); font-size: 16px; line-height: 1.9; margin: 0 0 22px; }
+.story-copy p:first-child { color: var(--ink); font-family: Georgia, serif; font-size: 23px; line-height: 1.5; }
+.story-copy strong { color: var(--ink); }
+.story-copy .story-signoff { border-top: 1px solid var(--line); padding-top: 24px; margin-bottom: 0; }
+@media (max-width: 700px) { .brand-story { grid-template-columns: 1fr; gap: 20px; padding: 40px 0; } }

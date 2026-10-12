@@ -5,6 +5,7 @@
     <a class="brand" th:href="@{/}"><span class="brand-mark">O</span> ODYSSEY<span class="brand-small">LOCAL GOODS</span></a>
     <nav aria-label="Main navigation">
         <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}">Home</a>
+        <a th:href="@{/#our-story}">Our story</a>
         <a th:href="@{/products}" th:attr="aria-current=${activePage == 'products' ? 'page' : null}">Explore products</a>
     </nav>
 </header>
