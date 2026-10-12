@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<header th:fragment="header(activePage)" class="site-header">
+<header th:fragment="header(activePage)" class="site-header marble-header">
     <a class="brand" th:href="@{/}" aria-label="Odyssey home — four minds, one journey">
-        <img class="brand-mark" th:src="@{/images/odyssey-shop-3d.svg}" alt="" width="80" height="80">
-        <span class="brand-type"><span class="brand-name">ODYSSEY</span><span class="brand-tagline">FOUR MINDS. ONE JOURNEY.</span></span>
+        <img class="brand-marble" th:src="@{/images/odyssey-marble-logo.png}"
+             alt="Odyssey — four minds, one journey" width="2076" height="757">
     </a>
     <nav aria-label="Main navigation">
         <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}">Home</a>

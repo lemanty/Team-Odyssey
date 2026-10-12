@@ -112,9 +112,11 @@ Team-Odyssey/
 
 ### 品牌标志
 
-当前 `logo-shop-3d` 设计以倾斜的立体 O 作为外圈，使用渐变和偏移轮廓形成厚度；内部按两行排列 **S H / O P** 四个手绘风格字母，分别采用陶土、紫、青绿和金色，代表四位成员。标语为 **FOUR MINDS. ONE JOURNEY.**。
+`logo-shop-3dv2` 分支使用大理石与石膏质感的立体 O：内部四色 **SH / OP** 代表四位成员，古典衬线字标呼应 Odyssey 的古希腊意象。
 
-当前图标为 `src/main/resources/static/images/odyssey-shop-3d.svg`，字母也是矢量路径，不依赖电脑安装字体。上一版四段圆环保留为 `odyssey-mark.svg`；页面引用在 `fragments/layout.html`，尺寸在 `static/css/style.css`。
+当前完整横向 Logo 为 `src/main/resources/static/images/odyssey-marble-logo.png`（2076 × 757 PNG，由内置图像生成工具辅助生成，属于位图而非矢量）。页头引用位于 `fragments/layout.html`，响应式尺寸在 `static/css/style.css` 中；浅色背景通过混合模式与页面衔接，因此深色主题需准备另一份素材。
+
+历史设计继续保留：`odyssey-mark.svg` 为四色圆环，`odyssey-shop-3d.svg` 为倾斜 O 与四色 SHOP。当前分支只切换页头品牌图像，不改变购物功能。
 
 ## 4. 推荐分工：A / B / C / D
 

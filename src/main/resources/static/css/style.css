@@ -51,3 +51,11 @@ h3 { font-size: 20px; font-weight: 500; }
 .price { font-size: 15px; white-space: nowrap; }
 @media (max-width: 900px) { .hero { gap: 30px; } .hero-art { height: 400px; } .product-grid { grid-template-columns: repeat(2, 1fr); } .site-footer { margin: 0 32px; } }
 @media (max-width: 600px) { .site-header { padding: 20px; flex-wrap: wrap; } main { padding-left: 20px; padding-right: 20px; } .hero { grid-template-columns: 1fr; padding: 36px 0; } .hero-art { height: 330px; } .category-grid, .product-grid { grid-template-columns: 1fr; } .section-heading { align-items: flex-start; flex-direction: column; gap: 0; } .site-footer { margin: 0 20px; flex-direction: column; } nav { gap: 22px; } .catalogue { padding-top: 35px; } }
+
+/* Marble identity: preserve the complete sculptural logo and wordmark. */
+.marble-header { padding-top: 10px; padding-bottom: 10px; }
+.brand-marble { display: block; width: 340px; max-width: 100%; height: auto; mix-blend-mode: multiply; }
+@media (max-width: 600px) {
+    .marble-header .brand { max-width: 100%; }
+    .brand-marble { width: 270px; }
+}
