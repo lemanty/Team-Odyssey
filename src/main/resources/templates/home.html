@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=object-edit-5)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=soft-connections-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
-<main>
+<main class="home-page">
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">YOUR NEIGHBOURHOOD, ONLINE</p>
@@ -24,6 +24,23 @@
         </div>
     </section>
     <section class="category-section" aria-labelledby="categories-title">
+        <svg class="section-journey section-journey-in" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="journey-in" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8d9b7a" stop-opacity="0" />
+                <stop offset="18%" stop-color="#8d9b7a" stop-opacity=".42" />
+                <stop offset="72%" stop-color="#c4a07c" stop-opacity=".4" />
+                <stop offset="100%" stop-color="#c4a07c" stop-opacity="0" />
+            </linearGradient></defs>
+            <path stroke="url(#journey-in)" d="M -60 12 C 230 190, 565 50, 790 218" />
+        </svg>
+        <svg class="section-journey section-journey-out" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="journey-out" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#a1a78d" stop-opacity="0" />
+                <stop offset="65%" stop-color="#c4a07c" stop-opacity=".4" />
+                <stop offset="100%" stop-color="#c4a07c" stop-opacity="0" />
+            </linearGradient></defs>
+            <path stroke="url(#journey-out)" d="M 540 175 C 725 60, 965 32, 1260 8" />
+        </svg>
         <div class="section-heading"><h2 id="categories-title">A little of what you need.</h2><span>Two collections. One local shop.</span></div>
         <div class="category-grid">
             <svg class="category-thread category-thread-desktop" viewBox="0 0 1184 385" preserveAspectRatio="none" aria-hidden="true" focusable="false">
