@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Our catalogue | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=voyage-soft-2)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=object-edit-5)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('products')}"></header>
@@ -15,7 +15,8 @@
     <p class="catalogue-notice">Sample catalogue — prices are illustrative in EUR. Purchasing and live stock are not available yet.</p>
     <div class="section-heading"><h2>All products</h2><span th:text="${#lists.size(products)} + ' items'">0 items</span></div>
     <div class="product-grid">
-        <article class="product-card" th:each="product : ${products}">
+        <article class="product-card" th:each="product, status : ${products}"
+                 th:id="${status.index == 0 or products[status.index - 1].category != product.category} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
             <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}" aria-hidden="true">
                 <span th:text="${product.category == 'Clothing' ? 'WEAR' : 'LIVE'}">GOODS</span>
             </div>

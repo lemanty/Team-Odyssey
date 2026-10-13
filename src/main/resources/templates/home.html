@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=voyage-soft-2)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=object-edit-5)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
@@ -26,8 +26,34 @@
     <section class="category-section" aria-labelledby="categories-title">
         <div class="section-heading"><h2 id="categories-title">A little of what you need.</h2><span>Two collections. One local shop.</span></div>
         <div class="category-grid">
-            <article class="category-card"><span class="eyebrow">01 / CLOTHING</span><h3>Made for everyday.</h3><p>Simple pieces for your daily wardrobe.</p></article>
-            <article class="category-card"><span class="eyebrow">02 / HOUSEHOLD</span><h3>Make yourself at home.</h3><p>Thoughtful essentials for your favourite spaces.</p></article>
+            <svg class="category-thread category-thread-desktop" viewBox="0 0 1184 385" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <defs><linearGradient id="thread-desktop" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#7e8e73" stop-opacity=".5" />
+                    <stop offset="48%" stop-color="#a4a183" stop-opacity=".65" />
+                    <stop offset="100%" stop-color="#b08669" stop-opacity=".6" />
+                </linearGradient></defs>
+                <path stroke="url(#thread-desktop)" d="M 152 310 A 535 158 -8 1 1 350 350" />
+            </svg>
+            <svg class="category-thread category-thread-mobile" viewBox="0 0 350 682" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <defs><linearGradient id="thread-mobile" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#7e8e73" stop-opacity=".5" />
+                    <stop offset="50%" stop-color="#a4a183" stop-opacity=".65" />
+                    <stop offset="100%" stop-color="#b08669" stop-opacity=".6" />
+                </linearGradient></defs>
+                <path stroke="url(#thread-mobile)" d="M 177 178 A 105 260 8 1 1 150 280" />
+            </svg>
+            <a class="category-card category-clothing" th:href="@{/products#category-clothing}" aria-label="Browse clothing">
+                <span class="eyebrow">01 / CLOTHING</span>
+                <h3>Made for<br>everyday.</h3>
+                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span>Browse clothing</span></span>
+                <img class="category-object" th:src="@{/images/category-clothing.png}" alt="" width="1122" height="1402" loading="lazy">
+            </a>
+            <a class="category-card category-household" th:href="@{/products#category-household}" aria-label="Browse household">
+                <span class="eyebrow">02 / HOUSEHOLD</span>
+                <h3>Make yourself<br>at home.</h3>
+                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span>Browse household</span></span>
+                <img class="category-object" th:src="@{/images/category-household.png}" alt="" width="1122" height="1402" loading="lazy">
+            </a>
         </div>
     </section>
     <section class="brand-story" id="our-story" aria-labelledby="story-title">
@@ -35,6 +61,10 @@
             <p class="eyebrow">OUR STORY</p>
             <h2 id="story-title">Four minds.<br>One extraordinary journey.</h2>
             <p class="story-caption">Inspired by an epic.<br>Created for your everyday.</p>
+            <div class="story-art" aria-hidden="true">
+                <img class="story-voyage" th:src="@{/images/odyssey-story-coast.png}"
+                     alt="" width="1122" height="1402" loading="lazy" decoding="async">
+            </div>
         </div>
         <div class="story-copy">
             <p>Every great journey begins with a sense of possibility. Ours begins with a name: <strong>Odyssey</strong>.</p>
