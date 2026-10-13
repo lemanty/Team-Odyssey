@@ -196,3 +196,41 @@ B/C 可围绕 `reserveStock`、`releaseStock`、`fulfillStock`、`recordStoreSal
 - [Spring Security 入门](https://spring.io/guides/gs/securing-web/)
 
 初始 Maven 项目和 Wrapper 来自 Spring Initializr；本基础框架、示例页面、测试与 README 使用了 Codex 辅助生成。团队须根据课程和学院对 AI、外部资源的实际政策核对允许范围及披露要求，审阅并理解代码后再作为课程成果提交。该记录不代表课程已允许所有 AI 用法。
+
+
+## 9. 与 Week 1–6 课件对齐的开发习惯
+
+当前保留 Java / Spring Boot / Thymeleaf。课堂示例使用 Python / Flask / Jinja；下面是概念对照，不表示两套框架的语法、默认行为完全相同，也不表示课程要求必须使用某一框架。
+
+| 课件内容 | 本项目对应写法 | 当前状态 |
+| --- | --- | --- |
+| Week 1：请求、响应、结构/表现/行为分工 | Controller 接收请求，模板生成 HTML，CSS 管理外观 | 已有首页和目录的 GET 请求 |
+| Week 2：语义标签、外部 CSS、Grid/Flex、媒体查询 | `header/nav/main/section/article/footer`、`static/css/style.css`、`@media` | 已使用；CSS 已展开为多行便于阅读 |
+| Week 3：route、render_template、模板循环和复用 | `@GetMapping`、`Model` 加数据后返回模板名、`th:each`、共享 fragments | 已使用；后端语言不同 |
+| Week 4：表单校验、POST/Redirect/GET、ORM 与事务 | 后续使用表单对象、Bean Validation、重定向、JPA 与事务 | 尚未实现表单和数据库 |
+| Week 5：身份、权限、密码哈希、CSRF | 后续通过 Spring Security 实现，并逐个操作检查角色与订单所有权 | 尚未实现登录和权限 |
+| Week 6：DOM、事件、渐进增强 | 后续在外部 JS 中使用 `defer`、`querySelector`、`addEventListener`、`textContent` | 当前没有自定义 JS；悬停效果来自 CSS |
+
+### 已有页面的写法
+
+- HTML 负责内容和语义，CSS 放在外部文件；一个声明一行，保留规则顺序，避免难读的一行式媒体查询。
+- 用 `h1/h2/h3` 表示内容层级，不能只按字号挑标签。链接负责导航，按钮负责操作。
+- 共享页头页脚只维护一份。Thymeleaf 的 fragment 与 Jinja 的 base/block 都用于复用，但不是相同语法。
+- 模板使用 `th:text` 输出文本，不把用户输入当作 HTML 输出；列表继续使用 `th:each`，后续搜索要补充无结果提示。
+- `th:href="@{/products}"` 处理应用路径，但不像 Flask 的 `url_for('endpoint')` 那样直接按视图函数名生成地址。
+- 首页的 SVG 椭圆、渐变、遮罩、层叠与过渡属于额外视觉增强，不是声称 Week 2 已教过的内容。它们不应承载库存、权限等业务规则。
+- 当前分类入口是目录中的位置跳转，不是分类筛选；当前商品来自内存列表，不是数据库。
+
+### 后续功能按课堂流程实现
+
+1. 搜索等读取操作使用 GET；保存、删除、取消订单等修改操作使用 POST，并由后端校验。
+2. 表单字段保留可见 label、id、name，设置适合的 type、required 和长度/范围；出错时保留输入并显示字段错误。
+3. 保存成功后采用 POST/Redirect/GET；需要与课堂严格对应时显式使用 303，而不是假设框架默认重定向一定是 303。
+4. 浏览器校验只改善体验，服务器仍须检查类型、范围、业务规则和权限；数据库再用唯一、非空、外键等约束保护数据。
+5. 创建订单与预留库存放在同一事务中；失败回滚，不能显示保存成功。库存并发控制是本项目需要额外设计的业务内容。
+6. 身份认证与授权分开：每次读写私有订单都检查所有权，员工操作检查角色，不能只隐藏按钮。
+7. 密码使用安全库提供的哈希功能；修改类表单启用 CSRF 防护；密钥放环境变量。不要照搬 Flask 签名 Cookie 的内部机制到 Spring Session。
+8. JavaScript 用具名函数和事件监听组织，DOM 文本用 textContent 更新；先做可用的服务端流程，再增加即时筛选和输入提示。
+9. 上传文件时检查大小、实际内容并生成文件名；私有附件不放 static。数据库回滚不等于删除已保存文件，需要单独清理。
+
+对应课件：Week 2 第 18–32、65–74、86–92 页；Week 3 第 18–43、61–64 页；Week 4 第 9–29、35–48、57–68 页；Week 5 第 14–18、41–60 页；Week 6 第 9、28–53、64 页。以课件原文和正式项目要求为准。

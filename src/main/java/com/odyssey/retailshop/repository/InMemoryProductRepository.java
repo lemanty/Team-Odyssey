@@ -19,5 +19,7 @@ public class InMemoryProductRepository implements ProductRepository {
     );
 
     @Override
-    public List<Product> findAll() { return products; }
+    public List<Product> findAll() {
+        return products;
+    }
 }
