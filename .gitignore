@@ -5,3 +5,10 @@
 .env
 /src/main/resources/application-local.properties
 *.log
+
+# Database host secrets and private exports
+.env.mysql
+/backups/
+
+.env.team
+/scripts/__pycache__/

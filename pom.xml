@@ -30,6 +30,15 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -74,5 +83,90 @@
 			</plugin>
 		</plugins>
 	</build>
+
+
+    <!-- Opt-in host commands; ordinary build/test does not start a database. -->
+    <profiles>
+        <profile>
+            <id>database</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.4</version>
+                        <configuration>
+                            <executable>docker</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                        </configuration>
+                        <executions>
+                    <execution>
+                        <id>db-up</id>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <arguments>
+                                <argument>compose</argument>
+                                <argument>--env-file</argument>
+                                <argument>.env.mysql</argument>
+                                <argument>-f</argument>
+                                <argument>infra/mysql/compose.yaml</argument>
+                                <argument>up</argument>
+                                <argument>-d</argument>
+                                <argument>--wait</argument>
+                                <argument>--wait-timeout</argument>
+                                <argument>360</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>db-stop</id>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <arguments>
+                                <argument>compose</argument>
+                                <argument>--env-file</argument>
+                                <argument>.env.mysql</argument>
+                                <argument>-f</argument>
+                                <argument>infra/mysql/compose.yaml</argument>
+                                <argument>stop</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>db-status</id>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <arguments>
+                                <argument>compose</argument>
+                                <argument>--env-file</argument>
+                                <argument>.env.mysql</argument>
+                                <argument>-f</argument>
+                                <argument>infra/mysql/compose.yaml</argument>
+                                <argument>ps</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>db-logs</id>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <arguments>
+                                <argument>compose</argument>
+                                <argument>--env-file</argument>
+                                <argument>.env.mysql</argument>
+                                <argument>-f</argument>
+                                <argument>infra/mysql/compose.yaml</argument>
+                                <argument>logs</argument>
+                                <argument>--tail</argument>
+                                <argument>100</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

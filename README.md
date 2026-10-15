@@ -4,7 +4,7 @@ COMP3019J Web Application Development — Online Shopping Website
 
 面向本地零售商的在线购物项目，目标是让服装和家居用品的线上购物流程与门店日常运营保持一致。团队成员暂用 **A、B、C、D** 表示。
 
-> 当前版本是可运行的基础框架：主页和商品列表已经实现，商品来自内存中的示例数据。尚未接入数据库、账号、购物车、真实库存或下单功能。页面 EUR 价格仅为示例，不代表已确定的业务币种。
+> 当前版本是可运行的基础框架：主页和商品列表已经实现，默认 demo 模式商品来自内存；mysql 模式读取数据库商品表（见第 10 节）。账号、购物车、真实库存或下单功能尚未实现。页面 EUR 价格仅为示例，不代表已确定的业务币种。
 
 ## 1. 技术选择
 
@@ -18,7 +18,7 @@ COMP3019J Web Application Development — Online Shopping Website
 | Bean Validation | 已引入 | 后续校验表单输入 |
 | Spring Boot DevTools | 已引入 | 辅助本地开发 |
 | JUnit / MockMvc | 已使用 | 应用启动和网页集成测试 |
-| MySQL + Spring Data JPA | 后续接入 | 数据持久化 |
+| MySQL + Spring JDBC | mysql 模式已接入 | 商品数据持久化；JPA 尚未使用 |
 | Spring Security | 后续接入 | 登录和角色权限 |
 
 采用一个 Spring Boot 应用，前后端放在同一仓库中，不需要 Node.js 或单独的前端服务。尚未覆盖于课堂的技术应按课程要求在设计报告中说明用途和适用理由。
@@ -96,7 +96,7 @@ Team-Odyssey/
 浏览器 GET /products
     → ProductController
     → ProductService
-    → ProductRepository（当前实现为 InMemoryProductRepository）
+    → ProductRepository（demo: InMemoryProductRepository；mysql: JdbcProductRepository）
     → 返回商品数据
     → products.html 渲染
     → 浏览器显示网页
@@ -104,7 +104,7 @@ Team-Odyssey/
 
 - **Controller**：处理路径和表单，不直接编写 SQL 或库存计算。
 - **Service**：放置业务规则，后续订单事务在这里协调。
-- **Repository**：只负责数据读写。接入 JPA 时用数据库实现替换内存实现，避免两个同接口 Bean 同时启用。
+- **Repository**：只负责数据读写。通过 Spring profile 在内存实现与 JDBC 实现之间切换，避免两个同接口 Bean 同时启用。
 - **Model**：描述业务数据。当前 `Product` 是普通 Java 类，不是数据库实体。
 - **Templates / Static**：分别存放动态 HTML 和 CSS、图片、JavaScript。
 
@@ -207,7 +207,7 @@ B/C 可围绕 `reserveStock`、`releaseStock`、`fulfillStock`、`recordStoreSal
 | Week 1：请求、响应、结构/表现/行为分工 | Controller 接收请求，模板生成 HTML，CSS 管理外观 | 已有首页和目录的 GET 请求 |
 | Week 2：语义标签、外部 CSS、Grid/Flex、媒体查询 | `header/nav/main/section/article/footer`、`static/css/style.css`、`@media` | 已使用；CSS 已展开为多行便于阅读 |
 | Week 3：route、render_template、模板循环和复用 | `@GetMapping`、`Model` 加数据后返回模板名、`th:each`、共享 fragments | 已使用；后端语言不同 |
-| Week 4：表单校验、POST/Redirect/GET、ORM 与事务 | 后续使用表单对象、Bean Validation、重定向、JPA 与事务 | 尚未实现表单和数据库 |
+| Week 4：表单校验、POST/Redirect/GET、ORM 与事务 | 后续使用表单对象、Bean Validation、重定向、JPA 与事务 | JDBC 商品读取已接入；表单、ORM 尚未实现 |
 | Week 5：身份、权限、密码哈希、CSRF | 后续通过 Spring Security 实现，并逐个操作检查角色与订单所有权 | 尚未实现登录和权限 |
 | Week 6：DOM、事件、渐进增强 | 后续在外部 JS 中使用 `defer`、`querySelector`、`addEventListener`、`textContent` | 当前没有自定义 JS；悬停效果来自 CSS |
 
@@ -219,7 +219,7 @@ B/C 可围绕 `reserveStock`、`releaseStock`、`fulfillStock`、`recordStoreSal
 - 模板使用 `th:text` 输出文本，不把用户输入当作 HTML 输出；列表继续使用 `th:each`，后续搜索要补充无结果提示。
 - `th:href="@{/products}"` 处理应用路径，但不像 Flask 的 `url_for('endpoint')` 那样直接按视图函数名生成地址。
 - 首页的 SVG 椭圆、渐变、遮罩、层叠与过渡属于额外视觉增强，不是声称 Week 2 已教过的内容。它们不应承载库存、权限等业务规则。
-- 当前分类入口是目录中的位置跳转，不是分类筛选；当前商品来自内存列表，不是数据库。
+- 当前分类入口是目录中的位置跳转，不是分类筛选；demo 模式商品来自内存列表，mysql 模式来自数据库。
 
 ### 后续功能按课堂流程实现
 
@@ -234,3 +234,148 @@ B/C 可围绕 `reserveStock`、`releaseStock`、`fulfillStock`、`recordStoreSal
 9. 上传文件时检查大小、实际内容并生成文件名；私有附件不放 static。数据库回滚不等于删除已保存文件，需要单独清理。
 
 对应课件：Week 2 第 18–32、65–74、86–92 页；Week 3 第 18–43、61–64 页；Week 4 第 9–29、35–48、57–68 页；Week 5 第 14–18、41–60 页；Week 6 第 9、28–53、64 页。以课件原文和正式项目要求为准。
+
+## 10. 数据库：我和组员怎么启动、登录
+
+当前已提供 **MySQL + JDBC** 商品读取。默认 `demo` 模式仍使用 4 个内存示例商品，方便独立运行和测试；下面脚本启用 `mysql` 模式，商品页面读取共享数据库的 `products` 表。MySQL 模式不会自动生成/删除表，也不会失败后偷偷回退到示例数据。SKU、库存、订单表和网页商品编辑功能尚未实现。
+
+### 先看这个：谁负责启动什么
+
+| 人员 | 需要运行 | 数据库客户端连接 |
+| --- | --- | --- |
+| A：这台 Mac 的管理员 | Docker Desktop，然后 Host-Start | `127.0.0.1:3307` |
+| B / C / D：组员 | Member-Connect，保持窗口打开；再运行 Member-Website | `127.0.0.1:13307` |
+
+所有人数据库名是 `odyssey`。当前数据库账号是 `odyssey_app`（团队开发共享账号，与每个人的 SSH 登录账号不同），密码私下分发，不能写入 README。成员不必安装 Docker/MySQL，只需 Java 17+、Python 3、OpenSSH；首次运行 Maven 需要联网下载依赖。
+
+**远程登录尚未配置完成：需要成员公钥、主机开启 SSH，并从另一台电脑验证校园网允许互访。脚本不能代替这些步骤。** 目前只能确认主机本地连接。
+
+### A：主机一键启动
+
+先打开 Docker Desktop。Mac 在 Finder 中双击 [Host-Start.command](scripts/Host-Start.command)。它依次启动数据库、创建缺失的商品表、启动网站。不会覆盖现有商品。网站地址：<http://localhost:8080/products>。
+
+也可以在 IntelliJ README 的 Shell 代码块旁点击运行按钮（若有），或复制到项目终端：
+
+```bash
+python3 scripts/database.py host-start
+python3 scripts/database.py init
+python3 scripts/database.py web-host
+```
+
+首次在新主机上部署才需要复制 `.env.mysql.example` 为 `.env.mysql`，设置两个不同的密码。这台已配置主机不要重复覆盖密码文件。
+
+只打开 MySQL 命令行，直接执行，不用粘贴密码：
+
+```bash
+python3 scripts/database.py login
+```
+
+在 `mysql>` 后输入 SQL，以分号结束；输入 `exit;` 退出。密码来自本机 `.env.mysql`，不会显示在命令中。不要把这个主机文件发给组员，因为它也含 root 密码。
+
+查看状态：
+
+```bash
+python3 scripts/database.py status
+```
+
+原来的 Maven 命令仍可用：`./mvnw -Pdatabase exec:exec@db-up`、`exec:exec@db-status`、`exec:exec@db-stop`。它们只管理数据库，不会启动网站或建表。
+
+### B / C / D：先把公钥给管理员（仅第一次）
+
+Mac / Linux 终端查看：
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Windows PowerShell 查看：
+
+```powershell
+Get-Content $HOME\.ssh\id_ed25519.pub
+```
+
+如果提示文件不存在，运行下面命令，按提示生成。默认保存位置可按 Enter；建议为私钥设置口令。若提示文件已存在，**不要覆盖已有密钥**。
+
+```bash
+ssh-keygen -t ed25519
+```
+
+再次运行查看公钥命令，将 `ssh-ed25519` 开头的一整行发给管理员，并注明 B / C / D。**只能发 `.pub` 公钥，不能发送 `id_ed25519` 私钥。**
+
+管理员需配置专用 SSH 账号及公钥，仅授予数据库隧道需要的权限（限制转发目标到 `127.0.0.1:3307`、禁用终端/代理/X11 转发），再通过 macOS「通用 → 共享 → 远程登录」允许该指定账号。不要让成员使用主机管理员密码或给予完整磁盘访问。账号、公钥和限制需要实际部署后才可连接。
+
+### B / C / D：填写本机配置（仅第一次）
+
+复制仓库 `.env.team.example` 为 `.env.team`，填写管理员提供的信息：
+
+```text
+SSH_HOST=主机当前局域网IP
+SSH_USER=管理员分配的SSH账号
+SSH_KEY=自己的私钥文件路径
+DB_USERNAME=odyssey_app
+DB_PASSWORD=管理员私下提供的数据库普通账号密码
+DB_PORT=13307
+```
+
+这不是网站注册登录。`SSH_USER` 是进入加密隧道的账号；`DB_USERNAME` 是读写数据库的账号。路径可以使用 `~/.ssh/id_ed25519`；Windows 可用 `C:/Users/你的用户名/.ssh/id_ed25519`。不在值的两边添加引号。
+
+`.env.team` 已被 Git 忽略。Mac/Linux 可以执行 `chmod 600 .env.team` 限制读取权限。
+
+### B / C / D：以后每天怎么使用
+
+Mac 双击 [Member-Connect.command](scripts/Member-Connect.command)，输入自己的 SSH 私钥口令（如设置了），保持窗口打开。首次连接应与管理员核对主机指纹后再确认。没有持续输出通常是正常的。
+
+然后双击 [Member-Website.command](scripts/Member-Website.command)，启动自己的 Java 网站，它会读取主机上的共享库。
+
+终端等效操作（开两个终端）：
+
+```bash
+# 终端 1：保持运行
+python3 scripts/database.py tunnel
+```
+
+```bash
+# 终端 2：启动网站
+python3 scripts/database.py web-member
+```
+
+Windows 用 `py -3` 替换 `python3`。普通 Markdown 链接只会打开脚本，不保证执行；Mac 真正双击运行需要在 Finder 中打开 `.command`，Windows 使用上述终端命令。
+
+IntelliJ Database 中新建 **普通 MySQL** 数据源：主机 `127.0.0.1`，组员端口 `13307`（主机本人用 `3307`），数据库 `odyssey`，用户 `odyssey_app`，密码填写普通数据库密码。下载缺失驱动后点击「测试连接」。不要选择 Amazon Aurora。
+
+### 添加第一件商品
+
+在上述 MySQL 命令行，或 IntelliJ 的数据库查询控制台执行：
+
+```sql
+USE odyssey;
+INSERT INTO products (name, category, description, price)
+VALUES ('Cotton T-shirt', 'Clothing', 'Soft cotton for everyday wear.', 19.99);
+SELECT * FROM products;
+```
+
+每执行一次 INSERT 就会新增一条。也可以在 IntelliJ 展开 `odyssey → tables → products`，打开数据表、添加行，再提交更改。运行 mysql 模式网站后刷新 `/products` 即可看到已提交记录。默认 demo 模式不读取这张表。
+
+正式商品表定义保存在 `src/main/resources/db/001-products.sql`，未来修改结构需新增版本脚本并由管理员协调执行。不要以删除数据卷或清表的方式解决配置错误。表结构脚本可提交 Git；数据库中的记录不会通过 Git Push 同步。
+
+### 主机在线、密码与数据保存
+
+- 主机必须开机、联网、Docker 运行且不休眠。开发时接电源、不要合盖，可运行 `caffeinate -i` 防止空闲睡眠，Ctrl+C 结束。
+- Docker 已设置登录 Mac 时启动；这不代表关机、未登录或休眠时数据库仍可访问。
+- 数据保存在 Docker 命名卷 `odyssey-shared-db_mysql_data`，不要执行 `down -v` 或删除此卷。数据卷不等于备份。
+- 数据库只绑定 `127.0.0.1:3307`。组员必须通过 SSH 隧道访问，不要把 MySQL 端口直接公开到校园网或公网。
+- 同一个校园 Wi-Fi 仍可能隔离设备。连接超时时检查主机 IP、SSH 设置、休眠和网络互访限制。
+- `.env.mysql` 修改密码不会更新已有 MySQL 账号。需要管理员先修改数据库内密码，再同步文件和客户端；不要删卷。组员 `.env.team` 也要更新。
+- 退出网站不会停止数据库；关闭隧道只断开该成员连接。所有成员修改同一份数据，避免运行清库脚本。
+
+### 上传 GitHub
+
+可以提交源码、SQL 表结构、`scripts/`、Compose、Maven 配置、README、`.env.mysql.example` 和 `.env.team.example` 空模板。
+
+不能提交 `.env.mysql`、`.env.team`、SSH 私钥、真实密码和数据库备份。提交前检查 `git status --short`，并运行：
+
+```bash
+git check-ignore .env.mysql .env.team
+```
+
+示例文件应保持没有真实密码。本轮配置不会自动 commit 或 push。

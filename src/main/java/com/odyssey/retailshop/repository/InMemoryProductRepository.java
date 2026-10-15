@@ -2,10 +2,12 @@ package com.odyssey.retailshop.repository;
 
 import com.odyssey.retailshop.model.Product;
 import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
+@Profile("!mysql")
 public class InMemoryProductRepository implements ProductRepository {
     private final List<Product> products = List.of(
         new Product(1L, "Everyday Cotton Tee", "Clothing",
