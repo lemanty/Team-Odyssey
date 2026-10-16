@@ -23,6 +23,23 @@ class CatalogueWebTests {
     }
 
     @Test
+    void homepageLanguageAndOrderNavigationCoexist() throws Exception {
+        mockMvc.perform(get("/").param("lang", "zh")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("customer@test.com")))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("日常好物，")))
+            .andExpect(content().string(containsString("四位创始人，")))
+            .andExpect(content().string(containsString("href=\"/orders\"")))
+            .andExpect(content().string(containsString("/?lang=en")))
+            .andExpect(header().string("Set-Cookie", containsString("odyssey_language=zh")));
+        mockMvc.perform(get("/").cookie(new jakarta.servlet.http.Cookie("odyssey_language", "zh")))
+            .andExpect(content().string(containsString("日常好物，")));
+        mockMvc.perform(get("/").param("lang", "en"))
+            .andExpect(content().string(containsString("Good things.")))
+            .andExpect(content().string(containsString("/?lang=zh")));
+    }
+
+    @Test
     void catalogueRendersProductsThroughAllLayers() throws Exception {
         mockMvc.perform(get("/products"))
             .andExpect(status().isOk())
