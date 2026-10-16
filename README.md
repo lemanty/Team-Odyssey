@@ -426,7 +426,7 @@ python3 scripts/seed-clothing.py
 
 `users` 存储 ID、姓名、唯一邮箱、BCrypt 密码哈希、角色及创建时间。邮箱统一小写；密码至少 8 个、最多 64 个字符且不能超过 72 个 UTF-8 字节。数据库不会保存明文密码。注册不会自动登录；登录成功会更新会话 ID 并保留会话购物车，退出会清除会话（包括购物车）。
 
-登录、注册和账号页右上角的 `EN / 中文` 将偏好写入 `odyssey_language` Cookie，保留 180 天。当前翻译范围为账号页面及公共导航，商品文案和其他页面主体仍为英文。Cookie 设置 `HttpOnly`、`SameSite=Lax`，HTTPS 请求时增加 `Secure`；仅接受 en/zh，不保存密码、邮箱或角色。退出不会清除语言偏好。登录身份使用服务器会话及独立 `JSESSIONID` Cookie，没有长期自动登录功能。
+登录、注册和账号页右上角的 `EN / 中文` 将偏好写入 `odyssey_language` Cookie，保留 180 天。当前翻译范围为首页（含品牌故事、分类入口）、账号页面、公共导航及页脚；商品文案和购物车主体仍为英文。首页顶部也提供 EN / 中文切换，沿用同一 Cookie。Cookie 设置 `HttpOnly`、`SameSite=Lax`，HTTPS 请求时增加 `Secure`；仅接受 en/zh，不保存密码、邮箱或角色。退出不会清除语言偏好。登录身份使用服务器会话及独立 `JSESSIONID` Cookie，没有长期自动登录功能。
 
 Spring Security 为 POST 表单提供 CSRF 校验。基础测试包括重复邮箱、无效注册、密码哈希、成功/失败登录、会话更新、退出、未登录访问、角色限制与语言 Cookie。邮箱验证、忘记密码、登录限速和跨设备偏好同步尚未实现。正式部署时应配置 HTTPS，并设置 `SERVER_SERVLET_SESSION_COOKIE_SECURE=true`。
 

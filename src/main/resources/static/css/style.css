@@ -1060,3 +1060,18 @@ html[lang="zh-CN"] :is(.auth-art h1, .auth-panel h2, .account-page h1) {
 .language-switch a:hover { background: #e9ecdf; }
 .language-switch a:focus-visible { outline: 2px solid #61775e; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .auth-switch a.auth-switch-button { transition: none; } }
+
+/* Home language preference uses the same cookie as the account pages. */
+.home-language-switch { display: inline-flex; align-items: center; gap: 3px; padding-left: 12px; border-left: 1px solid #d9ddd1; }
+.site-header .home-language-switch a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px; border-radius: 6px; }
+.home-language-switch a[aria-current="true"] { background: #e9ecdf; }
+.home-language-switch a:hover { background: #dfe6d6; }
+.home-language-switch a:focus-visible { outline: 2px solid #61775e; outline-offset: 3px; }
+html[lang="zh-CN"] .home-page :is(h1,h2,h3) { font-family: 'Odyssey Rounded', 'PingFang SC', 'Microsoft YaHei', sans-serif; font-weight: 400; letter-spacing: .015em; line-height: 1.35; }
+html[lang="zh-CN"] .home-page .hero h1 { font-size: clamp(40px,4.8vw,66px); }
+html[lang="zh-CN"] .home-page .story-copy p { line-height: 2.1; }
+html[lang="zh-CN"] .home-page .category-card h3 { font-size: clamp(26px,3vw,40px); }
+html[lang="zh-CN"] .home-page .eyebrow { letter-spacing: .12em; }
+@media(max-width:760px) { html[lang="zh-CN"] .home-page .section-heading h2 { font-size: 28px; } }
+
+html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odyssey Rounded', 'PingFang SC', sans-serif; line-height: 1.8; }
