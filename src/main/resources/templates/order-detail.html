@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orders | Odyssey</title>
+<link rel="stylesheet" th:href="@{/css/style.css(v=orders-1)}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('orders')}">
+</header>
+<main class="order-page">
+<p class="eyebrow">YOUR ODYSSEY</p>
+<p class="cart-feedback cart-error" role="alert" th:if="${orderError}" th:text="${orderError}">
+</p>
+<p class="cart-feedback" role="status" th:if="${orderMessage}" th:text="${orderMessage}">
+</p>
+<a class="detail-back" th:href="${staffView ? '/staff/orders' : '/orders'}" th:text="${zh ? '← 返回订单列表' : '← Back to orders'}">
+</a>
+<h1 th:text="${zh ? '订单详情' : 'Your order.'}">
+</h1>
+<p class="order-number" th:text="${order.id}">
+</p>
+<span class="order-badge" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}">
+</span>
+<div class="order-grid">
+<section class="order-card">
+<h2 th:text="${zh ? '商品明细' : 'Order details'}">
+</h2>
+<div class="order-item" th:each="item : ${items}">
+<a th:href="@{/products/{id}(id=${item.productId})}" th:text="${item.productName}">
+</a>
+<p>
+<span th:text="'€' + ${#numbers.formatDecimal(item.unitPrice,1,2)}">
+</span> × <span th:text="${item.quantity}">
+</span>
+<strong th:text="' · €' + ${#numbers.formatDecimal(item.subtotal(),1,2)}">
+</strong>
+</p>
+</div>
+<h2 th:text="'€' + ${#numbers.formatDecimal(order.total,1,2)}">
+</h2>
+</section>
+<section class="order-card">
+<h2 th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送' : 'Delivery') : (zh ? '门店自取' : 'Store collection')}">
+</h2>
+<p class="order-address" th:text="${order.address}">
+</p>
+<p th:if="${order.fulfillment == 'COLLECTION'}" th:text="${zh ? '状态变为待取货后，凭订单号前往门店领取。' : 'Collect at the shop with your order number once the status is READY.'}">
+</p>
+<p th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}">
+</p>
+<div th:if="${!staffView and order.status == 'PENDING'}">
+<h2 th:text="${zh ? '修改收货方式' : 'Change fulfilment'}">
+</h2>
+<form class="order-form" method="post" th:action="@{/orders/{id}/edit(id=${order.id})}">
+<label for="fulfillment" th:text="${zh ? '收货方式' : 'Fulfilment'}">
+</label>
+<select id="fulfillment" name="fulfillment">
+<option value="DELIVERY" th:selected="${order != null and order.fulfillment == 'DELIVERY'}" th:text="${zh ? '配送' : 'Delivery'}">
+</option>
+<option value="COLLECTION" th:selected="${order != null and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '门店自取' : 'Collect in store'}">
+</option>
+</select>
+<label for="address" th:text="${zh ? '配送地址（自取无需填写）' : 'Delivery address (not needed for collection)'}">
+</label>
+<textarea id="address" name="address" maxlength="500" rows="3" th:text="${order != null ? order.address : ''}">
+</textarea>
+<button class="order-button" th:text="${zh ? '保存修改' : 'Save changes'}">
+</button>
+</form>
+<form method="post" th:action="@{/orders/{id}/cancel(id=${order.id})}">
+<button class="order-button order-cancel" th:text="${zh ? '取消订单' : 'Cancel order'}">
+</button>
+</form>
+</div>
+<p th:if="${!staffView and order.status != 'PENDING'}" th:text="${zh ? '当前状态不可修改或取消。' : 'This order can no longer be edited or cancelled.'}">
+</p>
+<form th:if="${staffView and order.status != 'CANCELLED' and order.status != 'COMPLETED'}" method="post" th:action="@{/staff/orders/{id}/status(id=${order.id})}">
+<button class="order-button" name="next" value="PREPARING" th:if="${order.status == 'PENDING'}" th:text="${zh ? '开始备货' : 'Start preparing'}">
+</button>
+<button class="order-button" name="next" value="SHIPPED" th:if="${order.status == 'PREPARING' and order.fulfillment == 'DELIVERY'}" th:text="${zh ? '标记已发货' : 'Mark as shipped'}">
+</button>
+<button class="order-button" name="next" value="READY" th:if="${order.status == 'PREPARING' and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '标记待取货' : 'Ready for collection'}">
+</button>
+<button class="order-button" name="next" value="COMPLETED" th:if="${order.status == 'SHIPPED' or order.status == 'READY'}" th:text="${zh ? '标记已完成' : 'Complete order'}">
+</button>
+</form>
+</section>
+</div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}">
+</footer>
+</body>
+</html>

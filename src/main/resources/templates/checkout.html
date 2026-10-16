@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orders | Odyssey</title>
+<link rel="stylesheet" th:href="@{/css/style.css(v=orders-1)}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('orders')}">
+</header>
+<main class="order-page">
+<p class="eyebrow">YOUR ODYSSEY</p>
+<p class="cart-feedback cart-error" role="alert" th:if="${orderError}" th:text="${orderError}">
+</p>
+<p class="cart-feedback" role="status" th:if="${orderMessage}" th:text="${orderMessage}">
+</p>
+<h1 th:text="${zh ? '确认订单' : 'Make it yours.'}">
+</h1>
+<a class="detail-back" th:href="@{/cart}" th:text="${zh ? '返回购物车' : 'Back to your bag'}">
+</a>
+<p th:if="${#lists.isEmpty(bag.lines)}" th:text="${zh ? '购物车为空，请先添加商品。' : 'Your bag is empty. Add some products first.'}">
+</p>
+<div class="order-grid" th:unless="${#lists.isEmpty(bag.lines)}">
+<section class="order-card">
+<h2 th:text="${zh ? '订单商品' : 'Your selection'}">
+</h2>
+<p th:each="line : ${bag.lines}">
+<span th:text="${line.product != null ? line.product.name : 'Unavailable product'}">
+</span> × <span th:text="${line.quantity}">
+</span>
+<strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">
+</strong>
+</p>
+<h2 th:text="'€' + ${#numbers.formatDecimal(bag.total,1,2)}">
+</h2>
+<p th:text="${zh ? '提交时将重新核对价格及库存。本项目暂不收取运费或在线付款。' : 'Prices and stock are checked when you place the order. No delivery charge or online payment in this project.'}">
+</p>
+</section>
+<form class="order-card order-form" method="post" th:action="@{/orders}">
+<input type="hidden" name="token" th:value="${checkoutToken}">
+<label for="fulfillment" th:text="${zh ? '收货方式' : 'Fulfilment'}">
+</label>
+<select id="fulfillment" name="fulfillment">
+<option value="DELIVERY" th:selected="${order != null and order.fulfillment == 'DELIVERY'}" th:text="${zh ? '配送' : 'Delivery'}">
+</option>
+<option value="COLLECTION" th:selected="${order != null and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '门店自取' : 'Collect in store'}">
+</option>
+</select>
+<label for="address" th:text="${zh ? '配送地址（自取无需填写）' : 'Delivery address (not needed for collection)'}">
+</label>
+<textarea id="address" name="address" maxlength="500" rows="3" th:text="${order != null ? order.address : ''}">
+</textarea>
+<button class="order-button" type="submit" th:text="${zh ? '提交订单' : 'Place order'}">
+</button>
+</form>
+</div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}">
+</footer>
+</body>
+</html>

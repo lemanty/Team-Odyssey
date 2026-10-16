@@ -21,6 +21,12 @@ public class CartService {
         if (state == null) { state = new State(); session.setAttribute("cart", state); }
         return state;
     }
+    public Map<Long,Integer> quantities(HttpSession session) {
+        synchronized (session) { return new LinkedHashMap<>(state(session).quantities); }
+    }
+    public void clear(HttpSession session) {
+        synchronized (session) { state(session).quantities.clear(); }
+    }
     public int count(HttpSession session) {
         synchronized (session) { return state(session).quantities.values().stream().mapToInt(Integer::intValue).sum(); }
     }

@@ -4,10 +4,10 @@
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="account-page">
     <div th:replace="~{fragments/auth :: language(${administrator ? '/admin' : '/staff'})}"></div>
-    <p class="eyebrow">ODYSSEY TEAM</p>
+    <a class="detail-back" th:href="@{/staff/orders}" th:text="${zh ? '订单管理 →' : 'Manage orders →'}"></a><p class="eyebrow">ODYSSEY TEAM</p>
     <h1 th:if="${administrator}" th:text="${zh ? '管理员工作台' : 'Administrator workspace'}"></h1>
     <h1 th:unless="${administrator}" th:text="${zh ? '员工工作台' : 'Staff workspace'}"></h1>
-    <p class="auth-notice" th:text="${zh ? '权限验证通过。此页是工作台入口，下列业务模块尚未实现。' : 'Access verified. This is a workspace entry page; the operational modules below are not implemented yet.'}"></p>
+    <p class="auth-notice" th:text="${zh ? '订单管理已开放；其他计划模块将陆续加入。' : 'Order management is available. Other planned modules will follow.'}"></p>
     <h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
     <ul th:unless="${administrator}">
         <li th:text="${zh ? '维护商品信息与上下架' : 'Maintain products and catalogue availability'}"></li>

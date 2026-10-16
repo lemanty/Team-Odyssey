@@ -1060,3 +1060,20 @@ html[lang="zh-CN"] :is(.auth-art h1, .auth-panel h2, .account-page h1) {
 .language-switch a:hover { background: #e9ecdf; }
 .language-switch a:focus-visible { outline: 2px solid #61775e; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .auth-switch a.auth-switch-button { transition: none; } }
+
+/* Order journey: shared customer and staff layouts. */
+.order-page { max-width: 1160px; margin: 4rem auto; padding: 0 24px; }
+.order-page h1 { font-size: clamp(2.4rem, 5vw, 4rem); margin: 1rem 0; }
+.order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+.order-card { padding: 28px; border: 1px solid #d9ded2; border-radius: 20px; background: #f0f1e9; margin: 20px 0; }
+.order-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.order-badge { display: inline-block; border-radius: 24px; background: #dfe6d7; color: #21463b; padding: 8px 16px; font-weight: 600; }
+.order-form { display: flex; flex-direction: column; gap: 14px; }
+.order-form select, .order-form textarea { font: inherit; width: 100%; padding: 12px; border: 1px solid #8a9b8d; border-radius: 8px; background: #fffdf7; box-sizing: border-box; }
+.order-button { display: inline-block; cursor: pointer; padding: 14px 24px; margin-top: 12px; background: #21463b; color: white; border: 0; border-radius: 8px; font: inherit; text-decoration: none; text-align: center; }
+.order-button:hover { background: #375c4d; }
+.order-cancel { background: #76584c; }
+.order-item { border-bottom: 1px solid #d9ded2; padding: 14px 0; }
+.order-address { white-space: pre-wrap; overflow-wrap: anywhere; }
+.order-number { overflow-wrap: anywhere; }
+@media(max-width: 720px) { .order-grid { grid-template-columns: 1fr; } .order-page { margin: 2rem auto; } .order-card { margin: 8px 0; padding: 20px; } }

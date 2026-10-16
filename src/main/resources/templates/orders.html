@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orders | Odyssey</title>
+<link rel="stylesheet" th:href="@{/css/style.css(v=orders-1)}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('orders')}">
+</header>
+<main class="order-page">
+<p class="eyebrow">YOUR ODYSSEY</p>
+<p class="cart-feedback cart-error" role="alert" th:if="${orderError}" th:text="${orderError}">
+</p>
+<p class="cart-feedback" role="status" th:if="${orderMessage}" th:text="${orderMessage}">
+</p>
+<h1 th:text="${staffView ? (zh ? '员工订单后台' : 'Order workspace') : (zh ? '我的订单' : 'Your orders.')}">
+</h1>
+<p th:text="${zh ? '查看订单，跟进每一次旅程。' : 'Follow every step of your order.'}">
+</p>
+<p class="order-card" th:if="${#lists.isEmpty(orders)}" th:text="${zh ? '暂无订单。' : 'No orders yet.'}">
+</p>
+<article class="order-card order-row" th:each="order : ${orders}">
+<div>
+<a class="detail-back" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${'#' + #strings.substring(order.id,0,8)}">
+</a>
+<p th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}">
+</p>
+</div>
+<span class="order-badge" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}">
+</span>
+<span th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送' : 'Delivery') : (zh ? '自取' : 'Collection')}">
+</span>
+<strong th:text="'€' + ${#numbers.formatDecimal(order.total,1,2)}">
+</strong>
+</article>
+</main>
+<footer th:replace="~{fragments/layout :: footer}">
+</footer>
+</body>
+</html>

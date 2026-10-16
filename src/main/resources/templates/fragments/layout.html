@@ -9,6 +9,7 @@
         <a th:href="@{/products}" th:attr="aria-current=${activePage == 'products' ? 'page' : null}" th:text="${zh ? '探索商品' : 'Explore products'}">Explore products</a>
         <a th:href="@{/cart}" th:attr="aria-current=${activePage == 'cart' ? 'page' : null}"><span th:text="${zh ? '购物车' : 'Bag'}">Bag</span> (<span th:text="${cartCount}">0</span>)</a>
         <a th:if="${!signedIn}" th:href="@{/login}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '登录 / 注册' : 'Sign in / Join'}">Sign in / Join</a>
+        <a th:if="${signedIn}" th:href="@{/orders}" th:text="${zh ? '我的订单' : 'My orders'}"></a>
         <a th:if="${signedIn}" th:href="@{/account}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '我的账号' : 'My account'}">My account</a>
     </nav>
 </header>

@@ -50,7 +50,7 @@
             <h2>Bag summary</h2>
             <div class="cart-total"><span>Subtotal</span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
             <p>Items are saved for this browser session. Adding to your bag does not reserve stock.</p>
-            <p>Checkout, delivery charges and payment are coming later.</p>
+            <a class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
             <a class="detail-back" th:href="@{/products}">Continue exploring <span aria-hidden="true">↗</span></a>
         </aside>
     </div>
