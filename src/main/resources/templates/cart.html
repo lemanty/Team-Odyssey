@@ -11,8 +11,8 @@
 <main class="cart-page">
     <p class="eyebrow"><span th:text="${storeText.text('A FEW GOOD FINDS', zh)}">A FEW GOOD FINDS</span></p>
     <h1><span th:text="${storeText.text('Your bag.', zh)}">Your bag.</span></h1>
-    <p class="cart-feedback" role="status" th:if="${storeText.text(cartMessage, zh)}" th:text="${storeText.text(cartMessage, zh)}"></p>
-    <p class="cart-feedback cart-error" role="alert" th:if="${storeText.text(cartError, zh)}" th:text="${storeText.text(cartError, zh)}"></p>
+    <p class="cart-feedback" role="status" th:if="${cartMessage != null and !#strings.isEmpty(cartMessage)}" th:text="${storeText.text(cartMessage, zh)}"></p>
+    <p class="cart-feedback cart-error" role="alert" th:if="${cartError != null and !#strings.isEmpty(cartError)}" th:text="${storeText.text(cartError, zh)}"></p>
     <section class="cart-empty" th:if="${#lists.isEmpty(bag.lines)}">
         <h2><span th:text="${storeText.text('Your next discovery is waiting.', zh)}">Your next discovery is waiting.</span></h2>
         <p><span th:text="${storeText.text('Your bag is empty. Explore the collection and find something for your everyday.', zh)}">Your bag is empty. Explore the collection and find something for your everyday.</span></p>

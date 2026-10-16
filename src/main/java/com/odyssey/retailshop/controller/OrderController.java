@@ -31,12 +31,13 @@ public class OrderController {
             if (!token.equals(session.getAttribute("checkoutToken")) && !token.equals(previous)) {
                 flash.addFlashAttribute("orderError","Please reopen checkout. / 请重新打开结算页。"); return "redirect:/checkout";
             }
-            if (token.equals(previous)) return "redirect:/orders/"+session.getAttribute("lastCheckoutId");
+            if (token.equals(previous)) return "redirect:/orders";
             try {
                 String id=orders.placeFromCart(user.getName(),token,fulfillment,address);
                 session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
-                return "redirect:/orders/"+id;
+                flash.addFlashAttribute("orderMessage", "Order placed successfully. / 订单提交成功。");
+                return "redirect:/orders";
             } catch (IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); return "redirect:/checkout"; }
         }
     }

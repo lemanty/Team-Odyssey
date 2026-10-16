@@ -98,7 +98,7 @@ class OrderTests {
         mvc.perform(get("/checkout").session(session).with(user("a@test.com"))).andExpect(status().isOk());
         String token=(String)session.getAttribute("checkoutToken");
         for (int retry=0; retry<2; retry++) mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
-            .param("token",token).param("fulfillment","DELIVERY").param("address","Road 1")).andExpect(status().is3xxRedirection());
+            .param("token",token).param("fulfillment","DELIVERY").param("address","Road 1")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/orders"));
         assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM cart_items",Integer.class)); assertEquals(1,stock()); assertEquals(1,orders.list("a@test.com",false).size());
         String id=orders.list("a@test.com",false).get(0).id();
         orders.advance(id,"PREPARING"); orders.advance(id,"SHIPPED"); orders.advance(id,"COMPLETED");

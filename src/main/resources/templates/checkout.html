@@ -11,9 +11,9 @@
 </header>
 <main class="order-page">
 <p class="eyebrow"><span th:text="${storeText.text('YOUR ODYSSEY', zh)}">YOUR ODYSSEY</span></p>
-<p class="cart-feedback cart-error" role="alert" th:if="${storeText.text(orderError, zh)}" th:text="${storeText.text(orderError, zh)}">
+<p class="cart-feedback cart-error" role="alert" th:if="${orderError != null and !#strings.isEmpty(orderError)}" th:text="${storeText.text(orderError, zh)}">
 </p>
-<p class="cart-feedback" role="status" th:if="${storeText.text(orderMessage, zh)}" th:text="${storeText.text(orderMessage, zh)}">
+<p class="cart-feedback" role="status" th:if="${orderMessage != null and !#strings.isEmpty(orderMessage)}" th:text="${storeText.text(orderMessage, zh)}">
 </p>
 <h1 th:text="${zh ? '确认订单' : 'Make it yours.'}">
 </h1>
