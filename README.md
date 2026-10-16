@@ -246,7 +246,7 @@ B/C 可围绕 `reserveStock`、`releaseStock`、`fulfillStock`、`recordStoreSal
 | A：这台 Mac 的管理员 | Docker Desktop，然后 Host-Start | `127.0.0.1:3307` |
 | B / C / D：组员 | Member-Connect，保持窗口打开；再运行 Member-Website | `127.0.0.1:13307` |
 
-所有人数据库名是 `odyssey`。当前数据库账号是 `odyssey_app`（团队开发共享账号，与每个人的 SSH 登录账号不同），密码私下分发，不能写入 README。成员不必安装 Docker/MySQL，只需 Java 17+、Python 3、OpenSSH；首次运行 Maven 需要联网下载依赖。
+所有人数据库名是 `odyssey`。当前数据库账号是 `odyssey_app`（团队开发共享账号，与每个人的 SSH 登录账号不同），密码私下分发，不能写入 README。成员不必安装 Docker/MySQL，只需 Java 17+、Python 3.9+、OpenSSH；首次运行 Maven 需要联网下载依赖。
 
 **远程登录尚未配置完成：需要成员公钥、主机开启 SSH，并从另一台电脑验证校园网允许互访。脚本不能代替这些步骤。** 目前只能确认主机本地连接。
 
@@ -339,7 +339,21 @@ python3 scripts/database.py tunnel
 python3 scripts/database.py web-member
 ```
 
-Windows 用 `py -3` 替换 `python3`。普通 Markdown 链接只会打开脚本，不保证执行；Mac 真正双击运行需要在 Finder 中打开 `.command`，Windows 使用上述终端命令。
+Windows 用 `py -3` 替换 `python3`。普通 Markdown 链接只会打开脚本，不保证执行；Mac 真正双击运行需要在 Finder 中打开 `.command`，Windows 在文件资源管理器中双击下面的 `.cmd` 文件。
+
+### Windows 组员：双击启动
+
+1. 安装 JDK 17 或 21、Python 3.9+（安装时勾选 Add Python to PATH）以及 OpenSSH 客户端。设置 `JAVA_HOME` 为 JDK 安装目录。新开终端，用 `java -version`、`py -3 --version`、`ssh -V` 检查；若没有 `py`，脚本也会尝试 `python` 和 `python3`。
+2. 按上面的说明填写项目根目录 `.env.team`，保存为 UTF-8，注意文件名不能变成 `.env.team.txt`。管理员需提前添加你的 SSH 公钥。
+3. 打开项目的 `scripts` 文件夹，双击 [Member-Connect.cmd](scripts/Member-Connect.cmd)，保持隧道窗口打开。
+4. 再双击 [Member-Website.cmd](scripts/Member-Website.cmd)。网站启动并通过检查后自动打开浏览器，默认地址为 <http://localhost:8080/products>。保留此窗口以便查看日志。
+5. 使用完毕，先在网站窗口按 `Ctrl+C`，再在隧道窗口按 `Ctrl+C`。如果出现批处理终止确认，按提示确认。
+
+脚本会复用已经启动的 MySQL 模式网站，不会重复启动；若端口被其他程序或 demo 网站占用，会提示先停止旧程序。出错窗口会保留，请把具体错误信息发给管理员。`Run-Database.cmd` 是公共入口，由上述脚本调用，不需要单独双击。
+
+**当前主机仍然是管理员的 Mac，Windows 组员不需要安装 Docker，也不要运行 Host-Start。** 如果以后选择 Windows 作为本地数据库主机，可先安装并启动 Docker Desktop，准备 `.env.mysql`，再双击 [Host-Start.cmd](scripts/Host-Start.cmd)。它依次启动数据库、执行现有建表脚本、启动网站；它不会安装或配置 Windows SSH 服务器。现有 Mac SSH 配置脚本只适用于 Mac。
+
+这些 `.cmd` 脚本可以提交到 GitHub；`.env.team`、`.env.mysql` 和 SSH 私钥不得提交。Windows 入口的自动化检查在 macOS 上运行，首次使用还需在 Windows 实机验证。
 
 IntelliJ Database 中新建 **普通 MySQL** 数据源：主机 `127.0.0.1`，组员端口 `13307`（主机本人用 `3307`），数据库 `odyssey`，用户 `odyssey_app`，密码填写普通数据库密码。下载缺失驱动后点击「测试连接」。不要选择 Amazon Aurora。
 

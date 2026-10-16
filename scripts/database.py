@@ -23,7 +23,7 @@ def config(filename):
     if not path.exists():
         raise RuntimeError(f'Prepare {filename} from {filename}.example first; see README.')
     values = {}
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding='utf-8-sig').splitlines():
         if line.strip() and not line.lstrip().startswith('#'):
             key, value = line.split('=', 1)
             values[key.strip()] = value.strip()
@@ -63,7 +63,7 @@ def sql(statement=None):
     if statement is None:
         compose(*command, env=env)
     else:
-        compose(*command, env=env, input=statement, text=True)
+        compose(*command, env=env, input=statement, text=True, encoding='utf-8')
 
 
 def tunnel():
@@ -183,7 +183,8 @@ def run_website(command, env, port):
             return
         if state != 'free':
             raise RuntimeError(f'端口 {port} 已被占用（{state}）。请先停止旧网站再运行；不会自动结束其他程序。')
-        process = subprocess.Popen(command, env=env, start_new_session=(os.name != 'nt'))
+        options = {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == 'nt' else {'start_new_session': True}
+        process = subprocess.Popen(command, env=env, cwd=ROOT, **options)
         try:
             deadline = time.monotonic() + 180
             while time.monotonic() < deadline:
@@ -202,6 +203,14 @@ def run_website(command, env, port):
             stop_website(process)
 
 
+def maven_command(windows):
+    # Fixed relative arguments avoid quoting the project directory through cmd.exe.
+    # run_website sets cwd=ROOT, including when the project path contains spaces.
+    if windows:
+        return [os.environ.get('COMSPEC', 'cmd.exe'), '/d', '/c', 'mvnw.cmd', 'spring-boot:run']
+    return [str(ROOT / 'mvnw'), 'spring-boot:run']
+
+
 def website(role):
     values = config('.env.mysql' if role == 'host' else '.env.team')
     port = int(values.get('MYSQL_PORT', '3307') if role == 'host' else values.get('DB_PORT', '13307'))
@@ -215,28 +224,31 @@ def website(role):
         java = subprocess.run(['/usr/libexec/java_home', '-v', '17'], capture_output=True, text=True)
         if java.returncode == 0:
             env['JAVA_HOME'] = java.stdout.strip()
-    wrapper = str(ROOT / ('mvnw.cmd' if os.name == 'nt' else 'mvnw'))
     web_port = int(env.get('PORT', '8080'))
     if not 1024 <= web_port <= 65535:
         raise RuntimeError('PORT must be between 1024 and 65535')
-    run_website([wrapper, 'spring-boot:run'], env, web_port)
+    run_website(maven_command(os.name == 'nt'), env, web_port)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['host-start', 'status', 'login', 'init', 'tunnel', 'web-host', 'web-member'])
+    parser.add_argument('action', choices=['host-start', 'host-all', 'status', 'login', 'init', 'tunnel', 'web-host', 'web-member'])
     action = parser.parse_args().action
-    if action == 'host-start':
+    if action in ('host-start', 'host-all'):
         config('.env.mysql')
         compose('up', '-d', '--wait', '--wait-timeout', '360')
         sql('SELECT DATABASE(), CURRENT_USER(), VERSION();')
+        if action == 'host-all':
+            for migration in sorted((ROOT / 'src/main/resources/db').glob('*.sql')):
+                sql(migration.read_text(encoding='utf-8'))
+            website('host')
     elif action == 'status':
         compose('ps')
     elif action == 'login':
         sql()
     elif action == 'init':
         for migration in sorted((ROOT / 'src/main/resources/db').glob('*.sql')):
-            sql(migration.read_text())
+            sql(migration.read_text(encoding='utf-8'))
     elif action == 'tunnel':
         tunnel()
     else:
