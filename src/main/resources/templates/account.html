@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '我的账号 | Odyssey' : 'My account | Odyssey'}">My account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-2)}"></head>
+<body><header th:replace="~{fragments/layout :: header('account')}"></header>
+<main class="account-page">
+    <div th:replace="~{fragments/auth :: language('/account')}"></div>
+    <p class="eyebrow">YOUR ODYSSEY</p><h1><span th:text="${zh ? '你好，' : 'Hello, '}"></span><span th:text="${displayName}"></span><span>.</span></h1>
+    <p th:text="${zh ? '欢迎回来。你的下一个发现就在前方。' : 'Welcome back. Your next discovery is waiting.'}"></p>
+    <dl class="account-details"><dt th:text="${zh ? '邮箱' : 'Email'}"></dt><dd th:text="${accountEmail}"></dd><dt th:text="${zh ? '语言偏好' : 'Language preference'}"></dt><dd th:text="${zh ? '中文（在此浏览器保存 180 天）' : 'English (saved in this browser for 180 days)'}"></dd></dl>
+    <a class="detail-back" th:href="@{/products}" th:text="${zh ? '探索商品 →' : 'Explore the collection →'}"></a>
+    <form class="account-logout" method="post" th:action="@{/logout}"><button type="submit" class="text-button" th:text="${zh ? '退出登录' : 'Sign out'}"></button></form>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

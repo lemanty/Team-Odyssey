@@ -1,0 +1,5 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><body>
+<nav th:fragment="language(path)" class="language-switch" aria-label="Language / 语言">
+    <a th:href="@{${path}(lang='en')}" th:attr="aria-current=${!zh ? 'true' : null}" lang="en">EN</a><span aria-hidden="true">/</span><a th:href="@{${path}(lang='zh')}" th:attr="aria-current=${zh ? 'true' : null}" lang="zh-CN">中文</a>
+</nav>
+</body></html>

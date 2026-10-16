@@ -4,7 +4,7 @@ COMP3019J Web Application Development — Online Shopping Website
 
 面向本地零售商的在线购物项目，目标是让服装和家居用品的线上购物流程与门店日常运营保持一致。团队成员暂用 **A、B、C、D** 表示。
 
-> 当前版本是可运行的基础框架：主页和商品列表已经实现，默认 demo 模式商品来自内存；mysql 模式读取数据库商品表（见第 10 节）。账号、购物车、真实库存或下单功能尚未实现。页面 EUR 价格仅为示例，不代表已确定的业务币种。
+> 当前已实现主页、商品列表/详情、会话购物车，以及 MySQL 注册登录。默认 demo 模式使用内存商品且不提供账号存储；mysql 模式使用数据库（见第 10 节）。库存仍为演示数据，真实库存预留与下单尚未实现。页面 EUR 价格仅为示例。
 
 ## 1. 技术选择
 
@@ -19,7 +19,7 @@ COMP3019J Web Application Development — Online Shopping Website
 | Spring Boot DevTools | 已引入 | 辅助本地开发 |
 | JUnit / MockMvc | 已使用 | 应用启动和网页集成测试 |
 | MySQL + Spring JDBC | mysql 模式已接入 | 商品数据持久化；JPA 尚未使用 |
-| Spring Security | 后续接入 | 登录和角色权限 |
+| Spring Security | 已使用 | 表单登录、密码哈希、CSRF、账号页与角色路径保护 |
 
 采用一个 Spring Boot 应用，前后端放在同一仓库中，不需要 Node.js 或单独的前端服务。尚未覆盖于课堂的技术应按课程要求在设计报告中说明用途和适用理由。
 
@@ -414,3 +414,20 @@ python3 scripts/seed-clothing.py
 购物车保存在 Java `HttpSession` 中，按浏览器会话隔离，不写入共享 MySQL。刷新页面仍保留；会话过期或服务器重启后可能清空，暂不支持跨设备同步。数量限制为 1–999，且不能超过数据库当前库存；库存未知或售罄时禁止添加。价格和库存均由后端重新读取，表单使用会话令牌校验。
 
 加入购物车不会预留或扣减库存，尚未提供结算、支付和创建订单。未来下单时仍需使用数据库事务重新校验库存并预留。`CartService` 管理购物车状态，`CartController` 处理表单，`cart.html` 展示购物车。
+
+## 13. 注册、登录与语言偏好
+
+数据库主机执行 `python3 scripts/database.py init` 创建 `003-users.sql` 中的 `users` 表，再用 `scripts/Host-Start.command` 启动网站。组员连接共享数据库后无需重复建表。新增安全依赖后需要完整重启网站，不能只刷新网页。
+
+- 注册：`http://localhost:8080/register`，填写姓名/昵称、邮箱、密码和确认密码。
+- 登录：`http://localhost:8080/login`，使用刚注册的邮箱和密码。
+- 我的账号：`http://localhost:8080/account`，显示姓名、邮箱，提供语言切换和退出。未登录会跳转登录页。
+- 所有新注册账号均为 `CUSTOMER`。注册表单不能指定员工或管理员权限。员工管理页面尚未实现；`/staff/**` 和 `/admin/**` 已设置角色访问限制。
+
+`users` 存储 ID、姓名、唯一邮箱、BCrypt 密码哈希、角色及创建时间。邮箱统一小写；密码至少 8 个、最多 64 个字符且不能超过 72 个 UTF-8 字节。数据库不会保存明文密码。注册不会自动登录；登录成功会更新会话 ID 并保留会话购物车，退出会清除会话（包括购物车）。
+
+登录、注册和账号页右上角的 `EN / 中文` 将偏好写入 `odyssey_language` Cookie，保留 180 天。当前翻译范围为账号页面及公共导航，商品文案和其他页面主体仍为英文。Cookie 设置 `HttpOnly`、`SameSite=Lax`，HTTPS 请求时增加 `Secure`；仅接受 en/zh，不保存密码、邮箱或角色。退出不会清除语言偏好。登录身份使用服务器会话及独立 `JSESSIONID` Cookie，没有长期自动登录功能。
+
+Spring Security 为 POST 表单提供 CSRF 校验。基础测试包括重复邮箱、无效注册、密码哈希、成功/失败登录、会话更新、退出、未登录访问、角色限制与语言 Cookie。邮箱验证、忘记密码、登录限速和跨设备偏好同步尚未实现。正式部署时应配置 HTTPS，并设置 `SERVER_SERVLET_SESSION_COOKIE_SECURE=true`。
+
+实现参考：[Spring Security 表单登录](https://docs.spring.io/spring-security/reference/7.0/servlet/authentication/passwords/form.html)、[CSRF 与 Thymeleaf 表单](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html)。

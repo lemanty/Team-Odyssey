@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.Optional;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,7 +27,7 @@ class CartTests {
         when(products.getProduct(42L)).thenReturn(Optional.of(new Product(42L, "Test shirt", "Clothing", "Cotton", new BigDecimal("12.50"), "Men", stock, null, null)));
     }
     private void change(MockHttpSession session, String action, int quantity) throws Exception {
-        mvc.perform(post("/cart/"+action).session(session).param("csrf",CartController.token(session)).param("productId","42").param("quantity",String.valueOf(quantity)))
+        mvc.perform(post("/cart/"+action).session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","42").param("quantity",String.valueOf(quantity)))
             .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/cart"));
     }
     @Test void addMergeUpdateRemoveAndSessionIsolation() throws Exception {
@@ -42,7 +43,7 @@ class CartTests {
     @Test void rejectsStockOverflowAndInvalidQuantityWithoutChangingCart() throws Exception {
         product(2); MockHttpSession session = new MockHttpSession(); change(session,"add",2);
         for (int quantity : new int[]{1, 0, -1, 1000}) {
-            mvc.perform(post("/cart/add").session(session).param("csrf",CartController.token(session)).param("productId","42").param("quantity",String.valueOf(quantity)))
+            mvc.perform(post("/cart/add").session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","42").param("quantity",String.valueOf(quantity)))
                 .andExpect(flash().attributeExists("cartError"));
         }
         mvc.perform(get("/cart").session(session)).andExpect(content().string(containsString("€25.00")));
@@ -50,14 +51,14 @@ class CartTests {
     @Test void rejectsUnavailableAndForgedRequests() throws Exception {
         MockHttpSession session = new MockHttpSession();
         product(0);
-        mvc.perform(post("/cart/add").session(session).param("csrf",CartController.token(session)).param("productId","42"))
+        mvc.perform(post("/cart/add").session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","42"))
             .andExpect(flash().attributeExists("cartError"));
         product(null);
-        mvc.perform(post("/cart/add").session(session).param("csrf",CartController.token(session)).param("productId","42"))
+        mvc.perform(post("/cart/add").session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","42"))
             .andExpect(flash().attributeExists("cartError"));
-        mvc.perform(post("/cart/add").session(session).param("csrf","forged").param("productId","42"))
+        mvc.perform(post("/cart/add").session(session).with(csrf()).param("csrf","forged").param("productId","42"))
             .andExpect(status().isForbidden());
-        mvc.perform(post("/cart/add").session(session).param("csrf",CartController.token(session)).param("productId","999"))
+        mvc.perform(post("/cart/add").session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","999"))
             .andExpect(flash().attributeExists("cartError"));
     }
     @Test void reflectsNewPriceAndStockAndAllowsRemovingDeletedProducts() throws Exception {

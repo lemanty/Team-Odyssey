@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '注册 | Odyssey' : 'Create an account | Odyssey'}">Create an account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-2)}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('account')}"></header>
+<main class="auth-page">
+    <aside class="auth-art"><p class="eyebrow">YOUR JOURNEY STARTS HERE</p><h1 th:text="${zh ? '好物相伴，开启你的日常新篇。' : 'Good things. A little closer.'}"></h1><p th:text="${zh ? '为日常生活，发现更多美好。欢迎加入 Odyssey。' : 'Thoughtful finds for the way you live. Make yourself at home with Odyssey.'}"></p></aside>
+    <section class="auth-panel" aria-labelledby="auth-title">
+        <div th:replace="~{fragments/auth :: language('/register')}"></div>
+        <p class="eyebrow">BECOME PART OF THE STORY</p><h2 id="auth-title" th:text="${zh ? '创建账号' : 'Join Odyssey.'}"></h2>
+        <p class="auth-intro" th:text="${zh ? '只需填写以下信息，即可开启旅程。' : 'A few details, and your journey begins.'}"></p>
+        <div class="auth-alert" role="alert" th:if="${registrationError}" th:switch="${registrationError}">
+            <p th:case="'duplicate'" th:text="${zh ? '该邮箱已注册，请登录或使用其他邮箱。' : 'This email is already registered. Sign in or use another email.'}"></p>
+            <p th:case="'validation'" th:text="${zh ? '请检查姓名、邮箱及密码。两次密码须一致，长度为 8–64 个字符，且最多 72 个 UTF-8 字节。' : 'Check your name, email and passwords. Passwords must match, contain 8–64 characters and use at most 72 UTF-8 bytes.'}"></p>
+            <p th:case="*" th:text="${zh ? '请启动 MySQL 模式后再注册。' : 'Start the MySQL version of the website to register.'}"></p>
+        </div>
+        <p class="auth-alert" th:unless="${databaseAvailable}" th:text="${zh ? '展示模式无法保存账号，请启动 MySQL 模式。' : 'Accounts require the MySQL version of the website.'}"></p>
+        <form class="auth-form" method="post" th:action="@{/register}">
+            <label for="name" th:text="${zh ? '姓名或昵称' : 'Your name'}"></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" required th:value="${nameValue}">
+            <label for="email" th:text="${zh ? '邮箱地址' : 'Email address'}"></label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" required th:value="${emailValue}" placeholder="you@example.com">
+            <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="64" required aria-describedby="password-help">
+            <small id="password-help" th:text="${zh ? '使用 8–64 个字符。建议使用较长的独特密码。' : 'Use 8–64 characters. A long, unique passphrase works well.'}"></small>
+            <label for="confirmPassword" th:text="${zh ? '确认密码' : 'Confirm password'}"></label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="64" required>
+            <button class="cart-button" type="submit" th:disabled="${!databaseAvailable}" th:text="${zh ? '创建账号' : 'Create account'}"></button>
+        </form>
+        <div class="auth-switch"><span th:text="${zh ? '已有账号？' : 'Already part of the journey?'}"></span> <a class="auth-switch-button" th:href="@{/login}" th:text="${zh ? '去登录' : 'Sign in'}"></a></div>
+    </section>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer>
+</body></html>

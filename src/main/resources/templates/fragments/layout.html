@@ -4,10 +4,12 @@
 <header th:fragment="header(activePage)" class="site-header">
     <a class="brand" th:href="@{/}"><span class="brand-mark">O</span> ODYSSEY<span class="brand-small">LOCAL GOODS</span></a>
     <nav aria-label="Main navigation">
-        <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}">Home</a>
-        <a th:href="@{/#our-story}">Our story</a>
-        <a th:href="@{/products}" th:attr="aria-current=${activePage == 'products' ? 'page' : null}">Explore products</a>
-        <a th:href="@{/cart}" th:attr="aria-current=${activePage == 'cart' ? 'page' : null}">Bag (<span th:text="${cartCount}">0</span>)</a>
+        <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}" th:text="${zh ? '首页' : 'Home'}">Home</a>
+        <a th:href="@{/#our-story}" th:text="${zh ? '品牌故事' : 'Our story'}">Our story</a>
+        <a th:href="@{/products}" th:attr="aria-current=${activePage == 'products' ? 'page' : null}" th:text="${zh ? '探索商品' : 'Explore products'}">Explore products</a>
+        <a th:href="@{/cart}" th:attr="aria-current=${activePage == 'cart' ? 'page' : null}"><span th:text="${zh ? '购物车' : 'Bag'}">Bag</span> (<span th:text="${cartCount}">0</span>)</a>
+        <a th:if="${!signedIn}" th:href="@{/login}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '登录 / 注册' : 'Sign in / Join'}">Sign in / Join</a>
+        <a th:if="${signedIn}" th:href="@{/account}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '我的账号' : 'My account'}">My account</a>
     </nav>
 </header>
 <footer th:fragment="footer" class="site-footer">
