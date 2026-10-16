@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=order-cards-3)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=order-wash-4)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -21,7 +21,7 @@
 </p>
 <p class="order-card" th:if="${#lists.isEmpty(orders)}" th:text="${zh ? '暂无订单。' : 'No orders yet.'}">
 </p>
-<article class="order-card order-summary-card" th:each="order : ${orders}">
+<article class="order-card order-summary-card" th:each="order, card : ${orders}" th:classappend="${'order-wash-' + (card.index % 4)}">
     <div class="order-summary-header">
         <div><a class="order-number-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${(zh ? '订单 #' : 'Order #') + #strings.substring(order.id,0,8)}"></a>
             <p class="order-date" th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}"></p></div>

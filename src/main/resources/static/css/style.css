@@ -1159,3 +1159,31 @@ html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odysse
     .order-destination p { font-size: 20px; }
     .order-summary-total { text-align: left; padding-top: 14px; border-top: 1px solid #d9ded2; }
 }
+
+/* Soft sage washes vary by card while keeping a warm ivory base. */
+.order-summary-card {
+    background-color: #faf7ee;
+    border-color: #b9c8ad;
+    box-shadow: 0 5px 18px rgba(43, 66, 42, .045);
+}
+.order-summary-card.order-wash-0 {
+    background-image: radial-gradient(ellipse at 0% 15%, rgba(163, 190, 143, .52), transparent 64%),
+                      radial-gradient(ellipse at 100% 100%, rgba(205, 216, 183, .28), transparent 50%);
+}
+.order-summary-card.order-wash-1 {
+    background-image: radial-gradient(ellipse at 100% 85%, rgba(156, 184, 141, .48), transparent 64%),
+                      radial-gradient(ellipse at 15% 0%, rgba(218, 225, 197, .28), transparent 48%);
+}
+.order-summary-card.order-wash-2 {
+    background-image: radial-gradient(ellipse at 45% 100%, rgba(172, 194, 151, .46), transparent 68%),
+                      radial-gradient(ellipse at 100% 0%, rgba(197, 214, 179, .25), transparent 48%);
+}
+.order-summary-card.order-wash-3 {
+    background-image: radial-gradient(ellipse at 70% 0%, rgba(166, 190, 150, .48), transparent 65%),
+                      radial-gradient(ellipse at 0% 100%, rgba(206, 220, 187, .3), transparent 48%);
+}
+.order-summary-card .order-summary-header,
+.order-summary-card .order-destination,
+.order-summary-card .order-preview-item + .order-preview-item {
+    border-color: rgba(105, 130, 91, .24);
+}
