@@ -27,7 +27,7 @@ class OrderTests {
     @Autowired MockMvc mvc;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql")) {
+        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",name)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", "").replaceAll("(?m)^--.*$", "");
             for (String statement : sql.split(";")) if (!statement.isBlank()) jdbc.execute(statement);
         }
@@ -72,13 +72,34 @@ class OrderTests {
             assertEquals(1,successes); assertEquals(1,stock());
         } finally { pool.shutdownNow(); }
     }
+    @Test void accountCartPersistsAcrossSessionsAndIsIsolated() throws Exception {
+        var first=new org.springframework.mock.web.MockHttpSession();
+        mvc.perform(post("/cart/add").session(first).with(user("a@test.com")).with(csrf())
+            .param("csrf",com.odyssey.retailshop.controller.CartController.token(first)).param("productId","1").param("quantity","2"))
+            .andExpect(status().is3xxRedirection());
+        var otherDevice=new org.springframework.mock.web.MockHttpSession();
+        mvc.perform(get("/cart").session(otherDevice).with(user("a@test.com")))
+            .andExpect(content().string(containsString("€25.00")));
+        mvc.perform(get("/cart").session(first).with(user("b@test.com")))
+            .andExpect(content().string(containsString("Your bag is empty")));
+        mvc.perform(post("/logout").session(first).with(user("a@test.com")).with(csrf())).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/cart").with(user("a@test.com")))
+            .andExpect(content().string(containsString("€25.00")));
+        assertEquals(2,jdbc.queryForObject("SELECT quantity FROM cart_items WHERE user_id=1",Integer.class));
+    }
+    @Test void failedCheckoutKeepsAccountCart() {
+        jdbc.update("INSERT INTO cart_items VALUES (1,1,2),(1,2,1)");
+        assertThrows(IllegalArgumentException.class,()->orders.placeFromCart("a@test.com",UUID.randomUUID().toString(),"COLLECTION",""));
+        assertEquals(2,jdbc.queryForObject("SELECT COUNT(*) FROM cart_items",Integer.class));
+        assertEquals(3,stock());
+    }
     @Test void checkoutThroughFormsClearsCartAndRetriesSafely() throws Exception {
-        var session=new org.springframework.mock.web.MockHttpSession(); cart.change(session,1L,2,true);
+        var session=new org.springframework.mock.web.MockHttpSession(); jdbc.update("INSERT INTO cart_items VALUES (1,1,2)");
         mvc.perform(get("/checkout").session(session).with(user("a@test.com"))).andExpect(status().isOk());
         String token=(String)session.getAttribute("checkoutToken");
         for (int retry=0; retry<2; retry++) mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
             .param("token",token).param("fulfillment","DELIVERY").param("address","Road 1")).andExpect(status().is3xxRedirection());
-        assertEquals(0,cart.count(session)); assertEquals(1,stock()); assertEquals(1,orders.list("a@test.com",false).size());
+        assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM cart_items",Integer.class)); assertEquals(1,stock()); assertEquals(1,orders.list("a@test.com",false).size());
         String id=orders.list("a@test.com",false).get(0).id();
         orders.advance(id,"PREPARING"); orders.advance(id,"SHIPPED"); orders.advance(id,"COMPLETED");
         assertEquals("COMPLETED",orders.get(id,"a@test.com",false).status());
@@ -95,7 +116,7 @@ class OrderTests {
     @Test void pagesOwnershipStaffPermissionsAndCsrf() throws Exception {
         String id=place("DELIVERY");
         var session=new org.springframework.mock.web.MockHttpSession();
-        cart.change(session,1L,1,true);
+        jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
         mvc.perform(get("/checkout").session(session).with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("Place order")));
         mvc.perform(get("/orders")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/orders/"+id).with(user("b@test.com"))).andExpect(status().isNotFound());

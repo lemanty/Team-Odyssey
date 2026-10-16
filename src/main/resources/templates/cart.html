@@ -49,7 +49,7 @@
             <p class="eyebrow"><span th:text="${storeText.text('YOUR EVERYDAY EDIT', zh)}">YOUR EVERYDAY EDIT</span></p>
             <h2><span th:text="${storeText.text('Bag summary', zh)}">Bag summary</span></h2>
             <div class="cart-total"><span><span th:text="${storeText.text('Subtotal', zh)}">Subtotal</span></span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
-            <p><span th:text="${storeText.text('Items are saved for this browser session. Adding to your bag does not reserve stock.', zh)}">Items are saved for this browser session. Adding to your bag does not reserve stock.</span></p>
+            <p><span th:text="${storeText.text('Signed-in bags are saved to your account. Guest bags are temporary and are not merged on sign-in. Adding to your bag does not reserve stock.', zh)}">Signed-in bags are saved to your account. Guest bags are temporary and are not merged on sign-in. Adding to your bag does not reserve stock.</span></p>
             <a class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </aside>

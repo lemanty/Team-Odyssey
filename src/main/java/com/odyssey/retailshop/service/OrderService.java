@@ -51,6 +51,19 @@ public class OrderService {
         if (clean.isBlank() || clean.length() > 500) throw new IllegalArgumentException("Enter a delivery address (up to 500 characters). / 请填写配送地址（最多500字）。");
         return clean;
     }
+    public String placeFromCart(String email, String token, String fulfillment, String address) {
+        ready();
+        return tx.execute(status -> {
+            Long userId=jdbc.queryForObject("SELECT id FROM users WHERE email=? FOR UPDATE",Long.class,email);
+            var existing=jdbc.queryForList("SELECT id FROM shop_orders WHERE user_id=? AND checkout_token=?",String.class,userId,token);
+            if (!existing.isEmpty()) return existing.get(0);
+            Map<Long,Integer> cart=new LinkedHashMap<>();
+            jdbc.query("SELECT product_id,quantity FROM cart_items WHERE user_id=? ORDER BY product_id",r -> { cart.put(r.getLong(1),r.getInt(2)); },userId);
+            String id=place(email,token,cart,fulfillment,address);
+            jdbc.update("DELETE FROM cart_items WHERE user_id=?",userId);
+            return id;
+        });
+    }
     public String place(String email, String token, Map<Long,Integer> cart, String fulfillment, String address) {
         ready();
         String destination = address(fulfillment,address);

@@ -33,8 +33,8 @@ public class OrderController {
             }
             if (token.equals(previous)) return "redirect:/orders/"+session.getAttribute("lastCheckoutId");
             try {
-                String id=orders.place(user.getName(),token,cart.quantities(session),fulfillment,address);
-                cart.clear(session); session.removeAttribute("checkoutToken");
+                String id=orders.placeFromCart(user.getName(),token,fulfillment,address);
+                session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
                 return "redirect:/orders/"+id;
             } catch (IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); return "redirect:/checkout"; }
