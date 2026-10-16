@@ -7,6 +7,7 @@
     <aside class="auth-art auth-art-login"><p class="eyebrow"><span th:text="${storeText.text('THE ODYSSEY CONTINUES', zh)}">THE ODYSSEY CONTINUES</span></p><h1 th:text="${zh ? '每次相遇，都是新的旅程。' : 'A familiar place. A new discovery.'}">A familiar place. A new discovery.</h1><p th:text="${zh ? '从日常所需，到意外惊喜。欢迎回到 Odyssey。' : 'From everyday essentials to unexpected favourites. Welcome back to Odyssey.'}"></p></aside>
     <section class="auth-panel" aria-labelledby="auth-title">
         <p class="eyebrow"><span th:text="${storeText.text('WELCOME BACK', zh)}">WELCOME BACK</span></p><h2 id="auth-title" th:text="${zh ? '欢迎回来' : 'Sign in.'}"></h2>
+        <p class="auth-notice" role="status" th:if="${param.cartRequired}" th:text="${zh ? '请先登录后再加入购物车。商品将保存在你的账号中。' : 'Please sign in before adding items to your bag. Your bag is saved to your account.'}"></p>
         <p class="auth-intro" th:text="${zh ? '登录账号，继续你的发现之旅。' : 'Your next discovery starts here.'}"></p>
         <p class="auth-alert" role="alert" th:if="${param.error}" th:text="${zh ? '用户名、邮箱或密码不正确，请重试。' : 'The username, email or password is incorrect. Please try again.'}"></p>
         <p class="auth-notice" role="status" th:if="${param.registered}" th:text="${zh ? '注册成功！请使用新账号登录。' : 'Account created. Sign in with your new details.'}"></p>

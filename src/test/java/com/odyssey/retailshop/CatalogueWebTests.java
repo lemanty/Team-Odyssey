@@ -56,7 +56,7 @@ class CatalogueWebTests {
             .andExpect(content().string(containsString("全部商品")))
             .andExpect(content().string(containsString("日常纯棉T恤")))
             .andExpect(content().string(containsString("陶瓷马克杯")))
-            .andExpect(content().string(containsString("暂无库存信息")));
+            .andExpect(content().string(containsString("/login?cartRequired=true")));
     }
 
     @Test

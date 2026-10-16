@@ -22,10 +22,13 @@ public class SecurityConfig {
     }
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/orders", "/orders/**", "/checkout", "/account", "/account/**").authenticated()
+                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/account", "/account/**").authenticated()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())
+            .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
+                new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login?cartRequired"),
+                request -> request.getServletPath().startsWith("/cart/")))
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")
                 .defaultSuccessUrl("/account", true).failureUrl("/login?error").permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/login?logout").deleteCookies("JSESSIONID"));

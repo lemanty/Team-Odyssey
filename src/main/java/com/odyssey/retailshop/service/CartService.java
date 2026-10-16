@@ -20,12 +20,14 @@ public class CartService {
     }
     private Map<Long,Integer> read(HttpSession session) {
         String owner=owner();
-        if (owner!=null && accounts.available()) return accounts.read(owner);
+        if (owner==null) return java.util.Collections.emptyMap();
+        if (accounts.available()) return accounts.read(owner);
         return state(session).quantities;
     }
     private void modify(HttpSession session, java.util.function.Consumer<Map<Long,Integer>> action) {
         String owner=owner();
-        if (owner!=null && accounts.available()) accounts.modify(owner,action);
+        if (owner==null) throw new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException("Sign in before changing your bag");
+        if (accounts.available()) accounts.modify(owner,action);
         else action.accept(state(session).quantities);
     }
 

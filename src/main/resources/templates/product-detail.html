@@ -47,7 +47,8 @@
             </div>
             <p class="detail-stock" th:if="${product.stockQuantity == null}"><span th:text="${storeText.text('Stock information coming soon', zh)}">Stock information coming soon</span></p>
 
-            <form class="add-to-cart" method="post" th:action="@{/cart/add}">
+            <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
+            <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>

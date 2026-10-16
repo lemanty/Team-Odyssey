@@ -1115,3 +1115,5 @@ html[lang="zh-CN"] .home-page .eyebrow { letter-spacing: .12em; }
 @media(max-width:760px) { html[lang="zh-CN"] .home-page .section-heading h2 { font-size: 28px; } }
 
 html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odyssey Rounded', 'PingFang SC', sans-serif; line-height: 1.8; }
+
+.guest-cart-button { display: block; margin-top: 20px; text-align: center; text-decoration: none; box-sizing: border-box; }
