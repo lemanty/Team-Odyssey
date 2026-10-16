@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=soft-connections-1)}">
+    <title th:text="${zh ? '奥德赛 | 身边好物，美好日常' : 'Odyssey | Local goods, everyday living'}">Odyssey | Local goods, everyday living</title>
+    <link rel="stylesheet" th:href="@{/css/style.css(v=home-i18n-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
 <main class="home-page">
     <section class="hero">
         <div class="hero-copy">
-            <p class="eyebrow">YOUR NEIGHBOURHOOD, ONLINE</p>
-            <h1>Good things.<br>Everyday living.</h1>
-            <p class="intro">Clothing to live in. Little comforts for home. Discover the everyday essentials from your local shop.</p>
-            <a class="button" th:href="@{/products}">Explore our catalogue <span aria-hidden="true">↗</span></a>
-            <p class="small-note">Catalogue preview · Online ordering is coming later.</p>
+            <p class="eyebrow"><span th:text="${zh ? '身边的小店，线上的相遇' : 'YOUR NEIGHBOURHOOD, ONLINE'}">YOUR NEIGHBOURHOOD, ONLINE</span></p>
+            <h1><span th:if="${!zh}">Good things.<br>Everyday living.</span><span th:if="${zh}">日常好物，<br>美好生活。</span></h1>
+            <p class="intro"><span th:text="${zh ? '穿得自在，住得舒心。从身边的小店，发现让每一天更美好的衣物与家居好物。' : 'Clothing to live in. Little comforts for home. Discover the everyday essentials from your local shop.'}">Clothing to live in. Little comforts for home. Discover the everyday essentials from your local shop.</span></p>
+            <a class="button" th:href="@{/products}"><span th:text="${zh ? '探索我们的商品' : 'Explore our catalogue'}">Explore our catalogue</span> <span aria-hidden="true">↗</span></a>
+            <p class="small-note"><span th:text="${zh ? '精选日常好物 · 支持配送或门店自取。' : 'Everyday essentials · Delivery or collection.'}">Everyday essentials · Delivery or collection.</span></p>
         </div>
         <div class="hero-art">
             <img class="hero-voyage" th:src="@{/images/odyssey-voyage.png}"
-                 alt="An ivory arch opening onto the Aegean Sea, with a distant sailboat, terracotta pottery and linen."
+                 th:alt="${zh ? '米白色拱门外是爱琴海与远处的帆船，陶器和亚麻织物点缀着海边露台。' : 'An ivory arch opening onto the Aegean Sea, with a distant sailboat, terracotta pottery and linen.'}"
                  width="1254" height="1254" fetchpriority="high">
         </div>
     </section>
@@ -41,7 +41,7 @@
             </linearGradient></defs>
             <path stroke="url(#journey-out)" d="M 540 175 C 725 60, 965 32, 1260 8" />
         </svg>
-        <div class="section-heading"><h2 id="categories-title">A little of what you need.</h2><span>Two collections. One local shop.</span></div>
+        <div class="section-heading"><h2 id="categories-title"><span th:text="${zh ? '你需要的美好，都在这里。' : 'A little of what you need.'}">A little of what you need.</span></h2><span><span th:text="${zh ? '两种精选，一个熟悉的小店。' : 'Two collections. One local shop.'}">Two collections. One local shop.</span></span></div>
         <div class="category-grid">
             <svg class="category-thread category-thread-desktop" viewBox="0 0 1184 385" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                 <defs><linearGradient id="thread-desktop" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -59,36 +59,43 @@
                 </linearGradient></defs>
                 <path stroke="url(#thread-mobile)" d="M 177 178 A 105 260 8 1 1 150 280" />
             </svg>
-            <a class="category-card category-clothing" th:href="@{/products#category-clothing}" aria-label="Browse clothing">
-                <span class="eyebrow">01 / CLOTHING</span>
-                <h3>Made for<br>everyday.</h3>
-                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span>Browse clothing</span></span>
+            <a class="category-card category-clothing" th:href="@{/products#category-clothing}" th:attr="aria-label=${zh ? '探索服装' : 'Browse clothing'}">
+                <span class="eyebrow"><span th:text="${zh ? '01 / 服装' : '01 / CLOTHING'}">01 / CLOTHING</span></span>
+                <h3><span th:if="${!zh}">Made for<br>everyday.</span><span th:if="${zh}">自在穿着，<br>日日相伴。</span></h3>
+                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span><span th:text="${zh ? '探索服装' : 'Browse clothing'}">Browse clothing</span></span></span>
                 <img class="category-object" th:src="@{/images/category-clothing.png}" alt="" width="1122" height="1402" loading="lazy">
             </a>
-            <a class="category-card category-household" th:href="@{/products#category-household}" aria-label="Browse household">
-                <span class="eyebrow">02 / HOUSEHOLD</span>
-                <h3>Make yourself<br>at home.</h3>
-                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span>Browse household</span></span>
+            <a class="category-card category-household" th:href="@{/products#category-household}" th:attr="aria-label=${zh ? '探索家居' : 'Browse household'}">
+                <span class="eyebrow"><span th:text="${zh ? '02 / 家居' : '02 / HOUSEHOLD'}">02 / HOUSEHOLD</span></span>
+                <h3><span th:if="${!zh}">Make yourself<br>at home.</span><span th:if="${zh}">舒心好物，<br>自在居家。</span></h3>
+                <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span><span th:text="${zh ? '探索家居' : 'Browse household'}">Browse household</span></span></span>
                 <img class="category-object" th:src="@{/images/category-household.png}" alt="" width="1122" height="1402" loading="lazy">
             </a>
         </div>
     </section>
     <section class="brand-story" id="our-story" aria-labelledby="story-title">
         <div class="story-heading">
-            <p class="eyebrow">OUR STORY</p>
-            <h2 id="story-title">Four minds.<br>One extraordinary journey.</h2>
-            <p class="story-caption">Inspired by an epic.<br>Created for your everyday.</p>
+            <p class="eyebrow"><span th:text="${zh ? '我们的故事' : 'OUR STORY'}">OUR STORY</span></p>
+            <h2 id="story-title"><span th:if="${!zh}">Four minds.<br>One extraordinary journey.</span><span th:if="${zh}">四位创始人，<br>一段不凡旅程。</span></h2>
+            <p class="story-caption"><span th:if="${!zh}">Inspired by an epic.<br>Created for your everyday.</span><span th:if="${zh}">灵感源自史诗，<br>用心融入日常。</span></p>
             <div class="story-art" aria-hidden="true">
                 <img class="story-voyage" th:src="@{/images/odyssey-story-coast.png}"
                      alt="" width="1122" height="1402" loading="lazy" decoding="async">
             </div>
         </div>
-        <div class="story-copy">
+        <div class="story-copy" th:unless="${zh}">
             <p>Every great journey begins with a sense of possibility. Ours begins with a name: <strong>Odyssey</strong>.</p>
             <p>Inspired by Homer&rsquo;s epic poem, <em>The Odyssey</em>, our name speaks to curiosity, discovery, and the courage to venture beyond the familiar. We bring that spirit to shopping, with a vision of making every visit feel like the beginning of something new.</p>
             <p>Founded by four people with different perspectives and a shared ambition, Odyssey was created to offer a fresh way to discover the things you wear, use, and welcome into your home. We believe the best finds do more than fill a wardrobe or a room: they express who you are and bring something meaningful to everyday life.</p>
             <p>Our ambition is to become one of the world&rsquo;s leading shopping brands. That journey starts close to home, with thoughtful choices, personal connections, and an experience designed around you. As we grow, we want to keep the care of a local shop while opening the door to a wider world of possibilities.</p>
             <p class="story-signoff">Four founders. A shared vision. A new journey in shopping.<br><strong>Welcome to Odyssey. Your next discovery starts here.</strong></p>
+        </div>
+        <div class="story-copy" th:if="${zh}">
+            <p>每一段伟大的旅程，都始于对可能性的向往。我们的旅程，始于一个名字：<strong>奥德赛 Odyssey</strong>。</p>
+            <p>品牌名源自荷马史诗《奥德赛》，承载着好奇、探索，以及走出熟悉世界的勇气。我们将这份精神带入购物体验，希望每一次与你相遇，都像一段新旅程的开始。</p>
+            <p>四位创始人，带着不同的视角和共同的志向，携手创立了 Odyssey。我们希望以一种新鲜的方式，帮助你发现日常穿着、使用以及装点家居的好物。真正值得拥有的东西，不只是填满衣橱或房间，更能表达你的个性，为平凡的日子增添意义。</p>
+            <p>我们的志向，是成为世界领先的购物品牌之一。这段旅程，从你身边开始：用心挑选商品，珍惜人与人的联系，围绕你的需要打磨每一次体验。随着品牌成长，我们希望始终保留本地小店的温度，同时为你打开通往更广阔世界的大门。</p>
+            <p class="story-signoff">四位创始人，一个共同愿景，一段全新的购物旅程。<br><strong>欢迎来到奥德赛。你的下一次发现，从这里开始。</strong></p>
         </div>
     </section>
 </main>
