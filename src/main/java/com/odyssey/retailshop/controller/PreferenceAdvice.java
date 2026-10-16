@@ -21,6 +21,9 @@ public class PreferenceAdvice {
             .query(request.getQueryString()).replaceQueryParam("lang", language)
             .build(true).getQuery();
     }
+    @ModelAttribute("supportStaff") public boolean supportStaff(org.springframework.security.core.Authentication auth) {
+        return auth!=null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STAFF") || a.getAuthority().equals("ROLE_ADMIN"));
+    }
     @ModelAttribute("zh") public boolean chinese(HttpServletRequest request) { return Boolean.TRUE.equals(request.getAttribute("zh")); }
     @ModelAttribute("signedIn") public boolean signedIn(Principal principal) { return principal != null; }
 }

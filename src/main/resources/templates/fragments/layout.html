@@ -11,6 +11,7 @@
         <a th:if="${!signedIn}" th:href="@{/login}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '登录 / 注册' : 'Sign in / Join'}">Sign in / Join</a>
         <a th:if="${signedIn}" th:href="@{/orders}" th:text="${zh ? '我的订单' : 'My orders'}"></a>
         <a th:if="${signedIn}" th:href="@{/account}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '我的账号' : 'My account'}">My account</a>
+        <a th:href="${supportStaff ? '/staff/support' : '/support'}" th:attr="aria-current=${activePage == 'support' ? 'page' : null}" th:text="${supportStaff ? (zh ? '客服工作台' : 'Support inbox') : (zh ? '联系客服' : 'Contact us')}"></a>
         <span class="home-language-switch" role="group" aria-label="Language / 语言">
             <a th:href="${englishLanguageUrl}" lang="en" th:attr="aria-current=${!zh ? 'true' : null}">EN</a>
             <span aria-hidden="true">/</span>

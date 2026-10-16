@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}">
+<title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
+<link rel="stylesheet" th:href="@{/css/style.css(v=support-1)}">
+<script th:src="@{/js/support.js}" defer></script>
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('support')}"></header>
+<main class="support-page" th:attr="data-support-base=${supportBase}">
+    <p class="eyebrow" th:text="${zh ? '每一个问题，都值得用心回应' : 'A little help along the way'}"></p>
+    <h1 th:text="${staffView ? (zh ? '客服工作台' : 'Support workspace') : (zh ? '我们在这里，听你说。' : 'Here to help.')}"></h1>
+    <p class="support-intro" th:text="${staffView ? (zh ? '优先处理待回复对话。未读仅代表你尚未查看，查看不会取消待回复标记。' : 'Prioritise conversations awaiting a reply. Reading a message does not clear its reply-needed status.') : (zh ? '商品、订单或配送方面有疑问？给我们留言，回复会保存在此页面。' : 'Questions about products, orders or delivery? Leave a message; our reply will appear here.')}"></p>
+    <p class="auth-alert" role="alert" th:if="${supportError != null}" th:text="${storeText.text(supportError,zh)}"></p>
+    <p class="support-connection" role="status" data-connection th:text="${zh ? '对话每8秒自动更新；也可以手动刷新。' : 'Conversations update every 8 seconds; you can also refresh manually.'}"></p>
+    <div th:fragment="workspace" class="support-workspace" th:classappend="${staffView ? 'support-staff' : 'support-customer'}">
+        <aside th:if="${staffView}" class="support-inbox" id="support-inbox">
+            <div class="support-metrics">
+                <div><strong th:text="${counts.waiting}"></strong><span th:text="${zh ? '待回复' : 'Need reply'}"></span></div>
+                <div><strong th:text="${counts.unread}"></strong><span th:text="${zh ? '我未读' : 'Unread'}"></span></div>
+                <div><strong th:text="${counts.resolved}"></strong><span th:text="${zh ? '已解决' : 'Resolved'}"></span></div>
+            </div>
+            <nav class="support-filters" th:aria-label="${zh ? '对话筛选' : 'Filter conversations'}">
+                <a th:each="f : ${ {'all','waiting','unread','resolved'} }" th:href="@{/staff/support(filter=${f})}" th:attr="aria-current=${filter == f ? 'page' : null}" th:text="${f == 'all' ? (zh ? '全部' : 'All') : (f == 'waiting' ? (zh ? '待回复' : 'Need reply') : (f == 'unread' ? (zh ? '未读' : 'Unread') : (zh ? '已解决' : 'Resolved')))}"></a>
+            </nav>
+            <p class="support-empty" th:if="${#lists.isEmpty(threads)}" th:text="${zh ? '此分类暂无对话。' : 'No conversations in this view.'}"></p>
+            <a class="support-thread" th:each="thread : ${threads}" th:classappend="${(thread.waiting ? 'needs-reply ' : '') + (selected != null and thread.id == selected.id ? 'is-selected' : '')}"
+               th:href="@{/staff/support(id=${thread.id},filter=${filter},page=${page})}" th:attr="aria-current=${selected != null and thread.id == selected.id ? 'page' : null}">
+                <div class="support-thread-heading"><strong th:text="${thread.customerName}"></strong><span class="support-unread" th:if="${thread.unread}" th:text="${zh ? '未读' : 'Unread'}"></span></div>
+                <span class="support-state pending" th:if="${thread.waiting}" th:text="${zh ? '待回复' : 'Reply needed'}"></span>
+                <span class="support-state" th:if="${!thread.waiting}" th:text="${thread.resolved ? (zh ? '已解决' : 'Resolved') : (zh ? '已回复' : 'Replied')}"></span>
+                <p class="support-preview" th:text="${thread.preview}"></p>
+                <time th:text="${#temporals.format(thread.updatedAt,'MM-dd HH:mm')}"></time>
+            </a>
+            <nav class="support-pagination" th:aria-label="${zh ? '对话列表分页' : 'Inbox pages'}">
+                <a th:if="${page > 0}" th:href="@{/staff/support(filter=${filter},page=${page - 1})}" th:text="${zh ? '← 上一页' : '← Previous'}"></a>
+                <span th:text="${zh ? '第 ' + (page + 1) + ' 页' : 'Page ' + (page + 1)}"></span>
+                <a th:if="${hasNext}" th:href="@{/staff/support(filter=${filter},page=${page + 1})}" th:text="${zh ? '下一页 →' : 'Next →'}"></a>
+            </nav>
+        </aside>
+        <section class="support-conversation">
+            <div id="support-chat" th:attr="data-thread=${selected != null ? selected.id : ''},data-through=${history.latestVisible},data-older=${older}">
+                <div class="support-chat-heading">
+                    <h2 th:text="${staffView ? (selected != null ? selected.customerName : (zh ? '选择一个对话' : 'Select a conversation')) : (zh ? 'Odyssey 客服' : 'Odyssey support')}"></h2>
+                    <span class="support-state pending" th:if="${selected != null and selected.waiting}" th:text="${staffView ? (zh ? '等待你的回复' : 'Awaiting your reply') : (zh ? '等待客服回复' : 'Awaiting a reply')}"></span>
+                    <span class="support-state" th:if="${selected != null and !selected.waiting}" th:text="${selected.resolved ? (zh ? '已解决' : 'Resolved') : (zh ? '客服已回复' : 'Support replied')}"></span>
+                </div>
+                <div class="support-history-links" th:if="${selected != null}">
+                    <a th:if="${history.before > 0}" th:href="@{${supportBase}(id=${selected.id},before=${history.before})}" th:text="${zh ? '查看更早消息' : 'Older messages'}"></a>
+                    <a th:if="${older}" th:href="@{${supportBase}(id=${selected.id})}" th:text="${zh ? '返回最新消息' : 'Latest messages'}"></a>
+                </div>
+                <div class="support-messages" tabindex="0" th:aria-label="${zh ? '对话消息' : 'Conversation messages'}">
+                    <p class="support-empty" th:if="${#lists.isEmpty(history.messages)}" th:text="${staffView ? (zh ? '从左侧选择顾客对话，查看记录并回复。' : 'Choose a customer from the inbox to read and reply.') : (zh ? '发送第一条消息，开始咨询。请勿发送密码或银行卡信息。' : 'Send your first message to start. Please do not share passwords or card details.')}"></p>
+                    <article class="support-message" th:each="message : ${history.messages}" th:classappend="${message.senderId == viewer.id ? 'is-mine' : ''}" th:attr="data-message-id=${message.id}">
+                        <div class="support-message-meta"><strong th:text="${message.staff ? (zh ? '客服 · ' : 'Support · ') + message.senderName : message.senderName}"></strong><time th:text="${#temporals.format(message.createdAt,'MM-dd HH:mm')}"></time></div>
+                        <p th:text="${message.body}"></p>
+                    </article>
+                </div>
+                <form class="support-resolve" th:if="${staffView and selected != null and !selected.resolved and !selected.waiting}" method="post" th:action="@{/staff/support/resolve}">
+                    <input type="hidden" name="id" th:value="${selected.id}"><input type="hidden" name="version" th:value="${selected.latestId}">
+                    <button class="text-button" th:text="${zh ? '标记为已解决' : 'Mark resolved'}"></button>
+                </form>
+            </div>
+            <form class="support-composer" th:if="${!staffView or selected != null}" method="post" th:action="@{${supportBase + '/messages'}}">
+                <input th:if="${selected != null}" type="hidden" name="id" th:value="${selected.id}"><input type="hidden" name="token" th:value="${sendToken}">
+                <label for="support-body" th:text="${staffView ? (zh ? '回复顾客' : 'Reply to customer') : (zh ? '你的消息' : 'Your message')}"></label>
+                <textarea id="support-body" name="body" required maxlength="2000" rows="4" th:text="${draft}" th:placeholder="${zh ? '请输入消息…' : 'Write a message…'}"></textarea>
+                <div><span th:text="${zh ? '最多2000字 · 换行请按 Enter' : 'Up to 2,000 characters · Enter inserts a new line'}"></span><button class="order-button" type="submit" th:text="${zh ? '发送消息 →' : 'Send message →'}"></button></div>
+            </form>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body></html>

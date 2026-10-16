@@ -1187,3 +1187,49 @@ html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odysse
 .order-summary-card .order-preview-item + .order-preview-item {
     border-color: rgba(105, 130, 91, .24);
 }
+
+/* Customer support: private conversation and a shared staff inbox. */
+.support-page { max-width: 1360px; margin: 40px auto 70px; padding: 0 32px; }
+.support-page h1 { font-size: clamp(30px,4vw,48px); margin: 16px 0; }
+.support-intro { max-width: 850px; line-height: 1.7; color: #58695c; }
+.support-connection { font-size: 13px; color: #58695c; min-height: 20px; }
+.support-workspace { display: grid; gap: 24px; margin-top: 24px; align-items: start; }
+.support-staff { grid-template-columns: minmax(260px,340px) minmax(0,1fr); }
+.support-customer { max-width: 920px; }
+.support-inbox, .support-conversation { min-width: 0; border: 1px solid #bdcbb3; background: #f7f6ee; border-radius: 18px; overflow: hidden; }
+.support-metrics { display: grid; grid-template-columns: repeat(3,1fr); padding: 20px 12px; gap: 8px; background: #e0e8d7; }
+.support-metrics div { display: grid; gap: 6px; text-align: center; }
+.support-metrics strong { font-size: 26px; }
+.support-metrics span { font-size: 13px; }
+.support-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px; }
+.support-filters a { padding: 9px 12px; font-size: 13px; border-radius: 20px; border: 1px solid #bdcbb3; }
+.support-filters a[aria-current] { color: #fff; background: #21463b; }
+.support-thread { display: block; margin: 0 12px 10px; border: 1px solid #d1dac9; border-left: 4px solid #d1dac9; border-radius: 10px; padding: 15px; background: #fffdf6; }
+.support-thread.needs-reply { background: #f6e7ce; border-left-color: #af663b; }
+.support-thread.is-selected { outline: 2px solid #385b49; outline-offset: 1px; }
+.support-thread-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.support-thread-heading strong { overflow-wrap: anywhere; }
+.support-unread { color: white; background: #994e31; border-radius: 20px; padding: 4px 9px; font-size: 12px; flex-shrink: 0; }
+.support-state { display: inline-block; border-radius: 20px; padding: 5px 12px; background: #e2eadb; color: #31523c; font-size: 13px; font-weight: 600; }
+.support-state.pending { background: #edd2a5; color: #6c421c; }
+.support-preview { font-size: 14px; color: #526051; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 10px 0; }
+.support-thread time { font-size: 12px; color: #58695c; }
+.support-pagination { display: flex; gap: 12px; justify-content: space-between; padding: 16px; font-size: 13px; }
+.support-pagination a, .support-history-links a { text-decoration: underline; text-underline-offset: 4px; }
+.support-chat-heading { padding: 22px 26px; background: linear-gradient(110deg,#dde8d2,#faf7ee); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.support-chat-heading h2 { font-size: 22px; margin: 0; overflow-wrap: anywhere; }
+.support-messages { height: 420px; overflow-y: auto; padding: 24px; overscroll-behavior: contain; }
+.support-message { width: fit-content; max-width: 85%; margin: 0 auto 20px 0; }
+.support-message.is-mine { margin-left: auto; margin-right: 0; }
+.support-message-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #58695c; margin-bottom: 8px; }
+.support-message p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 14px 18px; border-radius: 4px 16px 16px; border: 1px solid #d4ddca; background: #fffef8; line-height: 1.7; }
+.support-message.is-mine p { border-radius: 16px 4px 16px 16px; background: #21463b; color: #fffdf7; border-color: #21463b; }
+.support-empty { padding: 24px; line-height: 1.8; color: #58695c; }
+.support-history-links { display: flex; gap: 20px; padding: 10px 24px; font-size: 13px; }
+.support-composer { padding: 22px 26px; border-top: 1px solid #d4ddca; }
+.support-composer label { display: block; font-weight: 600; margin-bottom: 12px; }
+.support-composer textarea { width: 100%; resize: vertical; min-height: 110px; max-height: 360px; padding: 14px; font: inherit; line-height: 1.6; background: #fffef8; border: 1px solid #aabb9f; border-radius: 10px; }
+.support-composer > div { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; }
+.support-composer > div > span { font-size: 12px; color: #58695c; }
+.support-resolve { padding: 0 24px 12px; }
+@media(max-width:800px) { .support-staff { grid-template-columns: minmax(0,1fr); } .support-inbox { max-height: 440px; overflow-y: auto; } .support-page { padding: 0 16px; } .support-message { max-width: 95%; } .support-chat-heading, .support-composer { padding: 18px; } .support-messages { padding: 18px; height: 360px; } }
