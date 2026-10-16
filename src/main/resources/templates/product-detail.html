@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${product.name} + ' | Odyssey'">Product | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css(v=cart-1)}">
+    <script th:src="@{/js/product-gallery.js}" defer></script>
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('products')}"></header>
+<main class="product-detail">
+    <nav class="product-breadcrumb" aria-label="Breadcrumb"><a th:href="@{/products}"><span aria-hidden="true">&#8592;</span> All products</a></nav>
+    <div class="detail-layout">
+        <section class="product-gallery" aria-label="Product photographs" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
+            <div class="gallery-stage" tabindex="0" aria-label="Product photos. Use left and right arrow keys to change photo.">
+                <figure class="gallery-slide is-active" data-slide role="group" aria-roledescription="slide" aria-label="1 of 2: garment photograph">
+                    <img th:src="@{${product.garmentImage}}" th:alt="${product.name} + ' — garment photograph'" width="900" height="1200" fetchpriority="high">
+                </figure>
+                <figure class="gallery-slide" data-slide role="group" aria-roledescription="slide" aria-label="2 of 2: styled on model" aria-hidden="true" th:if="${product.modelImage != null}">
+                    <img th:src="@{${product.modelImage}}" th:alt="${product.name} + ' — styled on an adult ' + (${product.audience == 'Men'} ? 'male' : 'female') + ' model'" width="900" height="1200" decoding="async">
+                </figure>
+                <div class="gallery-arrows" hidden data-gallery-controls>
+                    <button type="button" data-prev aria-label="Previous photo">←</button>
+                    <button type="button" data-next aria-label="Next photo">→</button>
+                </div>
+            </div>
+            <div class="gallery-toolbar" hidden data-gallery-controls>
+                <div class="gallery-tabs" aria-label="Choose photograph">
+                    <button type="button" data-photo="0" aria-pressed="true">01 / Garment</button>
+                    <button type="button" data-photo="1" aria-pressed="false" th:if="${product.modelImage != null}">02 / On model</button>
+                </div>
+                <button type="button" class="gallery-play" data-play aria-label="Pause automatic slideshow">Pause</button>
+            </div>
+            <p class="gallery-caption">A closer look, from every perspective.</p>
+            <span class="sr-only" aria-live="polite" data-gallery-status></span>
+        </section>
+        <div class="detail-no-image" th:if="${product.garmentImage == null}"><span>ODYSSEY</span><p>Photography coming soon</p></div>
+        <section class="detail-copy" aria-labelledby="product-title">
+            <p class="eyebrow"><span th:text="${product.category}">Clothing</span><span th:if="${product.audience != null}" th:text="' / ' + ${product.audience}"> / Women</span></p>
+            <h1 id="product-title" th:text="${product.name}">Product name</h1>
+            <p class="detail-price" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
+            <p class="detail-description" th:text="${product.description}">Description</p>
+            <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
+                <span class="stock-dot" aria-hidden="true"></span>
+                <span th:text="${product.stockQuantity > 0} ? 'In stock · ' + ${product.stockQuantity} + ' available' : 'Out of stock'">In stock</span>
+            </div>
+            <p class="detail-stock" th:if="${product.stockQuantity == null}">Stock information coming soon</p>
+
+            <form class="add-to-cart" method="post" th:action="@{/cart/add}">
+                <input type="hidden" name="csrf" th:value="${cartToken}">
+                <input type="hidden" name="productId" th:value="${product.id}">
+                <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${product.stockQuantity == null} ? 'Stock unavailable' : (${product.stockQuantity <= 0} ? 'Out of stock' : 'Add to bag')">Add to bag</button>
+            </form>
+            <dl class="product-facts"><div><dt>Collection</dt><dd>The Everyday Collection</dd></div><div><dt>Product reference</dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt>Availability</dt><dd>Catalogue preview</dd></div></dl>
+            <p class="detail-note">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Your bag does not reserve stock. Size selection and checkout are not available yet.</p>
+            <a class="detail-back" th:href="@{/products}">Continue exploring <span aria-hidden="true">↗</span></a>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

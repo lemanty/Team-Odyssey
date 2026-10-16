@@ -1,0 +1,424 @@
+{
+  "tool": "OpenAI built-in image_gen",
+  "notes": "20 clothing samples; each pair within a gender shares a model identity. WebP assets derived from generated PNG originals.",
+  "products": [
+    {
+      "name": "Everyday Cotton Tee",
+      "slug": "ivory-cotton-tee",
+      "gender": "Men",
+      "price": 24,
+      "stock": 36,
+      "garment": "ivory short-sleeve cotton crewneck T-shirt, relaxed fit",
+      "description": "A ivory short-sleeve cotton crewneck T-shirt, relaxed fit, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build"
+    },
+    {
+      "name": "Linen Blend Shirt",
+      "slug": "sand-linen-shirt",
+      "gender": "Men",
+      "price": 39,
+      "stock": 24,
+      "garment": "sand beige long-sleeve linen shirt, button front and single chest pocket",
+      "description": "A sand beige long-sleeve linen shirt, button front and single chest pocket, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build"
+    },
+    {
+      "name": "Classic Crewneck Sweatshirt",
+      "slug": "sage-sweatshirt",
+      "gender": "Men",
+      "price": 45,
+      "stock": 28,
+      "garment": "sage green cotton crewneck sweatshirt, ribbed cuffs, relaxed fit",
+      "description": "A sage green cotton crewneck sweatshirt, ribbed cuffs, relaxed fit, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build"
+    },
+    {
+      "name": "Straight Leg Jeans",
+      "slug": "indigo-jeans",
+      "gender": "Men",
+      "price": 59,
+      "stock": 32,
+      "garment": "dark indigo straight-leg denim jeans, classic five pockets",
+      "description": "A dark indigo straight-leg denim jeans, classic five pockets, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build"
+    },
+    {
+      "name": "Canvas Overshirt",
+      "slug": "olive-overshirt",
+      "gender": "Men",
+      "price": 58,
+      "stock": 18,
+      "garment": "olive green canvas overshirt, two flap chest pockets, dark buttons",
+      "description": "A olive green canvas overshirt, two flap chest pockets, dark buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "name": "Soft Knit Cardigan",
+      "slug": "oat-cardigan",
+      "gender": "Women",
+      "price": 49,
+      "stock": 22,
+      "garment": "oatmeal V-neck knitted cardigan, five brown buttons, hip length",
+      "description": "A oatmeal V-neck knitted cardigan, five brown buttons, hip length, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "name": "Harbour Stripe Tee",
+      "slug": "navy-stripe-tee",
+      "gender": "Men",
+      "price": 29,
+      "stock": 40,
+      "garment": "ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt",
+      "description": "A ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "name": "Relaxed Chino Trousers",
+      "slug": "stone-chinos",
+      "gender": "Men",
+      "price": 54,
+      "stock": 26,
+      "garment": "stone beige straight-leg chino trousers, tailored waistband",
+      "description": "A stone beige straight-leg chino trousers, tailored waistband, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "name": "Merino Crewneck Jumper",
+      "slug": "navy-jumper",
+      "gender": "Men",
+      "price": 69,
+      "stock": 16,
+      "garment": "deep navy fine-knit merino crewneck jumper, long sleeves",
+      "description": "A deep navy fine-knit merino crewneck jumper, long sleeves, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "name": "Weekend Zip Jacket",
+      "slug": "rust-jacket",
+      "gender": "Men",
+      "price": 79,
+      "stock": 14,
+      "garment": "rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood",
+      "description": "A rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "name": "Oxford Button-Down Shirt",
+      "slug": "blue-oxford",
+      "gender": "Men",
+      "price": 46,
+      "stock": 30,
+      "garment": "pale sky blue Oxford long-sleeve button-down collar shirt, white buttons",
+      "description": "A pale sky blue Oxford long-sleeve button-down collar shirt, white buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "name": "Everyday Ribbed Tee",
+      "slug": "white-ribbed-tee",
+      "gender": "Women",
+      "price": 26,
+      "stock": 38,
+      "garment": "warm white fitted ribbed short-sleeve cotton crewneck T-shirt",
+      "description": "A warm white fitted ribbed short-sleeve cotton crewneck T-shirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "name": "Coastal Linen Dress",
+      "slug": "blue-linen-dress",
+      "gender": "Women",
+      "price": 74,
+      "stock": 19,
+      "garment": "dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt",
+      "description": "A dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "name": "Pleated Midi Skirt",
+      "slug": "sage-midi-skirt",
+      "gender": "Women",
+      "price": 55,
+      "stock": 21,
+      "garment": "sage green finely pleated midi skirt with clean waistband",
+      "description": "A sage green finely pleated midi skirt with clean waistband, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "name": "Wide-Leg Linen Trousers",
+      "slug": "cream-linen-trousers",
+      "gender": "Women",
+      "price": 59,
+      "stock": 25,
+      "garment": "cream high-waisted wide-leg linen trousers, front pleats",
+      "description": "A cream high-waisted wide-leg linen trousers, front pleats, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "name": "Soft Wrap Blouse",
+      "slug": "rose-wrap-blouse",
+      "gender": "Women",
+      "price": 44,
+      "stock": 27,
+      "garment": "muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie",
+      "description": "A muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "name": "Everyday Denim Jacket",
+      "slug": "blue-denim-jacket",
+      "gender": "Women",
+      "price": 68,
+      "stock": 17,
+      "garment": "medium blue classic denim jacket, two flap chest pockets, silver buttons",
+      "description": "A medium blue classic denim jacket, two flap chest pockets, silver buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "name": "Fine Knit Polo",
+      "slug": "chocolate-knit-polo",
+      "gender": "Women",
+      "price": 48,
+      "stock": 23,
+      "garment": "chocolate brown short-sleeve fine-knit polo top, three tonal buttons",
+      "description": "A chocolate brown short-sleeve fine-knit polo top, three tonal buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "name": "Belted Trench Coat",
+      "slug": "beige-trench",
+      "gender": "Women",
+      "price": 109,
+      "stock": 12,
+      "garment": "warm beige knee-length double-breasted trench coat, wide lapels, matching belt",
+      "description": "A warm beige knee-length double-breasted trench coat, wide lapels, matching belt, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    },
+    {
+      "name": "Relaxed Poplin Shirt",
+      "slug": "white-poplin-shirt",
+      "gender": "Women",
+      "price": 42,
+      "stock": 31,
+      "garment": "crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem",
+      "description": "A crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem, designed for effortless everyday dressing. Part of the Odyssey everyday collection.",
+      "modelIdentity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    }
+  ],
+  "generationPrompts": [
+    {
+      "slug": "sand-linen-shirt",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build, unmistakably different from generic catalogue faces. One adult male model wearing sand beige long-sleeve linen shirt, button front and single chest pocket. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build"
+    },
+    {
+      "slug": "sage-sweatshirt",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build, unmistakably different from generic catalogue faces. One adult male model wearing sage green cotton crewneck sweatshirt, ribbed cuffs, relaxed fit. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build"
+    },
+    {
+      "slug": "indigo-jeans",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build, unmistakably different from generic catalogue faces. One adult male model wearing dark indigo straight-leg denim jeans, classic five pockets. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 32-year-old Black man with dark skin, short tight curls, neatly trimmed beard, athletic build"
+    },
+    {
+      "slug": "ivory-cotton-tee",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build, unmistakably different from generic catalogue faces. One adult male model wearing ivory short-sleeve cotton crewneck T-shirt, relaxed fit. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 27-year-old East Asian man with straight black side-parted hair, clean shaven, slender build"
+    },
+    {
+      "slug": "olive-overshirt",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's olive green canvas overshirt, two flap chest pockets, dark buttons. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "slug": "olive-overshirt",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble, unmistakably different from generic catalogue faces. One adult male model wearing olive green canvas overshirt, two flap chest pockets, dark buttons. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "slug": "oat-cardigan",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 28-year-old East Asian woman with straight chin-length black bob, warm light skin, unmistakably different from generic catalogue faces. One adult female model wearing oatmeal V-neck knitted cardigan, five brown buttons, hip length. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "slug": "oat-cardigan",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's oatmeal V-neck knitted cardigan, five brown buttons, hip length. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "slug": "navy-stripe-tee",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "slug": "stone-chinos",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven, unmistakably different from generic catalogue faces. One adult male model wearing stone beige straight-leg chino trousers, tailored waistband. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "slug": "stone-chinos",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's stone beige straight-leg chino trousers, tailored waistband. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "slug": "navy-stripe-tee",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble, unmistakably different from generic catalogue faces. One adult male model wearing ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 38-year-old Mediterranean man with olive skin, wavy shoulder-length dark hair and light stubble"
+    },
+    {
+      "slug": "navy-jumper",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven, unmistakably different from generic catalogue faces. One adult male model wearing deep navy fine-knit merino crewneck jumper, long sleeves. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "slug": "navy-jumper",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's deep navy fine-knit merino crewneck jumper, long sleeves. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 29-year-old white man with fair freckled skin, short copper red hair, clean shaven"
+    },
+    {
+      "slug": "rust-jacket",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard, unmistakably different from generic catalogue faces. One adult male model wearing rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "slug": "blue-oxford",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's pale sky blue Oxford long-sleeve button-down collar shirt, white buttons. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "slug": "rust-jacket",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Men's rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "slug": "blue-oxford",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard, unmistakably different from generic catalogue faces. One adult male model wearing pale sky blue Oxford long-sleeve button-down collar shirt, white buttons. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 35-year-old South Asian man with medium brown skin, swept-back black hair and short beard"
+    },
+    {
+      "slug": "white-ribbed-tee",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's warm white fitted ribbed short-sleeve cotton crewneck T-shirt. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "slug": "blue-linen-dress",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 33-year-old Black woman with dark skin and natural short coily hair, unmistakably different from generic catalogue faces. One adult female model wearing dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "slug": "white-ribbed-tee",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 28-year-old East Asian woman with straight chin-length black bob, warm light skin, unmistakably different from generic catalogue faces. One adult female model wearing warm white fitted ribbed short-sleeve cotton crewneck T-shirt. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 28-year-old East Asian woman with straight chin-length black bob, warm light skin"
+    },
+    {
+      "slug": "sage-midi-skirt",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's sage green finely pleated midi skirt with clean waistband. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "slug": "sage-midi-skirt",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 33-year-old Black woman with dark skin and natural short coily hair, unmistakably different from generic catalogue faces. One adult female model wearing sage green finely pleated midi skirt with clean waistband. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "slug": "blue-linen-dress",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 33-year-old Black woman with dark skin and natural short coily hair"
+    },
+    {
+      "slug": "cream-linen-trousers",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's cream high-waisted wide-leg linen trousers, front pleats. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "slug": "cream-linen-trousers",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair, unmistakably different from generic catalogue faces. One adult female model wearing cream high-waisted wide-leg linen trousers, front pleats. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "slug": "rose-wrap-blouse",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "slug": "blue-denim-jacket",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's medium blue classic denim jacket, two flap chest pockets, silver buttons. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "slug": "rose-wrap-blouse",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair, unmistakably different from generic catalogue faces. One adult female model wearing muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 36-year-old Mediterranean woman with olive skin and long wavy dark brown hair"
+    },
+    {
+      "slug": "blue-denim-jacket",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair, unmistakably different from generic catalogue faces. One adult female model wearing medium blue classic denim jacket, two flap chest pockets, silver buttons. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "slug": "chocolate-knit-polo",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's chocolate brown short-sleeve fine-knit polo top, three tonal buttons. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "slug": "beige-trench",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 31-year-old South Asian woman with medium brown skin and long straight black hair, unmistakably different from generic catalogue faces. One adult female model wearing warm beige knee-length double-breasted trench coat, wide lapels, matching belt. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    },
+    {
+      "slug": "chocolate-knit-polo",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair, unmistakably different from generic catalogue faces. One adult female model wearing chocolate brown short-sleeve fine-knit polo top, three tonal buttons. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 26-year-old white woman with fair freckled skin and shoulder-length copper red hair"
+    },
+    {
+      "slug": "beige-trench",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's warm beige knee-length double-breasted trench coat, wide lapels, matching belt. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    },
+    {
+      "slug": "white-poplin-shirt",
+      "kind": "product",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Garment alone on invisible mannequin, NO HUMAN. Women's crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    },
+    {
+      "slug": "white-poplin-shirt",
+      "kind": "model",
+      "prompt": "Use case: product-mockup. One premium photorealistic ecommerce clothing photograph, portrait 3:4. Model is a 31-year-old South Asian woman with medium brown skin and long straight black hair, unmistakably different from generic catalogue faces. One adult female model wearing crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem. Natural relaxed standing pose. Face visible. Neutral complementary plain other clothes. Show full outfit head to feet for trousers, skirts, coats or dresses; otherwise head to upper thighs. Warm off-white seamless studio background, realistic textile texture, soft studio lighting, understated Mediterranean style. Entire garment and sleeves visible with generous framing margins. No text, labels, logos, watermark or collage.",
+      "identity": "a 31-year-old South Asian woman with medium brown skin and long straight black hair"
+    }
+  ]
+}

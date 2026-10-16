@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Everyday Cotton Tee",
+    "slug": "ivory-cotton-tee",
+    "gender": "Men",
+    "price": 24,
+    "stock": 36,
+    "garment": "ivory short-sleeve cotton crewneck T-shirt, relaxed fit",
+    "description": "A ivory short-sleeve cotton crewneck T-shirt, relaxed fit, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Linen Blend Shirt",
+    "slug": "sand-linen-shirt",
+    "gender": "Men",
+    "price": 39,
+    "stock": 24,
+    "garment": "sand beige long-sleeve linen shirt, button front and single chest pocket",
+    "description": "A sand beige long-sleeve linen shirt, button front and single chest pocket, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Classic Crewneck Sweatshirt",
+    "slug": "sage-sweatshirt",
+    "gender": "Men",
+    "price": 45,
+    "stock": 28,
+    "garment": "sage green cotton crewneck sweatshirt, ribbed cuffs, relaxed fit",
+    "description": "A sage green cotton crewneck sweatshirt, ribbed cuffs, relaxed fit, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Straight Leg Jeans",
+    "slug": "indigo-jeans",
+    "gender": "Men",
+    "price": 59,
+    "stock": 32,
+    "garment": "dark indigo straight-leg denim jeans, classic five pockets",
+    "description": "A dark indigo straight-leg denim jeans, classic five pockets, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Canvas Overshirt",
+    "slug": "olive-overshirt",
+    "gender": "Men",
+    "price": 58,
+    "stock": 18,
+    "garment": "olive green canvas overshirt, two flap chest pockets, dark buttons",
+    "description": "A olive green canvas overshirt, two flap chest pockets, dark buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Soft Knit Cardigan",
+    "slug": "oat-cardigan",
+    "gender": "Women",
+    "price": 49,
+    "stock": 22,
+    "garment": "oatmeal V-neck knitted cardigan, five brown buttons, hip length",
+    "description": "A oatmeal V-neck knitted cardigan, five brown buttons, hip length, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Harbour Stripe Tee",
+    "slug": "navy-stripe-tee",
+    "gender": "Men",
+    "price": 29,
+    "stock": 40,
+    "garment": "ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt",
+    "description": "A ivory and navy horizontal striped short-sleeve cotton crewneck T-shirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Relaxed Chino Trousers",
+    "slug": "stone-chinos",
+    "gender": "Men",
+    "price": 54,
+    "stock": 26,
+    "garment": "stone beige straight-leg chino trousers, tailored waistband",
+    "description": "A stone beige straight-leg chino trousers, tailored waistband, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Merino Crewneck Jumper",
+    "slug": "navy-jumper",
+    "gender": "Men",
+    "price": 69,
+    "stock": 16,
+    "garment": "deep navy fine-knit merino crewneck jumper, long sleeves",
+    "description": "A deep navy fine-knit merino crewneck jumper, long sleeves, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Weekend Zip Jacket",
+    "slug": "rust-jacket",
+    "gender": "Men",
+    "price": 79,
+    "stock": 14,
+    "garment": "rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood",
+    "description": "A rust terracotta lightweight zip-front bomber jacket, ribbed cuffs, no hood, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Oxford Button-Down Shirt",
+    "slug": "blue-oxford",
+    "gender": "Men",
+    "price": 46,
+    "stock": 30,
+    "garment": "pale sky blue Oxford long-sleeve button-down collar shirt, white buttons",
+    "description": "A pale sky blue Oxford long-sleeve button-down collar shirt, white buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Everyday Ribbed Tee",
+    "slug": "white-ribbed-tee",
+    "gender": "Women",
+    "price": 26,
+    "stock": 38,
+    "garment": "warm white fitted ribbed short-sleeve cotton crewneck T-shirt",
+    "description": "A warm white fitted ribbed short-sleeve cotton crewneck T-shirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Coastal Linen Dress",
+    "slug": "blue-linen-dress",
+    "gender": "Women",
+    "price": 74,
+    "stock": 19,
+    "garment": "dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt",
+    "description": "A dusty blue linen midi dress, short sleeves, V-neck, self-tie waist, flowing skirt, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Pleated Midi Skirt",
+    "slug": "sage-midi-skirt",
+    "gender": "Women",
+    "price": 55,
+    "stock": 21,
+    "garment": "sage green finely pleated midi skirt with clean waistband",
+    "description": "A sage green finely pleated midi skirt with clean waistband, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Wide-Leg Linen Trousers",
+    "slug": "cream-linen-trousers",
+    "gender": "Women",
+    "price": 59,
+    "stock": 25,
+    "garment": "cream high-waisted wide-leg linen trousers, front pleats",
+    "description": "A cream high-waisted wide-leg linen trousers, front pleats, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Soft Wrap Blouse",
+    "slug": "rose-wrap-blouse",
+    "gender": "Women",
+    "price": 44,
+    "stock": 27,
+    "garment": "muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie",
+    "description": "A muted dusty rose long-sleeve wrap blouse, V-neck, side waist tie, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Everyday Denim Jacket",
+    "slug": "blue-denim-jacket",
+    "gender": "Women",
+    "price": 68,
+    "stock": 17,
+    "garment": "medium blue classic denim jacket, two flap chest pockets, silver buttons",
+    "description": "A medium blue classic denim jacket, two flap chest pockets, silver buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Fine Knit Polo",
+    "slug": "chocolate-knit-polo",
+    "gender": "Women",
+    "price": 48,
+    "stock": 23,
+    "garment": "chocolate brown short-sleeve fine-knit polo top, three tonal buttons",
+    "description": "A chocolate brown short-sleeve fine-knit polo top, three tonal buttons, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Belted Trench Coat",
+    "slug": "beige-trench",
+    "gender": "Women",
+    "price": 109,
+    "stock": 12,
+    "garment": "warm beige knee-length double-breasted trench coat, wide lapels, matching belt",
+    "description": "A warm beige knee-length double-breasted trench coat, wide lapels, matching belt, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  },
+  {
+    "name": "Relaxed Poplin Shirt",
+    "slug": "white-poplin-shirt",
+    "gender": "Women",
+    "price": 42,
+    "stock": 31,
+    "garment": "crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem",
+    "description": "A crisp white oversized long-sleeve poplin shirt, pointed collar and curved hem, designed for effortless everyday dressing. Part of the Odyssey everyday collection."
+  }
+]

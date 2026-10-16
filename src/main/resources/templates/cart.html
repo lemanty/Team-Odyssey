@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your bag | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css(v=cart-1)}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('cart')}"></header>
+<main class="cart-page">
+    <p class="eyebrow">A FEW GOOD FINDS</p>
+    <h1>Your bag.</h1>
+    <p class="cart-feedback" role="status" th:if="${cartMessage}" th:text="${cartMessage}"></p>
+    <p class="cart-feedback cart-error" role="alert" th:if="${cartError}" th:text="${cartError}"></p>
+    <section class="cart-empty" th:if="${#lists.isEmpty(bag.lines)}">
+        <h2>Your next discovery is waiting.</h2>
+        <p>Your bag is empty. Explore the collection and find something for your everyday.</p>
+        <a class="detail-back" th:href="@{/products}">Explore products <span aria-hidden="true">↗</span></a>
+    </section>
+    <div class="cart-layout" th:unless="${#lists.isEmpty(bag.lines)}">
+        <section aria-label="Items in your bag">
+            <article class="cart-line" th:each="line : ${bag.lines}">
+                <a class="cart-image" th:if="${line.product != null}" th:href="@{/products/{id}(id=${line.id})}" th:attr="aria-label=${'View ' + line.product.name}">
+                    <img th:if="${line.product.garmentImage != null}" th:src="@{${line.product.garmentImage}}" th:alt="${line.product.name}" width="150" height="200">
+                    <span th:unless="${line.product.garmentImage != null}">ODYSSEY</span>
+                </a>
+                <div class="cart-line-copy">
+                    <h2 th:text="${line.product != null} ? ${line.product.name} : 'Product no longer available'">Product</h2>
+                    <p th:if="${line.product != null}" th:text="'€' + ${#numbers.formatDecimal(line.product.price, 1, 2)} + ' each'">Price</p>
+                    <p class="cart-error" th:unless="${line.available}">This quantity is no longer available. Please reduce it or remove this item.</p>
+                    <form class="cart-quantity" method="post" th:action="@{/cart/update}" th:if="${line.product != null}">
+                        <input type="hidden" name="csrf" th:value="${cartToken}">
+                        <input type="hidden" name="productId" th:value="${line.id}">
+                        <label th:for="'quantity-' + ${line.id}">Quantity</label>
+                        <input type="number" name="quantity" min="1" max="999" step="1" required th:id="'quantity-' + ${line.id}" th:value="${line.quantity}">
+                        <button type="submit" class="text-button">Update</button>
+                    </form>
+                    <form method="post" th:action="@{/cart/remove}">
+                        <input type="hidden" name="csrf" th:value="${cartToken}">
+                        <input type="hidden" name="productId" th:value="${line.id}">
+                        <button class="text-button" type="submit" th:attr="aria-label=${'Remove ' + (line.product != null ? line.product.name : 'unavailable product')}">Remove</button>
+                    </form>
+                </div>
+                <strong class="line-total" th:text="'€' + ${#numbers.formatDecimal(line.subtotal, 1, 2)}">€0.00</strong>
+            </article>
+        </section>
+        <aside class="cart-summary" aria-label="Bag summary">
+            <p class="eyebrow">YOUR EVERYDAY EDIT</p>
+            <h2>Bag summary</h2>
+            <div class="cart-total"><span>Subtotal</span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
+            <p>Items are saved for this browser session. Adding to your bag does not reserve stock.</p>
+            <p>Checkout, delivery charges and payment are coming later.</p>
+            <a class="detail-back" th:href="@{/products}">Continue exploring <span aria-hidden="true">↗</span></a>
+        </aside>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

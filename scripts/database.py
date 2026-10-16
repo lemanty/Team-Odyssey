@@ -6,6 +6,13 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import signal
+import socket
+import time
+import urllib.request
+import urllib.error
+import webbrowser
+from contextlib import contextmanager
 
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
@@ -77,6 +84,124 @@ def tunnel():
     subprocess.run(command, check=True)
 
 
+def website_state(port):
+    """Never assume that an arbitrary service on this port is our website."""
+    url = f'http://127.0.0.1:{port}/products'
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(url, timeout=2) as response:
+            if response.status == 200 and response.headers.get('X-Odyssey-App') == 'retail-shop':
+                return response.headers.get('X-Odyssey-Mode', 'unknown')
+    except (OSError, urllib.error.URLError):
+        pass
+    try:
+        with socket.create_connection(('127.0.0.1', port), timeout=0.5):
+            return 'occupied'
+    except OSError:
+        return 'free'
+
+
+def open_website(port):
+    url = f'http://localhost:{port}/products'
+    print(f'网站已就绪：{url}', flush=True)
+    if not webbrowser.open(url):
+        print('无法自动打开浏览器，请点击上面的地址。', flush=True)
+
+
+@contextmanager
+def launch_lock(port):
+    # OS releases the lock on crash; leaving the file behind does not block restart.
+    directory = ROOT / '.run'
+    directory.mkdir(exist_ok=True)
+    with (directory / f'website-{port}.lock').open('a+b') as handle:
+        handle.seek(0)
+        if os.name == 'nt':
+            import msvcrt
+            if handle.read(1) == b'':
+                handle.write(b'0')
+                handle.flush()
+            handle.seek(0)
+            lock = lambda: msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            unlock = lambda: msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            lock = lambda: fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            unlock = lambda: fcntl.flock(handle, fcntl.LOCK_UN)
+        try:
+            lock()
+        except OSError:
+            yield False
+        else:
+            try:
+                yield True
+            finally:
+                handle.seek(0)
+                unlock()
+
+
+def stop_website(process):
+    # Stop only the Maven/Java process tree created by THIS launcher.
+    if os.name == 'nt':
+        if process.poll() is None:
+            subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            process.poll()
+            try:
+                os.killpg(process.pid, 0)
+            except ProcessLookupError:
+                return
+            time.sleep(0.1)
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    process.wait()
+
+
+def run_website(command, env, port):
+    with launch_lock(port) as acquired:
+        if not acquired:
+            print('另一个启动脚本正在运行，等待它就绪；不会重复启动。', flush=True)
+            deadline = time.monotonic() + 180
+            while time.monotonic() < deadline:
+                if website_state(port) == 'mysql':
+                    open_website(port)
+                    return
+                time.sleep(1)
+            raise RuntimeError('等待已有启动任务超时，请查看原来的终端。')
+        state = website_state(port)
+        if state == 'mysql':
+            print('MySQL 模式网站已运行，直接打开已有页面。', flush=True)
+            open_website(port)
+            return
+        if state != 'free':
+            raise RuntimeError(f'端口 {port} 已被占用（{state}）。请先停止旧网站再运行；不会自动结束其他程序。')
+        process = subprocess.Popen(command, env=env, start_new_session=(os.name != 'nt'))
+        try:
+            deadline = time.monotonic() + 180
+            while time.monotonic() < deadline:
+                if process.poll() is not None:
+                    raise RuntimeError('网站在就绪前退出，请查看上方启动日志。')
+                if website_state(port) == 'mysql':
+                    open_website(port)
+                    print('保持此窗口打开。Ctrl+C 会停止本次网站及其子进程，数据库继续运行。', flush=True)
+                    code = process.wait()
+                    if code:
+                        raise RuntimeError(f'网站进程退出，状态码 {code}。')
+                    return
+                time.sleep(1)
+            raise RuntimeError('网站启动超过 180 秒，已停止本次启动，请检查日志后重试。')
+        finally:
+            stop_website(process)
+
+
 def website(role):
     values = config('.env.mysql' if role == 'host' else '.env.team')
     port = int(values.get('MYSQL_PORT', '3307') if role == 'host' else values.get('DB_PORT', '13307'))
@@ -91,7 +216,10 @@ def website(role):
         if java.returncode == 0:
             env['JAVA_HOME'] = java.stdout.strip()
     wrapper = str(ROOT / ('mvnw.cmd' if os.name == 'nt' else 'mvnw'))
-    subprocess.run([wrapper, 'spring-boot:run'], env=env, check=True)
+    web_port = int(env.get('PORT', '8080'))
+    if not 1024 <= web_port <= 65535:
+        raise RuntimeError('PORT must be between 1024 and 65535')
+    run_website([wrapper, 'spring-boot:run'], env, web_port)
 
 
 def main():
@@ -107,7 +235,8 @@ def main():
     elif action == 'login':
         sql()
     elif action == 'init':
-        sql((ROOT / 'src/main/resources/db/001-products.sql').read_text())
+        for migration in sorted((ROOT / 'src/main/resources/db').glob('*.sql')):
+            sql(migration.read_text())
     elif action == 'tunnel':
         tunnel()
     else:
@@ -115,6 +244,11 @@ def main():
 
 
 if __name__ == '__main__':
+    if os.name != 'nt':
+        def interrupted(signum, frame):
+            raise KeyboardInterrupt
+        signal.signal(signal.SIGTERM, interrupted)
+        signal.signal(signal.SIGHUP, interrupted)
     try:
         main()
     except KeyboardInterrupt:
