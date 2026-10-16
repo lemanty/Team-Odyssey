@@ -50,6 +50,16 @@ class CatalogueWebTests {
     }
 
     @Test
+    void chineseCatalogueTranslatesSampleProducts() throws Exception {
+        mockMvc.perform(get("/products?lang=zh"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("全部商品")))
+            .andExpect(content().string(containsString("日常纯棉T恤")))
+            .andExpect(content().string(containsString("陶瓷马克杯")))
+            .andExpect(content().string(containsString("暂无库存信息")));
+    }
+
+    @Test
     void catalogueRendersProductsThroughAllLayers() throws Exception {
         mockMvc.perform(get("/products"))
             .andExpect(status().isOk())

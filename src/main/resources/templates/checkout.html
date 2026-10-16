@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Orders | Odyssey</title>
+<title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=orders-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
 </header>
 <main class="order-page">
-<p class="eyebrow">YOUR ODYSSEY</p>
-<p class="cart-feedback cart-error" role="alert" th:if="${orderError}" th:text="${orderError}">
+<p class="eyebrow"><span th:text="${storeText.text('YOUR ODYSSEY', zh)}">YOUR ODYSSEY</span></p>
+<p class="cart-feedback cart-error" role="alert" th:if="${storeText.text(orderError, zh)}" th:text="${storeText.text(orderError, zh)}">
 </p>
-<p class="cart-feedback" role="status" th:if="${orderMessage}" th:text="${orderMessage}">
+<p class="cart-feedback" role="status" th:if="${storeText.text(orderMessage, zh)}" th:text="${storeText.text(orderMessage, zh)}">
 </p>
 <h1 th:text="${zh ? '确认订单' : 'Make it yours.'}">
 </h1>
@@ -26,7 +26,7 @@
 <h2 th:text="${zh ? '订单商品' : 'Your selection'}">
 </h2>
 <p th:each="line : ${bag.lines}">
-<span th:text="${line.product != null ? line.product.name : 'Unavailable product'}">
+<span th:text="${line.product != null ? storeText.text(line.product.name, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
 </span> × <span th:text="${line.quantity}">
 </span>
 <strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">

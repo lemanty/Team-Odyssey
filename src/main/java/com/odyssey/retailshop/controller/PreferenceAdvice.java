@@ -6,6 +6,11 @@ import org.springframework.web.bind.annotation.*;
 
 @ControllerAdvice
 public class PreferenceAdvice {
+    private final com.odyssey.retailshop.service.StoreText translations;
+    public PreferenceAdvice(com.odyssey.retailshop.service.StoreText translations) { this.translations = translations; }
+    @ModelAttribute("storeText")
+    public com.odyssey.retailshop.service.StoreText translations() { return translations; }
+
     @ModelAttribute("englishLanguageUrl")
     public String englishUrl(HttpServletRequest request) { return languageUrl(request, "en"); }
     @ModelAttribute("chineseLanguageUrl")

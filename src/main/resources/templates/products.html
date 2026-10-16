@@ -3,37 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Our catalogue | Odyssey</title>
+    <title th:text="${storeText.text('Our catalogue | Odyssey', zh)}">Our catalogue | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=cart-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('products')}"></header>
 <main class="catalogue">
-    <p class="eyebrow">THE EVERYDAY COLLECTION</p>
-    <h1>Find your everyday.</h1>
-    <p class="intro">Clothing and household favourites, all in one place.</p>
-    <p class="catalogue-notice">Sample catalogue — prices are illustrative in EUR. Stock is demonstration data. Online ordering is not available yet.</p>
-    <div class="section-heading"><h2>All products</h2><span th:text="${#lists.size(products)} + ' items'">0 items</span></div>
-    <p th:if="${#lists.isEmpty(products)}">Our next collection is on its way. Check back soon.</p>
+    <p class="eyebrow"><span th:text="${storeText.text('THE EVERYDAY COLLECTION', zh)}">THE EVERYDAY COLLECTION</span></p>
+    <h1><span th:text="${storeText.text('Find your everyday.', zh)}">Find your everyday.</span></h1>
+    <p class="intro"><span th:text="${storeText.text('Clothing and household favourites, all in one place.', zh)}">Clothing and household favourites, all in one place.</span></p>
+    <p class="catalogue-notice"><span th:text="${storeText.text('Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.', zh)}">Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.</span></p>
+    <div class="section-heading"><h2><span th:text="${storeText.text('All products', zh)}">All products</span></h2><span th:text="${#lists.size(products)} + ${zh ? ' 件商品' : ' items'}">0 items</span></div>
+    <p th:if="${#lists.isEmpty(products)}"><span th:text="${storeText.text('Our next collection is on its way. Check back soon.', zh)}">Our next collection is on its way. Check back soon.</span></p>
     <div class="product-grid">
         <article class="product-card" th:each="product, status : ${products}"
                  th:id="${status.index == 0 or products[status.index - 1].category != product.category} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
-            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${'View ' + product.name}">
+            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(product.name, zh)}">
             <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}">
-                <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${product.name}" loading="lazy" width="600" height="800">
-                <span th:if="${product.garmentImage == null}" th:text="${product.category == 'Clothing' ? 'WEAR' : 'LIVE'}">GOODS</span>
+                <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.text(product.name, zh)}" loading="lazy" width="600" height="800">
+                <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category == 'Clothing' ? '穿着' : '居家') : (product.category == 'Clothing' ? 'WEAR' : 'LIVE')}">GOODS</span>
             </div>
             <div class="product-copy">
-                <span class="eyebrow" th:text="${product.category}">Category</span>
-                <div class="product-heading"><h3 th:text="${product.name}">Product</h3><span class="price" th:text="'€' + ${product.price}">€0.00</span></div>
-                <p class="card-audience" th:if="${product.audience != null}" th:text="${product.audience} + ' collection'">Collection</p>
-                <span class="card-detail-link">Discover this piece <span aria-hidden="true">↗</span></span>
+                <span class="eyebrow" th:text="${storeText.text(product.category, zh)}">Category</span>
+                <div class="product-heading"><h3 th:text="${storeText.text(product.name, zh)}">Product</h3><span class="price" th:text="'€' + ${product.price}">€0.00</span></div>
+                <p class="card-audience" th:if="${product.audience != null}" th:text="${storeText.text(product.audience, zh)} + ${zh ? '系列' : ' collection'}"><span th:text="${storeText.text('Collection', zh)}">Collection</span></p>
+                <span class="card-detail-link"><span th:text="${storeText.text('Discover this piece', zh)}">Discover this piece</span> <span aria-hidden="true">↗</span></span>
             </div>
             </a>
             <form class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
-                <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${product.stockQuantity == null} ? 'Stock unavailable' : (${product.stockQuantity <= 0} ? 'Out of stock' : 'Add to bag')">Add to bag</button>
+                <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>
             </form>
         </article>
     </div>

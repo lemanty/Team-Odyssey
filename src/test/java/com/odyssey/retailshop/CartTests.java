@@ -30,6 +30,22 @@ class CartTests {
         mvc.perform(post("/cart/"+action).session(session).with(csrf()).param("csrf",CartController.token(session)).param("productId","42").param("quantity",String.valueOf(quantity)))
             .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/cart"));
     }
+    @Test void chineseCartIncludesProductLabelsFeedbackAndEmptyState() throws Exception {
+        when(products.getProduct(42L)).thenReturn(Optional.of(new Product(42L,"Soft Knit Cardigan","Clothing","Cotton",new BigDecimal("49.00"),"Women",5,null,null)));
+        MockHttpSession session = new MockHttpSession(); change(session,"add",1);
+        mvc.perform(get("/cart?lang=zh").session(session))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("我的购物车")))
+            .andExpect(content().string(containsString("柔软针织开衫")))
+            .andExpect(content().string(containsString("商品小计")))
+            .andExpect(content().string(containsString("数量")))
+            .andExpect(content().string(containsString("更新")))
+            .andExpect(content().string(containsString("继续选购")));
+        mvc.perform(get("/cart?lang=zh").flashAttr("cartError","The requested quantity is not available. Please check the current stock."))
+            .andExpect(content().string(containsString("所选数量超过可用库存")))
+            .andExpect(content().string(containsString("购物车还是空的")));
+        mvc.perform(get("/cart?lang=en").session(session)).andExpect(content().string(containsString("Soft Knit Cardigan")));
+    }
     @Test void addMergeUpdateRemoveAndSessionIsolation() throws Exception {
         product(5); MockHttpSession session = new MockHttpSession();
         change(session,"add",1); change(session,"add",1);

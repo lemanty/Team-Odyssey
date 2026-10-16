@@ -4,9 +4,9 @@
 <body>
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="auth-page">
-    <aside class="auth-art"><p class="eyebrow">YOUR JOURNEY STARTS HERE</p><h1 th:text="${zh ? '好物相伴，开启你的日常新篇。' : 'Good things. A little closer.'}"></h1><p th:text="${zh ? '为日常生活，发现更多美好。欢迎加入 Odyssey。' : 'Thoughtful finds for the way you live. Make yourself at home with Odyssey.'}"></p></aside>
+    <aside class="auth-art"><p class="eyebrow"><span th:text="${storeText.text('YOUR JOURNEY STARTS HERE', zh)}">YOUR JOURNEY STARTS HERE</span></p><h1 th:text="${zh ? '好物相伴，开启你的日常新篇。' : 'Good things. A little closer.'}"></h1><p th:text="${zh ? '为日常生活，发现更多美好。欢迎加入 Odyssey。' : 'Thoughtful finds for the way you live. Make yourself at home with Odyssey.'}"></p></aside>
     <section class="auth-panel" aria-labelledby="auth-title">
-        <p class="eyebrow">BECOME PART OF THE STORY</p><h2 id="auth-title" th:text="${zh ? '创建账号' : 'Join Odyssey.'}"></h2>
+        <p class="eyebrow"><span th:text="${storeText.text('BECOME PART OF THE STORY', zh)}">BECOME PART OF THE STORY</span></p><h2 id="auth-title" th:text="${zh ? '创建账号' : 'Join Odyssey.'}"></h2>
         <p class="auth-intro" th:text="${zh ? '只需填写以下信息，即可开启旅程。' : 'A few details, and your journey begins.'}"></p>
         <div class="auth-alert" role="alert" th:if="${registrationError}" th:switch="${registrationError}">
             <p th:case="'duplicate'" th:text="${zh ? '该邮箱已注册，请登录或使用其他邮箱。' : 'This email is already registered. Sign in or use another email.'}"></p>
