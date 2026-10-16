@@ -7,6 +7,13 @@
     <p class="eyebrow">YOUR ODYSSEY</p><h1><span th:text="${zh ? '你好，' : 'Hello, '}"></span><span th:text="${displayName}"></span><span>.</span></h1>
     <p th:text="${zh ? '欢迎回来。你的下一个发现就在前方。' : 'Welcome back. Your next discovery is waiting.'}"></p>
     <dl class="account-details"><dt th:text="${zh ? '邮箱' : 'Email'}"></dt><dd th:text="${accountEmail}"></dd><dt th:text="${zh ? '语言偏好' : 'Language preference'}"></dt><dd th:text="${zh ? '中文（在此浏览器保存 180 天）' : 'English (saved in this browser for 180 days)'}"></dd></dl>
+    <p class="auth-notice" th:switch="${accountRole}">
+        <span th:case="'CUSTOMER'" th:text="${zh ? '当前角色：顾客' : 'Your role: Customer'}"></span>
+        <span th:case="'STAFF'" th:text="${zh ? '当前角色：员工' : 'Your role: Staff'}"></span>
+        <span th:case="'ADMIN'" th:text="${zh ? '当前角色：管理员' : 'Your role: Administrator'}"></span>
+    </p>
+    <a class="detail-back" th:if="${accountRole == 'STAFF' or accountRole == 'ADMIN'}" th:href="@{/staff}" th:text="${zh ? '进入员工工作台 →' : 'Open staff workspace →'}"></a>
+    <a class="detail-back" th:if="${accountRole == 'ADMIN'}" th:href="@{/admin}" th:text="${zh ? '进入管理员工作台 →' : 'Open administrator workspace →'}"></a>
     <a class="detail-back" th:href="@{/products}" th:text="${zh ? '探索商品 →' : 'Explore the collection →'}"></a>
     <form class="account-logout" method="post" th:action="@{/logout}"><button type="submit" class="text-button" th:text="${zh ? '退出登录' : 'Sign out'}"></button></form>
 </main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

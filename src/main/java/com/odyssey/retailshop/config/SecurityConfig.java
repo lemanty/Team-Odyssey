@@ -15,7 +15,7 @@ public class SecurityConfig {
     @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
     @Bean UserDetailsService userDetailsService(UserRepository users) {
         return email -> {
-            var account = users.findByEmail(email.strip().toLowerCase(Locale.ROOT))
+            var account = users.findByLogin(email.strip().toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
             return User.withUsername(account.email()).password(account.passwordHash()).roles(account.role()).build();
         };
@@ -23,8 +23,8 @@ public class SecurityConfig {
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/account", "/account/**").authenticated()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
+                .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")
                 .defaultSuccessUrl("/account", true).failureUrl("/login?error").permitAll())

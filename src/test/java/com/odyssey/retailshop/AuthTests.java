@@ -50,6 +50,7 @@ class AuthTests {
     @Test void loginAccountLogoutAndSessionRotation() throws Exception {
         when(users.available()).thenReturn(true);
         when(users.findByEmail("alice@example.com")).thenReturn(Optional.of(new UserRepository.Account(1,"Alice","alice@example.com",encoder.encode("test-passphrase"),"CUSTOMER")));
+        when(users.findByLogin("alice@example.com")).thenAnswer(invocation -> users.findByEmail("alice@example.com"));
         mvc.perform(get("/account")).andExpect(status().is3xxRedirection());
         mvc.perform(post("/login").with(csrf()).param("email","alice@example.com").param("password","wrong"))
             .andExpect(redirectedUrl("/login?error"));

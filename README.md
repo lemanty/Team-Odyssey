@@ -422,7 +422,7 @@ python3 scripts/seed-clothing.py
 - 注册：`http://localhost:8080/register`，填写姓名/昵称、邮箱、密码和确认密码。
 - 登录：`http://localhost:8080/login`，使用刚注册的邮箱和密码。
 - 我的账号：`http://localhost:8080/account`，显示姓名、邮箱，提供语言切换和退出。未登录会跳转登录页。
-- 所有新注册账号均为 `CUSTOMER`。注册表单不能指定员工或管理员权限。员工管理页面尚未实现；`/staff/**` 和 `/admin/**` 已设置角色访问限制。
+- 所有新注册账号均为 `CUSTOMER`。注册表单不能指定员工或管理员权限。员工与管理员工作台入口已实现（`/staff`、`/admin`），其中业务操作仍待开发；路径及其子路径均受角色限制。
 
 `users` 存储 ID、姓名、唯一邮箱、BCrypt 密码哈希、角色及创建时间。邮箱统一小写；密码至少 8 个、最多 64 个字符且不能超过 72 个 UTF-8 字节。数据库不会保存明文密码。注册不会自动登录；登录成功会更新会话 ID 并保留会话购物车，退出会清除会话（包括购物车）。
 
@@ -431,3 +431,21 @@ python3 scripts/seed-clothing.py
 Spring Security 为 POST 表单提供 CSRF 校验。基础测试包括重复邮箱、无效注册、密码哈希、成功/失败登录、会话更新、退出、未登录访问、角色限制与语言 Cookie。邮箱验证、忘记密码、登录限速和跨设备偏好同步尚未实现。正式部署时应配置 HTTPS，并设置 `SERVER_SERVLET_SESSION_COOKIE_SECURE=true`。
 
 实现参考：[Spring Security 表单登录](https://docs.spring.io/spring-security/reference/7.0/servlet/authentication/passwords/form.html)、[CSRF 与 Thymeleaf 表单](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html)。
+
+## 14. 角色划分与权限测试
+
+| 角色 | 业务职责 | 权限边界 |
+| --- | --- | --- |
+| 顾客 CUSTOMER | 浏览、购物车；后续下单、查看自己的订单、备货前修改/取消、提交咨询 | 不能访问工作台，不能查看他人的订单或个人资料 |
+| 员工 STAFF | 后续商品编辑与上下架、备货与交付、门店销售/留货/退货、库存流水、回复咨询 | 可访问 `/staff`；不能管理角色、创建管理员或访问 `/admin` |
+| 管理员 ADMIN | 全部员工职责，后续账号启停、员工授权、系统设置和操作审计 | 可访问 `/staff` 和 `/admin`；也不能读取明文密码 |
+
+**已实现**：账号页显示角色及对应入口、服务端工作台路径拦截、未登录跳转、注册固定 CUSTOMER。**待实现**：工作台中的商品/订单/库存/用户管理操作；未来订单还需服务端所有权校验，不能只隐藏按钮。角色修改后须重新登录，当前登录会话中的权限不会自动刷新。
+
+本机共享开发数据库已创建 `staff@odyssey.test`（员工）和 `admin@odyssey.test`（管理员）。这两个地址仅为测试标识，不接收邮件。使用 `/login` 登录，成功后在“我的账号”进入对应工作台。员工访问 `/admin` 应返回 403；管理员访问两者都应成功。
+
+管理员现在可用用户名 `Admin` 登录；新增员工用户名为 `zhangsan`、`lisi`、`wangwu`。登录支持用户名或原邮箱，用户名不区分大小写。用户名存储在 `004-login-names.sql` 创建的 `user_login_names` 关联表中；注册仍使用邮箱，不能自行申请员工或管理员身份。上述测试账号密码按团队指定值设置，仅记录在本机私有文件中；普通注册仍要求至少 8 个字符。原员工测试账号保持可用。
+
+测试账号密码仅保存在数据库主机项目内 `.local/role-test-accounts.txt`，文件权限为仅所有者读写，`.local/` 已被 Git 忽略。不要将密码放入 README、SQL 脚本或 Git。组员使用同一开发数据库，无需再创建相同账号；这些测试账号不应带到正式部署。
+
+测试覆盖三种角色及未登录用户的访问矩阵；数据库存储的角色来自管理员维护，不能信任表单或 Cookie 提交的角色。

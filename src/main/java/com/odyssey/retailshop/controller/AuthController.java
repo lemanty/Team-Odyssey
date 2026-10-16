@@ -55,6 +55,7 @@ public class AuthController {
         var account = users.findByEmail(principal.getName()).orElseThrow();
         model.addAttribute("displayName", account.displayName());
         model.addAttribute("accountEmail", account.email());
+        model.addAttribute("accountRole", account.role());
         return "account";
     }
 }
