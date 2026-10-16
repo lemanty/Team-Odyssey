@@ -120,6 +120,14 @@ class OrderTests {
         mvc.perform(get("/checkout").session(session).with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("Place order")));
         mvc.perform(get("/orders")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/orders/"+id).with(user("b@test.com"))).andExpect(status().isNotFound());
+        mvc.perform(get("/orders?lang=zh").with(user("a@test.com")))
+            .andExpect(status().isOk()).andExpect(content().string(containsString("Shirt")))
+            .andExpect(content().string(containsString("/shirt.webp")))
+            .andExpect(content().string(containsString("Test address")))
+            .andExpect(content().string(containsString("配送地址")))
+            .andExpect(content().string(containsString("status-pending")));
+        assertTrue(orders.previews("b@test.com",false).isEmpty());
+
         mvc.perform(get("/staff/orders").with(user("a@test.com"))).andExpect(status().isForbidden());
         mvc.perform(post("/orders/"+id+"/cancel").with(user("a@test.com"))).andExpect(status().isForbidden());
         for (String path : List.of("/orders","/orders/"+id,"/checkout")) mvc.perform(get(path).with(user("a@test.com"))).andExpect(status().isOk());

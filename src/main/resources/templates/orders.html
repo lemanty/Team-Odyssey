@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=orders-1)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=order-cards-3)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -21,19 +21,31 @@
 </p>
 <p class="order-card" th:if="${#lists.isEmpty(orders)}" th:text="${zh ? '暂无订单。' : 'No orders yet.'}">
 </p>
-<article class="order-card order-row" th:each="order : ${orders}">
-<div>
-<a class="detail-back" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${'#' + #strings.substring(order.id,0,8)}">
-</a>
-<p th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}">
-</p>
-</div>
-<span class="order-badge" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}">
-</span>
-<span th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送' : 'Delivery') : (zh ? '自取' : 'Collection')}">
-</span>
-<strong th:text="'€' + ${#numbers.formatDecimal(order.total,1,2)}">
-</strong>
+<article class="order-card order-summary-card" th:each="order : ${orders}">
+    <div class="order-summary-header">
+        <div><a class="order-number-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${(zh ? '订单 #' : 'Order #') + #strings.substring(order.id,0,8)}"></a>
+            <p class="order-date" th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}"></p></div>
+        <div class="order-tags">
+            <span class="order-badge order-status-tag" th:classappend="${'status-' + #strings.toLowerCase(order.status)}" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}"></span>
+            <span class="order-badge order-fulfillment-tag" th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送' : 'Delivery') : (zh ? '门店自取' : 'Collection')}"></span>
+        </div>
+    </div>
+    <div class="order-preview-items">
+        <div class="order-preview-item" th:each="item : ${orderPreviews[order.id]}">
+            <a class="order-preview-image" th:href="@{/products/{id}(id=${item.productId})}" th:aria-label="${storeText.text(item.name,zh)}">
+                <img th:if="${item.image != null and !#strings.isEmpty(item.image)}" th:src="@{${item.image}}" th:alt="${storeText.text(item.name,zh)}" width="84" height="112" loading="lazy">
+                <span th:unless="${item.image != null and !#strings.isEmpty(item.image)}" th:text="${zh ? '暂无图片' : 'No image'}"></span>
+            </a>
+            <div class="order-preview-copy"><a th:href="@{/products/{id}(id=${item.productId})}" th:text="${storeText.text(item.name,zh)}"></a>
+                <p><span th:text="${zh ? '数量：' : 'Quantity: '}"></span><strong th:text="${item.quantity}"></strong><span th:text="' · €' + ${#numbers.formatDecimal(item.unitPrice,1,2)} + ${zh ? ' / 件' : ' each'}"></span></p></div>
+        </div>
+    </div>
+    <div class="order-summary-footer">
+        <div class="order-destination"><strong th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送地址' : 'Delivery address') : (zh ? '取货方式' : 'Collection details')}"></strong>
+            <p class="order-address" th:text="${order.fulfillment == 'DELIVERY' ? order.address : (zh ? '门店自取 · 待取货后凭订单号到店领取' : 'Collect in store with your order number once ready')}"></p></div>
+        <div class="order-summary-total"><span th:text="${zh ? '订单总额' : 'Order total'}"></span><strong th:text="'€' + ${#numbers.formatDecimal(order.total,1,2)}"></strong>
+            <a class="order-view-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${zh ? '查看订单 →' : 'View order →'}"></a></div>
+    </div>
 </article>
 </main>
 <footer th:replace="~{fragments/layout :: footer}">

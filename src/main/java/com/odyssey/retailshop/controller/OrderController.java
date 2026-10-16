@@ -46,6 +46,7 @@ public class OrderController {
     @GetMapping("/staff/orders")
     public String staff(Principal user, Model model) { return listing(user,model,true); }
     private String listing(Principal user, Model model, boolean staff) {
+        model.addAttribute("orderPreviews",orders.previews(user.getName(),staff));
         model.addAttribute("orders",orders.list(user.getName(),staff)); model.addAttribute("staffView",staff); return "orders";
     }
     @GetMapping("/orders/{id}")

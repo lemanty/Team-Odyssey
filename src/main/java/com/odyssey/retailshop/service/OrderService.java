@@ -35,6 +35,18 @@ public class OrderService {
         return staff ? jdbc.query("SELECT * FROM shop_orders ORDER BY created_at DESC, id", this::row)
             : jdbc.query("SELECT o.* FROM shop_orders o JOIN users u ON u.id=o.user_id WHERE u.email=? ORDER BY o.created_at DESC, o.id", this::row, email);
     }
+    public record Preview(long productId, String name, int quantity, BigDecimal unitPrice, String image) {}
+    public Map<String,List<Preview>> previews(String email, boolean staff) {
+        ready();
+        Map<String,List<Preview>> result=new LinkedHashMap<>();
+        String sql="SELECT i.*, d.garment_image FROM order_items i JOIN shop_orders o ON o.id=i.order_id JOIN users u ON u.id=o.user_id LEFT JOIN product_details d ON d.product_id=i.product_id"
+            + (staff ? "" : " WHERE u.email=?") + " ORDER BY i.order_id,i.product_id";
+        jdbc.query(sql, r -> {
+            result.computeIfAbsent(r.getString("order_id"), key -> new ArrayList<>()).add(
+                new Preview(r.getLong("product_id"),r.getString("product_name"),r.getInt("quantity"),r.getBigDecimal("unit_price"),r.getString("garment_image")));
+        }, staff ? new Object[]{} : new Object[]{email});
+        return result;
+    }
     public Order get(String id, String email, boolean staff) {
         ready();
         var rows = staff ? jdbc.query("SELECT * FROM shop_orders WHERE id=?",this::row,id)
