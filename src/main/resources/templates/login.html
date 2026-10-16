@@ -6,7 +6,6 @@
 <main class="auth-page">
     <aside class="auth-art auth-art-login"><p class="eyebrow">THE ODYSSEY CONTINUES</p><h1 th:text="${zh ? '每次相遇，都是新的旅程。' : 'A familiar place. A new discovery.'}">A familiar place. A new discovery.</h1><p th:text="${zh ? '从日常所需，到意外惊喜。欢迎回到 Odyssey。' : 'From everyday essentials to unexpected favourites. Welcome back to Odyssey.'}"></p></aside>
     <section class="auth-panel" aria-labelledby="auth-title">
-        <div th:replace="~{fragments/auth :: language('/login')}"></div>
         <p class="eyebrow">WELCOME BACK</p><h2 id="auth-title" th:text="${zh ? '欢迎回来' : 'Sign in.'}"></h2>
         <p class="auth-intro" th:text="${zh ? '登录账号，继续你的发现之旅。' : 'Your next discovery starts here.'}"></p>
         <p class="auth-alert" role="alert" th:if="${param.error}" th:text="${zh ? '用户名、邮箱或密码不正确，请重试。' : 'The username, email or password is incorrect. Please try again.'}"></p>
