@@ -1238,7 +1238,10 @@ html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odysse
 .support-attachments small { display: block; color: #58695c; margin-top: 8px; font-size: 12px; }
 .support-attachments input, .support-attachments select { width: 100%; min-width: 0; font: inherit; font-size: 14px; }
 .support-attachments select { padding: 12px; border: 1px solid #aabb9f; border-radius: 8px; background: #fffef8; }
-.support-upload input::file-selector-button { border: 1px solid #aabb9f; border-radius: 6px; background: #e3eadc; padding: 10px; color: #21463b; cursor: pointer; }
+.support-file-control { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid #aabb9f; border-radius: 6px; background: #e3eadc; color: #21463b; }
+.support-file-control input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.support-file-control:hover { background: #d6e1cd; }
+.support-file-control:focus-within { outline: 2px solid #698763; outline-offset: 2px; }
 [data-image-preview] { margin-top: 12px; }
 [data-image-preview] img { display: block; object-fit: contain; border-radius: 8px; }
 [data-upload-error] { display: block; color: #8a422e; font-size: 13px; margin-top: 8px; }

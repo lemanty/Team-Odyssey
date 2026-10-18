@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}">
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=support-attachments-2)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=support-attachments-3)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
 </head>
 <body>
@@ -72,7 +72,10 @@
                 <div class="support-attachments">
                     <div class="support-upload">
                         <label for="support-image" th:text="${zh ? '添加图片' : 'Attach an image'}"></label>
-                        <input id="support-image" type="file" name="image" accept="image/jpeg,image/png" aria-describedby="image-help">
+                        <div class="support-file-control">
+                            <input id="support-image" type="file" name="image" accept="image/jpeg,image/png" aria-describedby="image-help">
+                            <span aria-hidden="true" th:text="${zh ? '选择图片' : 'Choose image'}"></span>
+                        </div>
                         <small id="image-help" th:text="${zh ? '每条消息1张，JPG / PNG，最多5MB。' : 'One JPG / PNG image per message, up to 5 MB.'}"></small>
                         <div data-image-preview hidden><img alt="" width="120" height="90"><button type="button" class="text-button" data-remove-image th:text="${zh ? '移除图片' : 'Remove image'}"></button></div>
                         <span data-upload-error role="alert"></span>
