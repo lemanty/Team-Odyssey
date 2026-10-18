@@ -1,6 +1,74 @@
 [
- {"name":"Ivory Ceramic Vase","slug":"ivory-ceramic-vase","price":32,"stock":18,"description":"A rounded ivory ceramic vase with a narrow neck and a softly textured matte finish. A quiet accent for a shelf, table or bedside.","nameZh":"米白陶瓷花瓶","descriptionZh":"圆润瓶身搭配细窄瓶口，米白哑光表面带有细腻纹理，适合点缀书架、餐桌或床头。"},
- {"name":"Seagrass Storage Basket","slug":"seagrass-storage-basket","price":28,"stock":22,"description":"A natural woven seagrass basket with two loop handles. Keep throws, magazines and everyday essentials neatly together.","nameZh":"海草编织收纳篮","descriptionZh":"天然海草编织篮配有双侧提手，可收纳盖毯、杂志与日常小物，让空间保持整洁。"},
- {"name":"Sage Linen Cushion","slug":"sage-linen-cushion","price":26,"stock":30,"description":"A square sage-green linen cushion with a subtle woven texture and a piped edge. A soft finishing touch for a sofa or reading chair.","nameZh":"鼠尾草绿亚麻靠垫","descriptionZh":"鼠尾草绿色方形亚麻靠垫，细腻织纹搭配包边设计，为沙发或阅读椅增添柔和色彩。"},
- {"name":"Oak Serving Tray","slug":"oak-serving-tray","price":35,"stock":16,"description":"An oval light-oak tray with a shallow raised rim. Carry a morning coffee or organise a few favourites on your table.","nameZh":"橡木椭圆托盘","descriptionZh":"浅色橡木椭圆托盘，微微隆起的边缘方便放置物品，适合端放晨间咖啡或整理桌面。"}
+  {
+    "name": "Ivory Ceramic Vase",
+    "slug": "ivory-ceramic-vase",
+    "price": 32,
+    "stock": 18,
+    "description": "A rounded ivory ceramic vase with a narrow neck and a softly textured matte finish. A quiet accent for a shelf, table or bedside.",
+    "nameZh": "米白陶瓷花瓶",
+    "descriptionZh": "圆润瓶身搭配细窄瓶口，米白哑光表面带有细腻纹理，适合点缀书架、餐桌或床头。"
+  },
+  {
+    "name": "Seagrass Storage Basket",
+    "slug": "seagrass-storage-basket",
+    "price": 28,
+    "stock": 22,
+    "description": "A natural woven seagrass basket with two loop handles. Keep throws, magazines and everyday essentials neatly together.",
+    "nameZh": "海草编织收纳篮",
+    "descriptionZh": "天然海草编织篮配有双侧提手，可收纳盖毯、杂志与日常小物，让空间保持整洁。"
+  },
+  {
+    "name": "Sage Linen Cushion",
+    "slug": "sage-linen-cushion",
+    "price": 26,
+    "stock": 30,
+    "description": "A square sage-green linen cushion with a subtle woven texture and a piped edge. A soft finishing touch for a sofa or reading chair.",
+    "nameZh": "鼠尾草绿亚麻靠垫",
+    "descriptionZh": "鼠尾草绿色方形亚麻靠垫，细腻织纹搭配包边设计，为沙发或阅读椅增添柔和色彩。"
+  },
+  {
+    "name": "Oak Serving Tray",
+    "slug": "oak-serving-tray",
+    "price": 35,
+    "stock": 16,
+    "description": "An oval light-oak tray with a shallow raised rim. Carry a morning coffee or organise a few favourites on your table.",
+    "nameZh": "橡木椭圆托盘",
+    "descriptionZh": "浅色橡木椭圆托盘，微微隆起的边缘方便放置物品，适合端放晨间咖啡或整理桌面。"
+  },
+  {
+    "name": "Sandstone Ceramic Mug",
+    "slug": "sandstone-ceramic-mug",
+    "price": 18,
+    "stock": 36,
+    "description": "A sand-beige ceramic mug with a rounded handle and a softly speckled glaze. A simple companion for coffee or tea.",
+    "nameZh": "砂岩色陶瓷马克杯",
+    "descriptionZh": "沙米色陶瓷马克杯，圆润把手搭配细斑釉面，适合日常咖啡与茶饮。"
+  },
+  {
+    "name": "Oatmeal Cotton Throw",
+    "slug": "oatmeal-cotton-throw",
+    "price": 42,
+    "stock": 20,
+    "description": "An oatmeal woven cotton throw with short fringed edges. Fold it over a sofa or keep it nearby for quiet evenings.",
+    "nameZh": "燕麦色纯棉盖毯",
+    "descriptionZh": "燕麦色纯棉编织盖毯，搭配短流苏边缘，可铺在沙发上，也可在休闲时披盖。"
+  },
+  {
+    "name": "Linen Bedside Lamp",
+    "slug": "linen-bedside-lamp",
+    "price": 59,
+    "stock": 12,
+    "description": "A compact bedside lamp with a rounded ivory ceramic base and a natural linen shade. A gentle accent for a reading corner.",
+    "nameZh": "亚麻灯罩床头灯",
+    "descriptionZh": "小巧床头灯，圆润米白陶瓷底座搭配天然亚麻灯罩，为阅读角落增添柔和氛围。"
+  },
+  {
+    "name": "Oak Wall Clock",
+    "slug": "oak-wall-clock",
+    "price": 38,
+    "stock": 18,
+    "description": "A round wall clock with a light oak frame, cream dial and simple dark hour markers. A quiet finishing touch for everyday spaces.",
+    "nameZh": "橡木圆形挂钟",
+    "descriptionZh": "圆形挂钟采用浅色橡木边框、奶油色表盘与简洁深色刻度，为日常空间增添自然质感。"
+  }
 ]
