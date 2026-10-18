@@ -15,7 +15,7 @@
 </p>
 <p class="cart-feedback" role="status" th:if="${orderMessage != null and !#strings.isEmpty(orderMessage)}" th:text="${storeText.text(orderMessage, zh)}">
 </p>
-<a class="detail-back" th:href="${staffView ? '/staff/orders' : '/orders'}" th:text="${zh ? '← 返回订单列表' : '← Back to orders'}">
+<a class="detail-back" th:href="@{${staffView ? '/staff/orders' : '/orders'}}" th:text="${zh ? '← 返回订单列表' : '← Back to orders'}">
 </a>
 <h1 th:text="${zh ? '订单详情' : 'Your order.'}">
 </h1>

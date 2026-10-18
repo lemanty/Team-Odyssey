@@ -25,5 +25,6 @@ public class PreferenceAdvice {
         return auth!=null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STAFF") || a.getAuthority().equals("ROLE_ADMIN"));
     }
     @ModelAttribute("zh") public boolean chinese(HttpServletRequest request) { return Boolean.TRUE.equals(request.getAttribute("zh")); }
+    @ModelAttribute("newAccountWindowUrl") public String newAccountWindowUrl() { return "/login?window="+java.util.UUID.randomUUID().toString().replace("-",""); }
     @ModelAttribute("signedIn") public boolean signedIn(Principal principal) { return principal != null; }
 }

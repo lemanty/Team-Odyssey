@@ -5,6 +5,12 @@
     const zh = document.documentElement.lang === 'zh-CN';
     const connection = root.querySelector('[data-connection]');
     const base = root.dataset.supportBase;
+    const scoped = value => {
+        const url = new URL(value, location.href);
+        const selected = new URL(location.href).searchParams.get('window');
+        if (/^[a-f0-9]{32}$/.test(selected || '') && url.origin === location.origin) url.searchParams.set('window', selected);
+        return url.href;
+    };
     const file = document.getElementById('support-image');
     const preview = document.querySelector('[data-image-preview]');
     const uploadError = document.querySelector('[data-upload-error]');
@@ -39,7 +45,7 @@
             button.disabled = true;
             uploadError.textContent = '';
             try {
-                const response = await fetch(composer.action, {
+                const response = await fetch(scoped(composer.action), {
                     method: 'POST', credentials: 'same-origin',
                     headers: { Accept: 'application/json',
                         [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
@@ -48,7 +54,7 @@
                 if (response.status === 403 || response.status === 401 || response.redirected) {
                     uploadError.textContent = zh ? '登录状态或安全校验已过期，消息尚未发送。请在新标签页重新登录，再回来重试；输入内容已保留。' : 'Your session or security token has expired. Nothing was sent. Sign in in another tab, then return and retry. Your draft is preserved.';
                     const link = document.createElement('a');
-                    link.href = '/login'; link.target = '_blank'; link.rel = 'noopener';
+                    link.href = scoped('/login'); link.target = '_blank'; link.rel = 'noopener';
                     link.textContent = zh ? ' 点击重新登录 ↗' : ' Sign in ↗';
                     uploadError.append(link);
                     return;
@@ -59,7 +65,7 @@
                     uploadError.textContent = result.error || (zh ? '发送失败，请稍后重试。' : 'Unable to send. Please retry.');
                     return;
                 }
-                location.assign(result.redirect);
+                location.assign(scoped(result.redirect));
             } catch (_) {
                 uploadError.textContent = zh ? '暂时无法确认发送结果，请检查网络后重试。输入内容已保留，重试不会重复发送。' : 'Unable to confirm delivery. Check your connection and retry. Your draft is preserved; retries will not duplicate the message.';
             } finally {
@@ -79,7 +85,7 @@
         if (document.hidden || !chat.dataset.thread || !atBottom(box) || through <= acknowledged || reading) return;
         reading = true;
         try {
-            const response = await fetch(base + '/read', {
+            const response = await fetch(scoped(base + '/read'), {
                 method: 'POST', credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded',
                     [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
@@ -100,7 +106,7 @@
         if (busy || document.hidden) return;
         busy = true;
         try {
-            const response = await fetch(base + '/updates' + location.search, {credentials:'same-origin',cache:'no-store'});
+            const response = await fetch(scoped(base + '/updates' + location.search), {credentials:'same-origin',cache:'no-store'});
             if (!response.ok || response.redirected) throw new Error('Session or connection unavailable');
             const documentNext = new DOMParser().parseFromString(await response.text(), 'text/html');
             // The composer keeps its draft and idempotency token, but CSRF follows the current session.

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 request -> request.getServletPath().startsWith("/cart/")))
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")
                 .defaultSuccessUrl("/account", true).failureUrl("/login?error").permitAll())
-            .logout(logout -> logout.logoutSuccessUrl("/login?logout").deleteCookies("JSESSIONID"));
+            .logout(logout -> logout.logoutSuccessUrl("/login?logout"));
         return http.build();
     }
 }

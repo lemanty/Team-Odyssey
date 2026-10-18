@@ -3,6 +3,7 @@
 <body>
 <header th:fragment="header(activePage)" class="site-header">
     <a class="brand" th:href="@{/}"><span class="brand-mark">O</span> ODYSSEY<span class="brand-small" th:text="${zh ? '本地好物' : 'LOCAL GOODS'}">LOCAL GOODS</span></a>
+    <script defer th:src="@{/js/account-window.js(v=1)}"></script>
     <nav th:aria-label="${zh ? '主导航' : 'Main navigation'}">
         <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}" th:text="${zh ? '首页' : 'Home'}">Home</a>
         <a th:href="@{/#our-story}" th:text="${zh ? '品牌故事' : 'Our story'}">Our story</a>
@@ -11,7 +12,8 @@
         <a th:if="${!signedIn}" th:href="@{/login}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '登录 / 注册' : 'Sign in / Join'}">Sign in / Join</a>
         <a th:if="${signedIn}" th:href="@{/orders}" th:text="${zh ? '我的订单' : 'My orders'}"></a>
         <a th:if="${signedIn}" th:href="@{/account}" th:attr="aria-current=${activePage == 'account' ? 'page' : null}" th:text="${zh ? '我的账号' : 'My account'}">My account</a>
-        <a th:href="${supportStaff ? '/staff/support' : '/support'}" th:attr="aria-current=${activePage == 'support' ? 'page' : null}" th:text="${supportStaff ? (zh ? '客服工作台' : 'Support inbox') : (zh ? '联系客服' : 'Contact us')}"></a>
+        <a th:href="@{${supportStaff ? '/staff/support' : '/support'}}" th:attr="aria-current=${activePage == 'support' ? 'page' : null}" th:text="${supportStaff ? (zh ? '客服工作台' : 'Support inbox') : (zh ? '联系客服' : 'Contact us')}"></a>
+        <a th:attr="href=${newAccountWindowUrl}" target="_blank" rel="noopener" data-new-account-window th:text="${zh ? '新账号窗口 ↗' : 'New account window ↗'}"></a>
         <span class="home-language-switch" role="group" aria-label="Language / 语言">
             <a th:href="${englishLanguageUrl}" lang="en" th:attr="aria-current=${!zh ? 'true' : null}">EN</a>
             <span aria-hidden="true">/</span>
