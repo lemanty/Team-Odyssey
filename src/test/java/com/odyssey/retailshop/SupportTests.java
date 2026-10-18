@@ -98,11 +98,20 @@ class SupportTests {
     @Test void imageAndOrderMessagePersistsAndIsPrivate() throws Exception {
         String order=UUID.randomUUID().toString();
         jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,1,?,'PENDING','COLLECTION','',25)",order,UUID.randomUUID().toString());
+        jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (1,'Test shirt','Clothing','Sample',25),(2,'Second shirt','Clothing','Sample',10)");
+        jdbc.update("INSERT INTO product_details VALUES (1,'MEN',5,'/images/test-shirt.png','/images/test-model.png')");
+        jdbc.update("INSERT INTO order_items VALUES (?,1,'Test shirt',25,1),(?,2,'Second shirt',10,2)",order,order);
         String token=UUID.randomUUID().toString();
         mvc.perform(multipart("/support/messages").file(picture()).with(user("a@test.com")).with(csrf()).param("body","").param("token",token).param("orderId",order))
             .andExpect(redirectedUrl("/support"));
         String thread=support.own(customer).id();
         var message=support.history(customer,thread,0).messages().get(0);
+        var previews=support.orderPreviews(customer,thread,support.history(customer,thread,0)).get(order);
+        assertEquals(2,previews.size()); assertEquals("/images/test-shirt.png",previews.get(0).image());
+        assertNull(previews.get(1).image());
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,()->support.orderPreviews(other,thread,support.history(customer,thread,0)));
+        mvc.perform(get("/staff/support?id="+thread).with(user("s@test.com").roles("STAFF")))
+            .andExpect(content().string(containsString("/images/test-shirt.png")));
         assertTrue(message.image()); assertEquals(order,message.orderId()); assertTrue(support.get(staff,thread).waiting());
         mvc.perform(get("/support/images/"+message.id()).with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().contentType("image/png")).andExpect(header().string("Cache-Control","private, no-store"));
         mvc.perform(get("/support/images/"+message.id()).with(user("s@test.com").roles("STAFF"))).andExpect(status().isOk());
@@ -110,7 +119,9 @@ class SupportTests {
         mvc.perform(get("/support/images/"+message.id())).andExpect(status().is3xxRedirection());
         mvc.perform(get("/support?lang=zh").with(user("a@test.com"))).andExpect(status().isOk())
             .andExpect(content().string(containsString("/support/images/"+message.id())))
-            .andExpect(content().string(containsString("/orders/"+order)));
+            .andExpect(content().string(containsString("/orders/"+order)))
+            .andExpect(content().string(containsString("/images/test-shirt.png")))
+            .andExpect(content().string(containsString("暂无图片")));
         mvc.perform(multipart("/support/messages").file(picture()).with(user("a@test.com")).with(csrf()).param("body","").param("token",token).param("orderId",order)).andExpect(status().is3xxRedirection());
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM support_message_extras",Integer.class));
     }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}">
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=support-attachments-3)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=support-order-previews-1)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
 </head>
 <body>
@@ -57,7 +57,15 @@
                         <div class="support-message-meta"><strong th:text="${message.staff ? (zh ? '客服 · ' : 'Support · ') + message.senderName : message.senderName}"></strong><time th:text="${#temporals.format(message.createdAt,'MM-dd HH:mm')}"></time></div>
                         <p th:if="${!#strings.isEmpty(message.body)}" th:text="${message.body}"></p>
                         <a class="support-image-link" th:if="${message.image}" th:href="@{/support/images/{id}(id=${message.id})}" target="_blank" rel="noopener" th:aria-label="${zh ? '查看完整图片（新窗口）' : 'Open full image (opens another tab)'}"><img th:src="@{/support/images/{id}(id=${message.id})}" th:alt="${zh ? '对话图片' : 'Conversation image'}" width="280" height="210" loading="lazy"></a>
-                        <a class="support-order-link" th:if="${message.orderId != null}" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + message.orderId}}"><span th:text="${zh ? '关联订单' : 'Linked order'}"></span><strong th:text="${'#' + #strings.substring(message.orderId,0,8)}"></strong><span th:text="${zh ? '查看订单详情 →' : 'View order details →'}"></span></a>
+                        <a class="support-order-link" th:if="${message.orderId != null}" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + message.orderId}}"><span th:text="${zh ? '关联订单' : 'Linked order'}"></span><strong th:text="${'#' + #strings.substring(message.orderId,0,8)}"></strong>
+                            <span class="support-order-products" th:if="${linkedOrderPreviews[message.orderId] != null}">
+                                <span class="support-order-product" th:each="item : ${linkedOrderPreviews[message.orderId]}">
+                                    <img th:if="${item.image != null and !#strings.isEmpty(item.image)}" th:src="@{${item.image}}" th:alt="${storeText.text(item.name,zh)}" width="64" height="80" loading="lazy">
+                                    <span class="support-product-placeholder" th:unless="${item.image != null and !#strings.isEmpty(item.image)}" th:text="${zh ? '暂无图片' : 'No image'}"></span>
+                                    <span><span th:text="${storeText.text(item.name,zh)}"></span><small th:text="${'× ' + item.quantity}"></small></span>
+                                </span>
+                            </span>
+<span th:text="${zh ? '查看订单详情 →' : 'View order details →'}"></span></a>
                     </article>
                 </div>
                 <form class="support-resolve" th:if="${staffView and selected != null and !selected.resolved and !selected.waiting}" method="post" th:action="@{/staff/support/resolve}">

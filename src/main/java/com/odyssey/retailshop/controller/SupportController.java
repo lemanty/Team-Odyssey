@@ -32,7 +32,9 @@ public class SupportController {
         model.addAttribute("staffView",viewer.staff()); model.addAttribute("viewer",viewer);
         model.addAttribute("selected",selected); model.addAttribute("filter",filter); model.addAttribute("page",page);
         model.addAttribute("older",before>0); model.addAttribute("sendToken",UUID.randomUUID().toString());
-        model.addAttribute("history",selected==null ? new SupportService.History(List.of(),0,0) : support.history(viewer,selected.id(),before));
+        var history=selected==null ? new SupportService.History(List.of(),0,0) : support.history(viewer,selected.id(),before);
+        model.addAttribute("history",history);
+        model.addAttribute("linkedOrderPreviews",selected==null ? Map.of() : support.orderPreviews(viewer,selected.id(),history));
         model.addAttribute("orderChoices",support.orderChoices(viewer,selected==null?null:selected.id()));
         model.addAttribute("supportBase",viewer.staff()?"/staff/support":"/support");
         if(viewer.staff()) {

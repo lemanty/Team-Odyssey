@@ -1258,3 +1258,9 @@ html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odysse
 .password-toggle:hover { background: #e8ecdf; color: #203e35; }
 .password-toggle:focus-visible { outline: 2px solid #698763; outline-offset: 1px; }
 .password-toggle[hidden], .password-eye-slash[hidden] { display: none; }
+
+.support-order-products { display: grid; gap: 10px; }
+.support-order-product { display: flex; align-items: center; gap: 12px; }
+.support-order-product img, .support-product-placeholder { width: 64px; height: 80px; flex: 0 0 64px; border-radius: 8px; object-fit: cover; background: #f7f5ee; }
+.support-product-placeholder { display: grid; place-items: center; font-size: 11px; }
+.support-order-product small { display: block; margin-top: 4px; color: #607063; }

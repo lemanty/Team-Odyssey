@@ -79,6 +79,18 @@ public class SupportService {
         Collections.reverse(rows);
         return new History(rows,more?rows.get(0).id():0,rows.isEmpty()?0:rows.get(rows.size()-1).id());
     }
+    public record OrderPreview(String name,int quantity,String image) {}
+    public Map<String,List<OrderPreview>> orderPreviews(Viewer viewer,String conversationId,History history) {
+        var conversation=get(viewer,conversationId);
+        var ids=history.messages().stream().map(Message::orderId).filter(Objects::nonNull).distinct().toList();
+        Map<String,List<OrderPreview>> result=new LinkedHashMap<>();
+        if(ids.isEmpty()) return result;
+        List<Object> args=new ArrayList<>(ids); args.add(conversation.customerId());
+        String placeholders=String.join(",",Collections.nCopies(ids.size(),"?"));
+        jdbc.query("SELECT i.order_id,i.product_name,i.quantity,d.garment_image FROM order_items i JOIN shop_orders o ON o.id=i.order_id LEFT JOIN product_details d ON d.product_id=i.product_id WHERE i.order_id IN ("+placeholders+") AND o.user_id=? ORDER BY i.product_id",
+            (org.springframework.jdbc.core.RowCallbackHandler) r -> result.computeIfAbsent(r.getString("order_id"),key->new ArrayList<>()).add(new OrderPreview(r.getString("product_name"),r.getInt("quantity"),r.getString("garment_image"))),args.toArray());
+        return result;
+    }
     public String send(Viewer viewer,String id,String body,String token) {
         return send(viewer,id,body,token,null,null);
     }
