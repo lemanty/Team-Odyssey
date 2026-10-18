@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '我的账号 | Odyssey' : 'My account | Odyssey'}"></title><link rel="stylesheet" th:href="@{/css/style.css}"><link rel="stylesheet" th:href="@{/css/account-center.css(v=1)}"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '我的账号 | Odyssey' : 'My account | Odyssey'}"></title><link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}"><link rel="stylesheet" th:href="@{/css/account-center.css(v=readable-1)}"></head>
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="account-center">
 <section class="account-welcome"><div><p class="eyebrow">YOUR ODYSSEY</p><h1><span th:text="${zh ? '你好，' : 'Hello, '}"></span><span th:text="${displayName}"></span><span>.</span></h1><p class="account-lead" th:text="${zh ? '订单、礼遇与帮助，都在这里。' : 'Your orders, rewards and a helping hand. All in one place.'}"></p></div><span class="account-role" th:text="${accountRole == 'ADMIN' ? (zh ? '管理员' : 'Administrator') : (accountRole == 'STAFF' ? (zh ? '员工' : 'Staff') : (zh ? '顾客账号' : 'Customer account'))}"></span></section>

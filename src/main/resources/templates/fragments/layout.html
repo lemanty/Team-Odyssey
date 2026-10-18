@@ -3,7 +3,7 @@
 <body>
 <header th:fragment="header(activePage)" class="site-header">
     <a class="brand" th:href="@{/}"><span class="brand-mark">O</span> ODYSSEY<span class="brand-small" th:text="${zh ? '本地好物' : 'LOCAL GOODS'}">LOCAL GOODS</span></a>
-    <link rel="stylesheet" th:href="@{/css/navigation.css(v=1)}">
+    <link rel="stylesheet" th:href="@{/css/navigation.css(v=readable-1)}">
     <script defer th:src="@{/js/navigation.js(v=2)}"></script>
     <script defer th:src="@{/js/account-window.js(v=1)}"></script>
     <nav th:aria-label="${zh ? '主导航' : 'Main navigation'}">
