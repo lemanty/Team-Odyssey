@@ -5,30 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Our catalogue | Odyssey', zh)}">Our catalogue | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=catalogue-filters-1)}">
+    <link rel="stylesheet" th:href="@{/css/catalogue-design.css(v=2)}">
+    <script defer th:src="@{/js/catalogue-filters.js(v=1)}"></script>
 </head>
-<body>
+<body class="catalogue-page">
 <header th:replace="~{fragments/layout :: header('products')}"></header>
 <main class="catalogue">
+    <section class="catalogue-editorial">
+        <div class="catalogue-editorial-copy">
     <p class="eyebrow"><span th:text="${storeText.text('THE EVERYDAY COLLECTION', zh)}">THE EVERYDAY COLLECTION</span></p>
     <h1><span th:text="${storeText.text('Find your everyday.', zh)}">Find your everyday.</span></h1>
     <p class="intro"><span th:text="${storeText.text('Clothing and household favourites, all in one place.', zh)}">Clothing and household favourites, all in one place.</span></p>
+            <div class="catalogue-collection-links"><a th:href="@{/products(q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '全部商品' : 'All products'}"></a><a th:href="@{/products(category='Clothing',q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '01 / 服装精选 ↗' : '01 / Clothing ↗'}"></a><a th:href="@{/products(category='Household',q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '02 / 家居好物 ↗' : '02 / Household ↗'}"></a></div>
+        </div>
+        <div class="catalogue-still-life" aria-hidden="true">
+            <span class="editorial-orbit"></span><span class="editorial-disc"></span>
+            <img class="editorial-vase" th:src="@{/images/products/ivory-ceramic-vase.png}" alt="" width="1086" height="1448">
+            <img class="editorial-linen" th:src="@{/images/products/oatmeal-cotton-throw.png}" alt="" width="1086" height="1448">
+            <span class="editorial-caption">TEXTURE / FORM / EVERYDAY</span>
+        </div>
+    </section>
     <p class="catalogue-notice"><span th:text="${storeText.text('Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.', zh)}">Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.</span></p>
     <form class="catalogue-filters" method="get" th:action="@{/products}" role="search">
         <label class="catalogue-search"><span th:text="${zh ? '搜索商品' : 'Search products'}"></span>
             <input type="search" name="q" th:value="${q}" th:placeholder="${zh ? '输入部分名称或描述，如：陶瓷、cotton' : 'Name or description, e.g. cotton'}">
         </label>
-        <label><span th:text="${zh ? '商品分类' : 'Category'}"></span>
-            <select name="category"><option value="" th:text="${zh ? '全部分类' : 'All categories'}"></option>
-                <option th:each="item : ${categories}" th:value="${item}" th:selected="${category == item}" th:text="${storeText.text(item, zh)}"></option>
-            </select>
-        </label>
-        <label><span th:text="${zh ? '最低价格 (€)' : 'Min price (€)'}"></span><input type="number" name="minPrice" min="0" max="999999999" step="0.01" th:value="${minPrice}" placeholder="0"></label>
-        <label><span th:text="${zh ? '最高价格 (€)' : 'Max price (€)'}"></span><input type="number" name="maxPrice" min="0" max="999999999" step="0.01" th:value="${maxPrice}" th:placeholder="${zh ? '不限' : 'Any'}"></label>
+        <input type="hidden" name="category" th:value="${category}">
+        <label><span th:text="${zh ? '价格区间' : 'Price range'}"></span><select name="priceRange" id="price-range" aria-controls="custom-price-fields">
+            <option value="all" th:selected="${priceRange == 'all'}" th:text="${zh ? '不限价格' : 'Any price'}"></option>
+            <option value="under25" th:selected="${priceRange == 'under25'}" th:text="${zh ? '€25 以下' : 'Under €25'}"></option>
+            <option value="25to50" th:selected="${priceRange == '25to50'}">€25 – €49.99</option>
+            <option value="50to100" th:selected="${priceRange == '50to100'}">€50 – €99.99</option>
+            <option value="100plus" th:selected="${priceRange == '100plus'}" th:text="${zh ? '€100 及以上' : '€100 and above'}"></option>
+            <option value="custom" th:selected="${priceRange == 'custom'}" th:text="${zh ? '自定义区间…' : 'Custom range…'}"></option>
+        </select></label>
         <label><span th:text="${zh ? '排序' : 'Sort by'}"></span><select name="sort">
             <option value="default" th:selected="${sort == 'default'}" th:text="${zh ? '默认排序' : 'Default'}"></option>
             <option value="price-asc" th:selected="${sort == 'price-asc'}" th:text="${zh ? '价格从低到高' : 'Price: low to high'}"></option>
             <option value="price-desc" th:selected="${sort == 'price-desc'}" th:text="${zh ? '价格从高到低' : 'Price: high to low'}"></option>
         </select></label>
+        <fieldset id="custom-price-fields" class="custom-price-fields" th:hidden="${priceRange != 'custom'}" th:disabled="${priceRange != 'custom'}">
+            <legend th:text="${zh ? '精确设置价格区间' : 'Set an exact price range'}"></legend>
+            <label><span th:text="${zh ? '最低价格 (€)' : 'Min price (€)'}"></span><input type="number" name="minPrice" min="0" max="999999999" step="0.01" th:value="${priceRange == 'custom' ? minPrice : ''}" placeholder="0"></label>
+            <label><span th:text="${zh ? '最高价格 (€)' : 'Max price (€)'}"></span><input type="number" name="maxPrice" min="0" max="999999999" step="0.01" th:value="${priceRange == 'custom' ? maxPrice : ''}" th:placeholder="${zh ? '不限' : 'Any'}"></label>
+        </fieldset>
         <div class="filter-actions"><button type="submit" th:text="${zh ? '搜索 / 筛选' : 'Apply filters'}"></button><a th:href="@{/products}" th:text="${zh ? '清除筛选' : 'Clear filters'}"></a></div>
     </form>
     <p class="filter-error" role="alert" th:if="${filterError}" th:text="${zh ? '请输入有效的非负价格（最多两位小数），最低价不能超过最高价。' : 'Enter valid nonnegative prices (up to two decimal places). Minimum must not exceed maximum.'}"></p>

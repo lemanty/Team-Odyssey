@@ -43,12 +43,23 @@ public class ProductController {
             @RequestParam(defaultValue = "") String category,
             @RequestParam(defaultValue = "") String minPrice,
             @RequestParam(defaultValue = "") String maxPrice,
-            @RequestParam(defaultValue = "default") String sort) {
+            @RequestParam(defaultValue = "default") String sort,
+            @RequestParam(defaultValue = "") String priceRange) {
         var all = productService.getProducts();
         var categories = all.stream().map(Product::getCategory).distinct().sorted().toList();
         model.addAttribute("categories", categories);
         model.addAttribute("q", q);
         model.addAttribute("category", category);
+        if (priceRange.isBlank()) priceRange = minPrice.isBlank() && maxPrice.isBlank() ? "all" : "custom";
+        switch (priceRange) {
+            case "under25" -> { minPrice = ""; maxPrice = "24.99"; }
+            case "25to50" -> { minPrice = "25"; maxPrice = "49.99"; }
+            case "50to100" -> { minPrice = "50"; maxPrice = "99.99"; }
+            case "100plus" -> { minPrice = "100"; maxPrice = ""; }
+            case "custom" -> { }
+            default -> { priceRange = "all"; minPrice = ""; maxPrice = ""; }
+        }
+        model.addAttribute("priceRange", priceRange);
         model.addAttribute("minPrice", minPrice);
         model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("sort", sort);
