@@ -38,7 +38,7 @@ class SupportHttpTests {
     }
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql")) {
+        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","004-login-names.sql","005-orders.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",file)).replaceAll("(?m)^--.*$","").replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","");
             for(String statement:sql.split(";")) if(!statement.isBlank()) jdbc.execute(statement);
         }
@@ -109,6 +109,26 @@ class SupportHttpTests {
         // Copying the public window URL to a browser without its cookie does not copy login.
         var stranger=HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(base+"/account?window="+a)).GET().build(),HttpResponse.BodyHandlers.ofString());
         assertEquals(302,stranger.statusCode());
+    }
+
+    @Autowired com.odyssey.retailshop.repository.UserRepository users;
+    @Test void registeredNamesLoginAndAmbiguousNamesRequireEmail() throws Exception {
+        users.create("Lemanty","registered@test.com",encoder.encode("test-password"));
+        loginWindow("","  LeMaNtY  ");
+        assertTrue(get("/account").body().contains("registered@test.com"));
+        assertTrue(users.findByLogin("registered@test.com").isPresent());
+        assertTrue(users.findByLogin("registered").isEmpty());
+        users.create("lemanty","duplicate@test.com",encoder.encode("test-password"));
+        assertTrue(users.findByLogin("lemanty").isEmpty());
+        assertEquals("registered@test.com",users.findByLogin("registered@test.com").orElseThrow().email());
+        long id=users.findByEmail("http@test.com").orElseThrow().id();
+        jdbc.update("INSERT INTO user_login_names(login_name,user_id) VALUES ('operator',?)",id);
+        assertEquals(id,users.findByLogin("OPERATOR").orElseThrow().id());
+        users.create("Operator","collision@test.com",encoder.encode("test-password"));
+        assertTrue(users.findByLogin("operator").isEmpty());
+        jdbc.update("UPDATE users SET display_name='operator' WHERE id=?",id);
+        jdbc.update("DELETE FROM users WHERE email='collision@test.com'");
+        assertEquals(id,users.findByLogin("operator").orElseThrow().id());
     }
 
 }

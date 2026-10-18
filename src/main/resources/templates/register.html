@@ -15,7 +15,8 @@
         </div>
         <p class="auth-alert" th:unless="${databaseAvailable}" th:text="${zh ? '展示模式无法保存账号，请启动 MySQL 模式。' : 'Accounts require the MySQL version of the website.'}"></p>
         <form class="auth-form" method="post" th:action="@{/register}">
-            <label for="name" th:text="${zh ? '姓名或昵称' : 'Your name'}"></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" required th:value="${nameValue}">
+            <label for="name" th:text="${zh ? '姓名或昵称' : 'Your name'}"></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" required th:value="${nameValue}" aria-describedby="name-help">
+            <small id="name-help" th:text="${zh ? '注册后可使用此昵称或邮箱登录；昵称重复时请使用邮箱。' : 'Sign in with this name or your email. If the name is shared, use your email.'}"></small>
             <label for="email" th:text="${zh ? '邮箱地址' : 'Email address'}"></label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" required th:value="${emailValue}" placeholder="you@example.com">
             <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="64" required aria-describedby="password-help">
             <small id="password-help" th:text="${zh ? '使用 8–64 个字符。建议使用较长的独特密码。' : 'Use 8–64 characters. A long, unique passphrase works well.'}"></small>
