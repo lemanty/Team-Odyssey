@@ -538,3 +538,9 @@ MySQL 模式下，登录用户的购物车保存在 `cart_items`，通过服务�
 数据库启动后，在项目根目录运行 `python3 scripts/seed-household.py`（Windows 使用 `py -3 scripts/seed-household.py`）。该命令使用现有数据库配置；重复运行不会重复添加商品，也不会重置已有价格和库存。共享数据库只需由主机导入一次，组员需同步本分支的代码及图片并重启网站。
 
 样本数据位于 `scripts/data/household-samples.json`，图片生成提示词位于 `scripts/data/household-image-prompts.json`。图片存放在 `src/main/resources/static/images/products/`。这些是开发演示商品，价格、库存及图片不代表实际在售商品。
+
+### 会员界面预览（feature/membership）
+
+访问 `/membership`，或点击导航「会员权益」、账号页的会员入口。提供中英文四档权益卡片和实时优惠试算：基础会员原价、银卡95折、金卡9折、黑金85折；拟定累计已完成订单门槛分别为 €0、€200、€500、€1,000。
+
+当前为界面方案，未启用会员等级、收费、自动升级或结算折扣。试算仅用于比较不同档位，不修改账号或购物车。后续接入结算时需要统一服务端折扣计算、订单优惠快照和升级规则。
