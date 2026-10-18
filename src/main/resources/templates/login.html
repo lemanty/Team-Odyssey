@@ -14,7 +14,7 @@
         <p class="auth-notice" role="status" th:if="${param.logout}" th:text="${zh ? '你已安全退出。' : 'You have signed out.'}"></p>
         <p class="auth-alert" th:unless="${databaseAvailable}" th:text="${zh ? '当前为展示模式。请启动 MySQL 模式以使用账号功能。' : 'Accounts require the MySQL version of the website.'}"></p>
         <form class="auth-form" method="post" th:action="@{/login}">
-            <label for="email" th:text="${zh ? '用户名或邮箱' : 'Username or email'}"></label><input id="email" name="email" type="text" autocomplete="username" maxlength="254" required placeholder="Admin / you@example.com">
+            <label for="email" th:text="${zh ? '用户名或邮箱' : 'Username or email'}"></label><input id="email" name="email" type="text" autocomplete="username" maxlength="254" required th:placeholder="${zh ? '请输入用户名或邮箱' : 'Enter your username or email'}">
             <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="64">
             <button class="cart-button" type="submit" th:disabled="${!databaseAvailable}" th:text="${zh ? '登录' : 'Sign in'}"></button>
         </form>
