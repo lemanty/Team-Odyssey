@@ -33,6 +33,7 @@ public class SupportController {
         model.addAttribute("selected",selected); model.addAttribute("filter",filter); model.addAttribute("page",page);
         model.addAttribute("older",before>0); model.addAttribute("sendToken",UUID.randomUUID().toString());
         model.addAttribute("history",selected==null ? new SupportService.History(List.of(),0,0) : support.history(viewer,selected.id(),before));
+        model.addAttribute("orderChoices",support.orderChoices(viewer,selected==null?null:selected.id()));
         model.addAttribute("supportBase",viewer.staff()?"/staff/support":"/support");
         if(viewer.staff()) {
             var rows=support.inbox(viewer,filter,page);
@@ -42,15 +43,28 @@ public class SupportController {
         return path.endsWith("/updates")?"support :: workspace":"support";
     }
     @PostMapping({"/support/messages","/staff/support/messages"})
-    public String send(Principal principal,@RequestParam(required=false) String id,@RequestParam String body,@RequestParam String token,RedirectAttributes flash) {
+    public String send(Principal principal,@RequestParam(required=false) String id,@RequestParam(defaultValue="") String body,@RequestParam String token,
+                       @RequestParam(required=false) String orderId,@RequestParam(required=false) org.springframework.web.multipart.MultipartFile image,RedirectAttributes flash) {
         var viewer=support.viewer(principal.getName());
         try {
-            String thread=support.send(viewer,id,body,token);
+            String thread=support.send(viewer,id,body,token,orderId,com.odyssey.retailshop.service.SupportImage.from(image));
             return viewer.staff()?"redirect:/staff/support?id="+thread:"redirect:/support";
         } catch(IllegalArgumentException e) {
-            flash.addFlashAttribute("supportError",e.getMessage()); flash.addFlashAttribute("draft",body);
+            flash.addFlashAttribute("supportError",e.getMessage()); flash.addFlashAttribute("draft",body); flash.addFlashAttribute("selectedOrder",orderId);
             return viewer.staff()?"redirect:/staff/support"+(id==null?"":"?id="+id):"redirect:/support";
         }
+    }
+    @GetMapping("/support/images/{messageId}")
+    public ResponseEntity<byte[]> image(Principal principal,@PathVariable long messageId) {
+        var image=support.image(support.viewer(principal.getName()),messageId);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(image.type()))
+            .header("Cache-Control","private, no-store").header("X-Content-Type-Options","nosniff")
+            .header("Content-Disposition","inline; filename=chat-image").body(image.bytes());
+    }
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public String tooLarge(RedirectAttributes flash,java.security.Principal principal) {
+        flash.addFlashAttribute("supportError","The image is too large. Choose an image up to 5 MB. / 图片太大，请选择不超过5MB的图片。");
+        return support.viewer(principal.getName()).staff()?"redirect:/staff/support":"redirect:/support";
     }
     @PostMapping({"/support/read","/staff/support/read"})
     public ResponseEntity<Void> read(Principal principal,@RequestParam String id,@RequestParam long through) {

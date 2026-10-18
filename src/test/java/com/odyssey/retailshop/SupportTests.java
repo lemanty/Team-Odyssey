@@ -28,7 +28,7 @@ class SupportTests {
     SupportService.Viewer customer,staff,otherStaff,other;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","006-account-cart.sql","007-support.sql")) {
+        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",file)).replaceAll("(?m)^--.*$","").replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","");
             for(String statement:sql.split(";")) if(!statement.isBlank()) jdbc.execute(statement);
         }
@@ -89,6 +89,45 @@ class SupportTests {
         var latest=support.history(customer,id,0); assertEquals(50,latest.messages().size()); assertTrue(latest.before()>0);
         var older=support.history(customer,id,latest.before()); assertEquals(2,older.messages().size()); assertEquals(0,older.before());
         support.read(staff,id,older.latestVisible()); assertTrue(support.get(staff,id).unread());
+    }
+    private org.springframework.mock.web.MockMultipartFile picture() throws Exception {
+        var output=new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(4,4,java.awt.image.BufferedImage.TYPE_INT_RGB),"png",output);
+        return new org.springframework.mock.web.MockMultipartFile("image","photo.png","image/png",output.toByteArray());
+    }
+    @Test void imageAndOrderMessagePersistsAndIsPrivate() throws Exception {
+        String order=UUID.randomUUID().toString();
+        jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,1,?,'PENDING','COLLECTION','',25)",order,UUID.randomUUID().toString());
+        String token=UUID.randomUUID().toString();
+        mvc.perform(multipart("/support/messages").file(picture()).with(user("a@test.com")).with(csrf()).param("body","").param("token",token).param("orderId",order))
+            .andExpect(redirectedUrl("/support"));
+        String thread=support.own(customer).id();
+        var message=support.history(customer,thread,0).messages().get(0);
+        assertTrue(message.image()); assertEquals(order,message.orderId()); assertTrue(support.get(staff,thread).waiting());
+        mvc.perform(get("/support/images/"+message.id()).with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().contentType("image/png")).andExpect(header().string("Cache-Control","private, no-store"));
+        mvc.perform(get("/support/images/"+message.id()).with(user("s@test.com").roles("STAFF"))).andExpect(status().isOk());
+        mvc.perform(get("/support/images/"+message.id()).with(user("b@test.com"))).andExpect(status().isNotFound());
+        mvc.perform(get("/support/images/"+message.id())).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/support?lang=zh").with(user("a@test.com"))).andExpect(status().isOk())
+            .andExpect(content().string(containsString("/support/images/"+message.id())))
+            .andExpect(content().string(containsString("/orders/"+order)));
+        mvc.perform(multipart("/support/messages").file(picture()).with(user("a@test.com")).with(csrf()).param("body","").param("token",token).param("orderId",order)).andExpect(status().is3xxRedirection());
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM support_message_extras",Integer.class));
+    }
+    @Test void rejectsForeignOrdersAndFakeImagesWithoutSaving() throws Exception {
+        String foreign=UUID.randomUUID().toString();
+        jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,2,?,'PENDING','COLLECTION','',25)",foreign,UUID.randomUUID().toString());
+        String thread=message(customer,null,"Hello");
+        assertTrue(support.orderChoices(customer,thread).isEmpty());
+        assertTrue(support.orderChoices(staff,thread).isEmpty());
+        assertThrows(IllegalArgumentException.class,()->support.send(customer,thread,"",UUID.randomUUID().toString(),foreign,null));
+        assertThrows(IllegalArgumentException.class,()->support.send(staff,thread,"",UUID.randomUUID().toString(),foreign,null));
+        var fake=new org.springframework.mock.web.MockMultipartFile("image","fake.png","image/png","<svg onload=alert(1)>".getBytes());
+        mvc.perform(multipart("/support/messages").file(fake).with(user("a@test.com")).with(csrf()).param("body","").param("token",UUID.randomUUID().toString()))
+            .andExpect(flash().attributeExists("supportError"));
+        mvc.perform(multipart("/support/messages").file(picture()).with(user("a@test.com")).param("token",UUID.randomUUID().toString())).andExpect(status().isForbidden());
+        assertEquals(1,support.history(customer,thread,0).messages().size());
+        assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM support_message_extras",Integer.class));
     }
     @Test void concurrentRetriesProduceOneMessage() throws Exception {
         var pool=Executors.newFixedThreadPool(2);var gate=new CountDownLatch(1);String token=UUID.randomUUID().toString();

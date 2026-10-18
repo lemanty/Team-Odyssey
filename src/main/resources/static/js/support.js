@@ -5,6 +5,33 @@
     const zh = document.documentElement.lang === 'zh-CN';
     const connection = root.querySelector('[data-connection]');
     const base = root.dataset.supportBase;
+    const file = document.getElementById('support-image');
+    const preview = document.querySelector('[data-image-preview]');
+    const uploadError = document.querySelector('[data-upload-error]');
+    let previewUrl;
+    if (file) {
+        function clearPreview() {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = null; preview.hidden = true;
+        }
+        file.addEventListener('change', () => {
+            clearPreview(); uploadError.textContent = '';
+            const image = file.files[0]; if (!image) return;
+            if (image.size > 5 * 1024 * 1024 || !['image/jpeg','image/png'].includes(image.type)) {
+                uploadError.textContent = zh ? '请选择不超过5MB的JPG或PNG图片。' : 'Choose a JPG or PNG image up to 5 MB.';
+                file.value = ''; return;
+            }
+            previewUrl = URL.createObjectURL(image);
+            preview.querySelector('img').src = previewUrl; preview.hidden = false;
+        });
+        document.querySelector('[data-remove-image]').addEventListener('click', () => { file.value=''; clearPreview(); });
+        document.querySelector('.support-composer').addEventListener('submit', event => {
+            if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value) {
+                event.preventDefault(); uploadError.textContent = zh ? '请填写消息、添加图片或选择订单。' : 'Add a message, image or order.';
+            }
+        });
+        window.addEventListener('pagehide', clearPreview);
+    }
     let busy = false;
     let acknowledged = 0;
     let reading = false;
