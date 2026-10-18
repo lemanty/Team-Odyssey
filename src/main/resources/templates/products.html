@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Our catalogue | Odyssey', zh)}">Our catalogue | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=catalogue-filters-1)}">
-    <link rel="stylesheet" th:href="@{/css/catalogue-design.css(v=2)}">
+    <link rel="stylesheet" th:href="@{/css/catalogue-design.css(v=3)}">
     <script defer th:src="@{/js/catalogue-filters.js(v=1)}"></script>
+    <script defer th:src="@{/js/catalogue-reveal.js(v=1)}"></script>
 </head>
 <body class="catalogue-page">
 <header th:replace="~{fragments/layout :: header('products')}"></header>
