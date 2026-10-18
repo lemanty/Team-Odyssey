@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <header th:fragment="header(activePage)" class="site-header">
-    <a class="brand" th:href="@{/}"><span class="brand-mark">O</span> ODYSSEY<span class="brand-small" th:text="${zh ? '本地好物' : 'LOCAL GOODS'}">LOCAL GOODS</span></a>
+    <a class="brand" th:href="@{/}"><img class="brand-logo" th:src="@{/favicon.svg(v=odyssey-ring-1)}" alt="" width="42" height="42"> ODYSSEY<span class="brand-small" th:text="${zh ? '本地好物' : 'LOCAL GOODS'}">LOCAL GOODS</span></a>
     <script defer th:src="@{/js/account-window.js(v=1)}"></script>
     <nav th:aria-label="${zh ? '主导航' : 'Main navigation'}">
         <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}" th:text="${zh ? '首页' : 'Home'}">Home</a>

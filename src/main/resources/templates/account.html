@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '我的账号 | Odyssey' : 'My account | Odyssey'}">My account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-2)}"></head>
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg(v=odyssey-ring-1)}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '我的账号 | Odyssey' : 'My account | Odyssey'}">My account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=brand-ring-1)}"></head>
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="account-page">
     <a class="detail-back" th:href="@{/orders}" th:text="${zh ? '我的订单 →' : 'My orders →'}"></a><p class="eyebrow"><span th:text="${storeText.text('YOUR ODYSSEY', zh)}">YOUR ODYSSEY</span></p><h1><span th:text="${zh ? '你好，' : 'Hello, '}"></span><span th:text="${displayName}"></span><span>.</span></h1>

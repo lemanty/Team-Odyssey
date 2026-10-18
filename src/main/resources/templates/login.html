@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-3)}"><script defer th:src="@{/js/password-visibility.js}"></script></head>
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg(v=odyssey-ring-1)}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=brand-ring-1)}"><script defer th:src="@{/js/password-visibility.js}"></script></head>
 <body>
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="auth-page">

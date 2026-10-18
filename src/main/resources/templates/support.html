@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg(v=odyssey-ring-1)}">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}">
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=support-attachments-3)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=brand-ring-1)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
 </head>
 <body>
