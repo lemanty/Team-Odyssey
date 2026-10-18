@@ -29,7 +29,7 @@ class CatalogueWebTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("日常好物，")))
             .andExpect(content().string(containsString("四位创始人，")))
-            .andExpect(content().string(containsString("href=\"/orders\"")))
+            .andExpect(content().string(containsString("href=\"/account\"")))
             .andExpect(content().string(containsString("?lang=en")))
             .andExpect(header().string("Set-Cookie", containsString("odyssey_language=zh")));
         mockMvc.perform(get("/").cookie(new jakarta.servlet.http.Cookie("odyssey_language", "zh")))
