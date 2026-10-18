@@ -1247,3 +1247,11 @@ html[lang="zh-CN"] .home-page .story-copy > p:first-child { font-family: 'Odysse
 .support-order-link { display: grid; gap: 8px; padding: 16px; margin-top: 10px; border-radius: 12px; border: 1px solid #b9c9ad; background: #e8eedf; color: #21463b; }
 .support-order-link > span { font-size: 13px; }
 @media(max-width:600px) { .support-composer .support-attachments { grid-template-columns: minmax(0,1fr); } }
+
+/* The visibility control stays inside the password field without covering typed text. */
+.password-field { position: relative; }
+.auth-form .password-field input { padding-right: 56px; }
+.password-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #526b5b; cursor: pointer; }
+.password-toggle:hover { background: #e8ecdf; color: #203e35; }
+.password-toggle:focus-visible { outline: 2px solid #698763; outline-offset: 1px; }
+.password-toggle[hidden], .password-eye-slash[hidden] { display: none; }

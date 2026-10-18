@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-2)}"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-3)}"><script defer th:src="@{/js/password-visibility.js}"></script></head>
 <body>
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="auth-page">
@@ -15,7 +15,17 @@
         <p class="auth-alert" th:unless="${databaseAvailable}" th:text="${zh ? '当前为展示模式。请启动 MySQL 模式以使用账号功能。' : 'Accounts require the MySQL version of the website.'}"></p>
         <form class="auth-form" method="post" th:action="@{/login}">
             <label for="email" th:text="${zh ? '用户名或邮箱' : 'Username or email'}"></label><input id="email" name="email" type="text" autocomplete="username" maxlength="254" required placeholder="Admin / you@example.com">
-            <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="64">
+            <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><div class="password-field">
+                <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="64">
+                <button class="password-toggle" type="button" aria-controls="password" aria-pressed="false" hidden
+                    th:attr="aria-label=${zh ? '显示密码' : 'Show password'},data-show-label=${zh ? '显示密码' : 'Show password'},data-hide-label=${zh ? '隐藏密码' : 'Hide password'}">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                        <path class="password-eye-slash" d="M3 3l18 18" hidden/>
+                    </svg>
+                </button>
+            </div>
             <button class="cart-button" type="submit" th:disabled="${!databaseAvailable}" th:text="${zh ? '登录' : 'Sign in'}"></button>
         </form>
         <div class="auth-switch"><span th:text="${zh ? '第一次来到这里？' : 'New to Odyssey?'}"></span> <a class="auth-switch-button" th:href="@{/register}" th:text="${zh ? '创建账号' : 'Create an account'}"></a></div>
