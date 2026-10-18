@@ -1,0 +1,12 @@
+/* One shared highlight travels between the primary navigation links. */
+.site-header nav { position: relative; isolation: isolate; }
+.site-header nav > a { position: relative; z-index: 1; border-bottom: 2px solid transparent; border-radius: 8px; transition: color .2s ease, background-color .2s ease; }
+.site-header nav > a:hover, .site-header nav > a:focus-visible { color: #345e42; background-color: #e6ecdd; }
+.site-header nav > a:focus-visible { outline: 2px solid #66845b; outline-offset: 5px; }
+.site-header nav.nav-enhanced > a:hover, .site-header nav.nav-enhanced > a:focus-visible { background: transparent; }
+.site-header nav.nav-enhanced > a[aria-current="page"] { border-bottom-color: transparent; }
+.nav-highlight { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; border-radius: 9px; background: linear-gradient(120deg,#dfe8d5,#eef0e4); box-shadow: inset 0 -2px 0 #6c8560; opacity: 0; transition: transform .28s cubic-bezier(.22,.75,.25,1), width .28s cubic-bezier(.22,.75,.25,1), height .28s ease, opacity .18s ease; }
+.nav-highlight.no-motion { transition: none; }
+.site-header .home-language-switch a { transition: background-color .2s ease, color .2s ease; }
+.site-header .home-language-switch a:hover { background-color: #dfe8d5; }
+@media (prefers-reduced-motion: reduce) { .nav-highlight, .site-header nav > a, .site-header .home-language-switch a { transition: none; } }
