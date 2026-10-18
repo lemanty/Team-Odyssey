@@ -530,3 +530,11 @@ MySQL 模式下，登录用户的购物车保存在 `cart_items`，通过服务�
 实现使用 Spring Session 为独立窗口管理不同的 HttpOnly / SameSite=Lax 会话 Cookie，登录时更换会话 ID，保留 CSRF 和角色权限校验；HTTPS 时 Cookie 同时设置 Secure。独立窗口会话存于当前应用内存，默认闲置 30 分钟过期，每分钟清理过期记录，服务器重启后需重新登录。账号、购物车和订单仍在 MySQL 中，不随会话清除。不要将此内存会话实现直接用于多实例部署。
 
 配送订单完成规则：员工只能将配送订单推进至“已发货”，随后由下单顾客在订单详情点击“确认收货”，才变为“已完成”。其他账号不能确认该订单，未发货不能确认，重复提交不会重复处理。自提订单仍由员工在“待取货”状态交货后标记完成。此次规则调整不追溯修改历史已完成订单。
+
+### 家居样本商品
+
+`feature/household-products` 增加米白陶瓷花瓶、海草编织收纳篮、鼠尾草绿亚麻靠垫和橡木椭圆托盘，包含中英文介绍、示例价格与库存，以及 AI 生成的商品图。家居详情显示商品图片，登录后可加入购物车。
+
+数据库启动后，在项目根目录运行 `python3 scripts/seed-household.py`（Windows 使用 `py -3 scripts/seed-household.py`）。该命令使用现有数据库配置；重复运行不会重复添加商品，也不会重置已有价格和库存。共享数据库只需由主机导入一次，组员需同步本分支的代码及图片并重启网站。
+
+样本数据位于 `scripts/data/household-samples.json`，图片生成提示词位于 `scripts/data/household-image-prompts.json`。图片存放在 `src/main/resources/static/images/products/`。这些是开发演示商品，价格、库存及图片不代表实际在售商品。

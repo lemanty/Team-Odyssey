@@ -47,6 +47,20 @@ class ProductDetailTests {
     }
 
     @Test
+    void householdUsesProductPhotoAndChineseCopyWithoutModelSlide() throws Exception {
+        when(productService.getProduct(50L)).thenReturn(Optional.of(new Product(50L,
+            "Ivory Ceramic Vase", "Household", "Sample", new BigDecimal("32.00"), "Home", 18,
+            "/images/products/ivory-ceramic-vase.png", "/images/products/ivory-ceramic-vase.png")));
+        mockMvc.perform(get("/products/50?lang=zh"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("米白陶瓷花瓶")))
+            .andExpect(content().string(containsString("€32.00")))
+            .andExpect(content().string(containsString("剩余 18 件")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("data-photo=\"1\""))))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("模特穿搭图"))));
+    }
+
+    @Test
     void missingProductReturns404() throws Exception {
         when(productService.getProduct(999L)).thenReturn(Optional.empty());
         mockMvc.perform(get("/products/999")).andExpect(status().isNotFound());

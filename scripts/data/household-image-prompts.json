@@ -1,0 +1,21 @@
+{
+  "tool": "built-in image_gen",
+  "prompts": [
+    {
+      "slug": "vase",
+      "prompt": "Use case: product-mockup. Generate one premium photorealistic ecommerce product photograph for Odyssey household collection: a single matte ivory ceramic vase with a rounded belly and narrow neck, empty, no flowers. Portrait 3:4 composition, whole object fully visible centered with generous margins, seamless warm ivory studio background, soft daylight from upper left, natural delicate shadow, warm Mediterranean minimalism, realistic material texture. No text, no logo, no watermark, no people, no extra objects. Single image, not a collage."
+    },
+    {
+      "slug": "basket",
+      "prompt": "Use case: product-mockup. Generate one premium photorealistic ecommerce product photograph for Odyssey household collection: a single natural seagrass woven round storage basket with two small loop handles, empty. Portrait 3:4 composition, whole object fully visible centered with generous margins, seamless warm ivory studio background, soft daylight from upper left, natural delicate shadow, warm Mediterranean minimalism, realistic material texture. No text, no logo, no watermark, no people, no extra objects. Single image, not a collage."
+    },
+    {
+      "slug": "cushion",
+      "prompt": "Use case: product-mockup. Generate one premium photorealistic ecommerce product photograph for Odyssey household collection: a single square sage green linen cushion with subtle fabric texture and a piped edge. Portrait 3:4 composition, whole object fully visible centered with generous margins, seamless warm ivory studio background, soft daylight from upper left, natural delicate shadow, warm Mediterranean minimalism, realistic material texture. No text, no logo, no watermark, no people, no extra objects. Single image, not a collage."
+    },
+    {
+      "slug": "tray",
+      "prompt": "Use case: product-mockup. Generate one premium photorealistic ecommerce product photograph for Odyssey household collection: a single oval light oak serving tray with a shallow raised rim, empty. Portrait 3:4 composition, whole object fully visible centered with generous margins, seamless warm ivory studio background, soft daylight from upper left, natural delicate shadow, warm Mediterranean minimalism, realistic material texture. No text, no logo, no watermark, no people, no extra objects. Single image, not a collage."
+    }
+  ]
+}
