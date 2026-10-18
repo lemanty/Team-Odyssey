@@ -25,9 +25,45 @@
             preview.querySelector('img').src = previewUrl; preview.hidden = false;
         });
         document.querySelector('[data-remove-image]').addEventListener('click', () => { file.value=''; clearPreview(); });
-        document.querySelector('.support-composer').addEventListener('submit', event => {
+        const composer = document.querySelector('.support-composer');
+        let sending = false;
+        composer.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (sending) return;
             if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value) {
-                event.preventDefault(); uploadError.textContent = zh ? '请填写消息、添加图片或选择订单。' : 'Add a message, image or order.';
+                uploadError.textContent = zh ? '请填写消息、添加图片或选择订单。' : 'Add a message, image or order.';
+                return;
+            }
+            sending = true;
+            const button = composer.querySelector('[type="submit"]');
+            button.disabled = true;
+            uploadError.textContent = '';
+            try {
+                const response = await fetch(composer.action, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { Accept: 'application/json',
+                        [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
+                    body: new FormData(composer)
+                });
+                if (response.status === 403 || response.status === 401 || response.redirected) {
+                    uploadError.textContent = zh ? '登录状态或安全校验已过期，消息尚未发送。请在新标签页重新登录，再回来重试；输入内容已保留。' : 'Your session or security token has expired. Nothing was sent. Sign in in another tab, then return and retry. Your draft is preserved.';
+                    const link = document.createElement('a');
+                    link.href = '/login'; link.target = '_blank'; link.rel = 'noopener';
+                    link.textContent = zh ? ' 点击重新登录 ↗' : ' Sign in ↗';
+                    uploadError.append(link);
+                    return;
+                }
+                if (!response.headers.get('Content-Type')?.includes('application/json')) throw new Error('Unexpected response');
+                const result = await response.json();
+                if (!response.ok) {
+                    uploadError.textContent = result.error || (zh ? '发送失败，请稍后重试。' : 'Unable to send. Please retry.');
+                    return;
+                }
+                location.assign(result.redirect);
+            } catch (_) {
+                uploadError.textContent = zh ? '暂时无法确认发送结果，请检查网络后重试。输入内容已保留，重试不会重复发送。' : 'Unable to confirm delivery. Check your connection and retry. Your draft is preserved; retries will not duplicate the message.';
+            } finally {
+                sending = false; button.disabled = false;
             }
         });
         window.addEventListener('pagehide', clearPreview);
@@ -67,6 +103,13 @@
             const response = await fetch(base + '/updates' + location.search, {credentials:'same-origin',cache:'no-store'});
             if (!response.ok || response.redirected) throw new Error('Session or connection unavailable');
             const documentNext = new DOMParser().parseFromString(await response.text(), 'text/html');
+            // The composer keeps its draft and idempotency token, but CSRF follows the current session.
+            const nextCsrf = documentNext.querySelector('.support-composer input[name="_csrf"]');
+            if (nextCsrf) {
+                document.querySelector('meta[name="csrf-token"]').content = nextCsrf.value;
+                const currentCsrf = document.querySelector('.support-composer input[name="_csrf"]');
+                if (currentCsrf) currentCsrf.value = nextCsrf.value;
+            }
             const nextChat = documentNext.getElementById('support-chat');
             const chat = document.getElementById('support-chat');
             if (!nextChat) throw new Error('No conversation');

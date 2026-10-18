@@ -43,13 +43,17 @@ public class SupportController {
         return path.endsWith("/updates")?"support :: workspace":"support";
     }
     @PostMapping({"/support/messages","/staff/support/messages"})
-    public String send(Principal principal,@RequestParam(required=false) String id,@RequestParam(defaultValue="") String body,@RequestParam String token,
-                       @RequestParam(required=false) String orderId,@RequestParam(required=false) org.springframework.web.multipart.MultipartFile image,RedirectAttributes flash) {
+    public Object send(Principal principal,@RequestParam(required=false) String id,@RequestParam(defaultValue="") String body,@RequestParam String token,
+                       @RequestParam(required=false) String orderId,@RequestParam(required=false) org.springframework.web.multipart.MultipartFile image,RedirectAttributes flash,
+                       @RequestHeader(value="Accept",defaultValue="") String accept) {
         var viewer=support.viewer(principal.getName());
         try {
             String thread=support.send(viewer,id,body,token,orderId,com.odyssey.retailshop.service.SupportImage.from(image));
-            return viewer.staff()?"redirect:/staff/support?id="+thread:"redirect:/support";
+            String destination=viewer.staff()?"/staff/support?id="+thread:"/support";
+            if(accept.contains("application/json")) return ResponseEntity.ok(Map.of("redirect",destination));
+            return "redirect:"+destination;
         } catch(IllegalArgumentException e) {
+            if(accept.contains("application/json")) return ResponseEntity.badRequest().body(Map.of("error",e.getMessage()));
             flash.addFlashAttribute("supportError",e.getMessage()); flash.addFlashAttribute("draft",body); flash.addFlashAttribute("selectedOrder",orderId);
             return viewer.staff()?"redirect:/staff/support"+(id==null?"":"?id="+id):"redirect:/support";
         }
@@ -62,7 +66,9 @@ public class SupportController {
             .header("Content-Disposition","inline; filename=chat-image").body(image.bytes());
     }
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
-    public String tooLarge(RedirectAttributes flash,java.security.Principal principal) {
+    public Object tooLarge(RedirectAttributes flash,java.security.Principal principal, jakarta.servlet.http.HttpServletRequest request) {
+        if(Optional.ofNullable(request.getHeader("Accept")).orElse("").contains("application/json"))
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(Map.of("error","The image is too large (maximum 5 MB). / 图片太大（最大5MB）。"));
         flash.addFlashAttribute("supportError","The image is too large. Choose an image up to 5 MB. / 图片太大，请选择不超过5MB的图片。");
         return support.viewer(principal.getName()).staff()?"redirect:/staff/support":"redirect:/support";
     }
