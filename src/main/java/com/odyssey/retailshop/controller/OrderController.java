@@ -69,6 +69,12 @@ public class OrderController {
         catch (IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); }
         return "redirect:/orders/"+id;
     }
+    @PostMapping("/orders/{id}/confirm-receipt")
+    public String confirmReceipt(@PathVariable String id,Principal user,RedirectAttributes flash) {
+        try { orders.confirmReceipt(id,user.getName()); flash.addFlashAttribute("orderMessage","Receipt confirmed. Order completed. / 已确认收货，订单已完成。"); }
+        catch(IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); }
+        return "redirect:/orders/"+id;
+    }
     @PostMapping("/staff/orders/{id}/status")
     public String advance(@PathVariable String id, @RequestParam String next, RedirectAttributes flash) {
         try { orders.advance(id,next); flash.addFlashAttribute("orderMessage","Status updated. / 状态已更新。"); }

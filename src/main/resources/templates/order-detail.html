@@ -76,6 +76,11 @@
 </div>
 <p th:if="${!staffView and order.status != 'PENDING'}" th:text="${zh ? '当前状态不可修改或取消。' : 'This order can no longer be edited or cancelled.'}">
 </p>
+<form th:if="${!staffView and order.status == 'SHIPPED' and order.fulfillment == 'DELIVERY'}" method="post" th:action="@{/orders/{id}/confirm-receipt(id=${order.id})}">
+<p th:text="${zh ? '请在实际收到商品后确认收货。确认后订单将标记为已完成。' : 'Confirm only after you have received your items. This will complete your order.'}"></p>
+<button class="order-button" type="submit" th:text="${zh ? '确认收货' : 'Confirm receipt'}"></button>
+</form>
+<p th:if="${staffView and order.status == 'SHIPPED'}" th:text="${zh ? '已发货，等待顾客确认收货。' : 'Shipped. Awaiting customer confirmation.'}"></p>
 <form th:if="${staffView and order.status != 'CANCELLED' and order.status != 'COMPLETED'}" method="post" th:action="@{/staff/orders/{id}/status(id=${order.id})}">
 <button class="order-button" name="next" value="PREPARING" th:if="${order.status == 'PENDING'}" th:text="${zh ? '开始备货' : 'Start preparing'}">
 </button>
@@ -83,7 +88,7 @@
 </button>
 <button class="order-button" name="next" value="READY" th:if="${order.status == 'PREPARING' and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '标记待取货' : 'Ready for collection'}">
 </button>
-<button class="order-button" name="next" value="COMPLETED" th:if="${order.status == 'SHIPPED' or order.status == 'READY'}" th:text="${zh ? '标记已完成' : 'Complete order'}">
+<button class="order-button" name="next" value="COMPLETED" th:if="${order.status == 'READY' and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '标记已完成' : 'Complete order'}">
 </button>
 </form>
 </section>

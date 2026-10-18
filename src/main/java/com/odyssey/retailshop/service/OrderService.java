@@ -118,6 +118,15 @@ public class OrderService {
             for (Item item : items(id)) jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity+? WHERE product_id=?",item.quantity(),item.productId());
         });
     }
+    public void confirmReceipt(String id,String email) {
+        ready();
+        tx.executeWithoutResult(s -> {
+            var order=get(id,email,false);
+            if(order.fulfillment().equals("DELIVERY") && order.status().equals("COMPLETED")) return;
+            if(jdbc.update("UPDATE shop_orders SET status='COMPLETED',updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=? AND status='SHIPPED' AND fulfillment='DELIVERY'",id,order.userId())!=1)
+                throw new IllegalArgumentException("Only shipped delivery orders can be confirmed. / 只有已发货的配送订单可以确认收货。");
+        });
+    }
     private void locked() { throw new IllegalArgumentException("The order has changed. Only pending orders can be edited or cancelled. / 订单状态已变化，仅待备货订单可修改或取消。"); }
     public void advance(String id, String next) {
         ready();
@@ -130,7 +139,7 @@ public class OrderService {
             default -> throw new IllegalArgumentException("Invalid transition. / 无效操作。");
         }
         int changed;
-        if (next.equals("COMPLETED")) changed=jdbc.update("UPDATE shop_orders SET status='COMPLETED',updated_at=CURRENT_TIMESTAMP WHERE id=? AND ((status='SHIPPED' AND fulfillment='DELIVERY') OR (status='READY' AND fulfillment='COLLECTION'))",id);
+        if (next.equals("COMPLETED")) changed=jdbc.update("UPDATE shop_orders SET status='COMPLETED',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='READY' AND fulfillment='COLLECTION'",id);
         else if (fulfillment == null) changed=jdbc.update("UPDATE shop_orders SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status=?",next,id,previous);
         else changed=jdbc.update("UPDATE shop_orders SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status=? AND fulfillment=?",next,id,previous,fulfillment);
         if (changed != 1) throw new IllegalArgumentException("The order has changed; refresh and try again. / 订单状态已变化，请刷新后重试。");

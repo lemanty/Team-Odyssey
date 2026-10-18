@@ -44,7 +44,7 @@
         <div class="order-destination"><strong th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送地址' : 'Delivery address') : (zh ? '取货方式' : 'Collection details')}"></strong>
             <p class="order-address" th:text="${order.fulfillment == 'DELIVERY' ? order.address : (zh ? '门店自取 · 待取货后凭订单号到店领取' : 'Collect in store with your order number once ready')}"></p></div>
         <div class="order-summary-total"><span th:text="${zh ? '订单总额' : 'Order total'}"></span><strong th:text="'€' + ${#numbers.formatDecimal(order.total,1,2)}"></strong>
-            <a class="order-view-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${zh ? '查看订单 →' : 'View order →'}"></a></div>
+            <a class="order-view-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${!staffView and order.status == 'SHIPPED' and order.fulfillment == 'DELIVERY' ? (zh ? '查看并确认收货 →' : 'View and confirm receipt →') : (zh ? '查看订单 →' : 'View order →')}"></a></div>
     </div>
 </article>
 </main>

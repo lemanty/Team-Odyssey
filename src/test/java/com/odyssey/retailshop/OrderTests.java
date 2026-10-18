@@ -101,7 +101,14 @@ class OrderTests {
             .param("token",token).param("fulfillment","DELIVERY").param("address","Road 1")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/orders"));
         assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM cart_items",Integer.class)); assertEquals(1,stock()); assertEquals(1,orders.list("a@test.com",false).size());
         String id=orders.list("a@test.com",false).get(0).id();
-        orders.advance(id,"PREPARING"); orders.advance(id,"SHIPPED"); orders.advance(id,"COMPLETED");
+        assertThrows(IllegalArgumentException.class,()->orders.confirmReceipt(id,"a@test.com"));
+        orders.advance(id,"PREPARING"); orders.advance(id,"SHIPPED");
+        assertThrows(IllegalArgumentException.class,()->orders.advance(id,"COMPLETED"));
+        mvc.perform(get("/orders/"+id).with(user("a@test.com"))).andExpect(content().string(containsString("Confirm receipt")));
+        mvc.perform(post("/orders/"+id+"/confirm-receipt").with(user("a@test.com"))).andExpect(status().isForbidden());
+        mvc.perform(post("/orders/"+id+"/confirm-receipt").with(user("b@test.com")).with(csrf())).andExpect(status().isNotFound());
+        assertEquals("SHIPPED",orders.get(id,"a@test.com",false).status());
+        for(int i=0;i<2;i++) mvc.perform(post("/orders/"+id+"/confirm-receipt").with(user("a@test.com")).with(csrf())).andExpect(redirectedUrl("/orders/"+id));
         assertEquals("COMPLETED",orders.get(id,"a@test.com",false).status());
     }
     @Test void cancellationRacingPreparationHasOnlyOneWinner() throws Exception {
