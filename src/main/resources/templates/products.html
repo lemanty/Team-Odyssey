@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Our catalogue | Odyssey', zh)}">Our catalogue | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=product-actions-2)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=catalogue-filters-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('products')}"></header>
@@ -13,11 +13,30 @@
     <h1><span th:text="${storeText.text('Find your everyday.', zh)}">Find your everyday.</span></h1>
     <p class="intro"><span th:text="${storeText.text('Clothing and household favourites, all in one place.', zh)}">Clothing and household favourites, all in one place.</span></p>
     <p class="catalogue-notice"><span th:text="${storeText.text('Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.', zh)}">Sample catalogue — prices are illustrative in EUR and stock is demonstration data. Sign in to order in database mode.</span></p>
+    <form class="catalogue-filters" method="get" th:action="@{/products}" role="search">
+        <label class="catalogue-search"><span th:text="${zh ? '搜索商品' : 'Search products'}"></span>
+            <input type="search" name="q" th:value="${q}" th:placeholder="${zh ? '输入部分名称或描述，如：陶瓷、cotton' : 'Name or description, e.g. cotton'}">
+        </label>
+        <label><span th:text="${zh ? '商品分类' : 'Category'}"></span>
+            <select name="category"><option value="" th:text="${zh ? '全部分类' : 'All categories'}"></option>
+                <option th:each="item : ${categories}" th:value="${item}" th:selected="${category == item}" th:text="${storeText.text(item, zh)}"></option>
+            </select>
+        </label>
+        <label><span th:text="${zh ? '最低价格 (€)' : 'Min price (€)'}"></span><input type="number" name="minPrice" min="0" max="999999999" step="0.01" th:value="${minPrice}" placeholder="0"></label>
+        <label><span th:text="${zh ? '最高价格 (€)' : 'Max price (€)'}"></span><input type="number" name="maxPrice" min="0" max="999999999" step="0.01" th:value="${maxPrice}" th:placeholder="${zh ? '不限' : 'Any'}"></label>
+        <label><span th:text="${zh ? '排序' : 'Sort by'}"></span><select name="sort">
+            <option value="default" th:selected="${sort == 'default'}" th:text="${zh ? '默认排序' : 'Default'}"></option>
+            <option value="price-asc" th:selected="${sort == 'price-asc'}" th:text="${zh ? '价格从低到高' : 'Price: low to high'}"></option>
+            <option value="price-desc" th:selected="${sort == 'price-desc'}" th:text="${zh ? '价格从高到低' : 'Price: high to low'}"></option>
+        </select></label>
+        <div class="filter-actions"><button type="submit" th:text="${zh ? '搜索 / 筛选' : 'Apply filters'}"></button><a th:href="@{/products}" th:text="${zh ? '清除筛选' : 'Clear filters'}"></a></div>
+    </form>
+    <p class="filter-error" role="alert" th:if="${filterError}" th:text="${zh ? '请输入有效的非负价格（最多两位小数），最低价不能超过最高价。' : 'Enter valid nonnegative prices (up to two decimal places). Minimum must not exceed maximum.'}"></p>
     <div class="section-heading"><h2><span th:text="${storeText.text('All products', zh)}">All products</span></h2><span th:text="${#lists.size(products)} + ${zh ? ' 件商品' : ' items'}">0 items</span></div>
-    <p th:if="${#lists.isEmpty(products)}"><span th:text="${storeText.text('Our next collection is on its way. Check back soon.', zh)}">Our next collection is on its way. Check back soon.</span></p>
+    <p th:if="${#lists.isEmpty(products) and !filterError}"><span th:text="${zh ? '没有找到符合条件的商品，请尝试其他关键词或放宽筛选条件。' : 'No matching products. Try another keyword or broaden your filters.'}">Our next collection is on its way. Check back soon.</span></p>
     <div class="product-grid">
         <article class="product-card" th:each="product, status : ${products}"
-                 th:id="${status.index == 0 or products[status.index - 1].category != product.category} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
+                 th:id="${product.id == products.^[category == #vars.product.category].id} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
             <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(product.name, zh)}">
             <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}">
                 <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.text(product.name, zh)}" loading="lazy" width="600" height="800">

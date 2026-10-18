@@ -68,4 +68,34 @@ class CatalogueWebTests {
             .andExpect(content().string(containsString("€16.50")))
             .andExpect(content().string(containsString("Sample catalogue")));
     }
+
+    @Test
+    void searchCombinesBilingualPartialTermsCategoryAndInclusivePrice() throws Exception {
+        mockMvc.perform(get("/products").param("q", "COT ton").param("category", "Clothing")
+                .param("minPrice", "24").param("maxPrice", "24.00"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Everyday Cotton Tee")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Canvas Overshirt"))))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Woven Cotton Throw"))));
+        mockMvc.perform(get("/products").param("q", "陶瓷").param("lang", "zh"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("陶瓷马克杯")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("日常纯棉T恤"))));
+    }
+
+    @Test
+    void pricesSortAndEmptyOrInvalidFiltersAreExplained() throws Exception {
+        String page = mockMvc.perform(get("/products").param("sort", "price-asc"))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(page.indexOf("Stoneware Mug") < page.indexOf("Everyday Cotton Tee"));
+        page = mockMvc.perform(get("/products").param("sort", "price-desc"))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(page.indexOf("Canvas Overshirt") < page.indexOf("Woven Cotton Throw"));
+        mockMvc.perform(get("/products").param("q", "nothing-matches"))
+            .andExpect(status().isOk()).andExpect(content().string(containsString("No matching products")));
+        for (String min : new String[]{"30", "-1", "abc"}) {
+            mockMvc.perform(get("/products").param("minPrice", min).param("maxPrice", "20"))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Enter valid nonnegative prices")));
+        }
+    }
 }
