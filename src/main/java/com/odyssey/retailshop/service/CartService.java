@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartService {
     private final ProductService products;
+    private final VariantService variants;
     private final com.odyssey.retailshop.repository.AccountCartRepository accounts;
-    public CartService(ProductService products, com.odyssey.retailshop.repository.AccountCartRepository accounts) { this.products = products; this.accounts=accounts; }
+    public CartService(ProductService products, com.odyssey.retailshop.repository.AccountCartRepository accounts, VariantService variants) { this.products = products; this.accounts=accounts; this.variants=variants; }
     private String owner() {
         var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (auth==null || !auth.isAuthenticated() || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) return null;
@@ -52,11 +53,13 @@ public class CartService {
     public void change(HttpSession session, long id, int quantity, boolean add) {
         synchronized (session) {
             if (quantity < 1 || quantity > 999) throw new IllegalArgumentException("Please choose a quantity between 1 and 999.");
-            Product product = products.getProduct(id).orElseThrow(() -> new IllegalArgumentException("This product is no longer available."));
+            Product product = products.getProduct(variants.productId(id)).orElseThrow(() -> new IllegalArgumentException("This product is no longer available."));
+            var variant = id<0 ? variants.find(-id).orElseThrow() : null;
+            if (id>0 && !variants.list(id).isEmpty()) throw new IllegalArgumentException("Please choose size and colour on the product page. / 请在商品详情选择尺码和颜色。");
             modify(session, items -> {
             if (!add && !items.containsKey(id)) throw new IllegalArgumentException("This product is not in your bag.");
             int next = quantity + (add ? items.getOrDefault(id, 0) : 0);
-            if (product.getStockQuantity() == null || next > product.getStockQuantity() || next > 999)
+            if (product.getStockQuantity() == null || next > product.getStockQuantity() || (variant!=null && next>variant.stock()) || next > 999)
                 throw new IllegalArgumentException("The requested quantity is not available. Please check the current stock.");
             items.put(id, next);
             });
@@ -65,17 +68,18 @@ public class CartService {
     public void remove(HttpSession session, long id) {
         synchronized (session) { modify(session, items -> items.remove(id)); }
     }
-    public record Line(long id, Product product, int quantity, BigDecimal subtotal, boolean available) {}
+    public record Line(long id, Product product, int quantity, BigDecimal subtotal, boolean available, String size, String color) {}
     public record View(List<Line> lines, BigDecimal total) {}
     public View view(HttpSession session) {
         synchronized (session) {
             List<Line> lines = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;
             for (var item : read(session).entrySet()) {
-                Product p = products.getProduct(item.getKey()).orElse(null);
+                var variant = item.getKey()<0 ? variants.find(-item.getKey()).orElse(null) : null;
+                Product p = products.getProduct(item.getKey()<0 ? (variant==null?0:variant.productId()) : item.getKey()).orElse(null);
                 BigDecimal subtotal = p == null ? BigDecimal.ZERO : p.getPrice().multiply(BigDecimal.valueOf(item.getValue()));
-                boolean available = p != null && p.getStockQuantity() != null && p.getStockQuantity() >= item.getValue();
-                lines.add(new Line(item.getKey(), p, item.getValue(), subtotal, available));
+                boolean available = p != null && p.getStockQuantity() != null && p.getStockQuantity() >= item.getValue() && (variant!=null ? variant.stock()>=item.getValue() : variants.list(p.getId()).isEmpty());
+                lines.add(new Line(item.getKey(), p, item.getValue(), subtotal, available,variant==null?"":variant.size(),variant==null?"":variant.color()));
                 total = total.add(subtotal);
             }
             return new View(lines, total);

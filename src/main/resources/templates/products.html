@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Our catalogue | Odyssey', zh)}">Our catalogue | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <link rel="stylesheet" th:href="@{/css/catalogue-design.css(v=readable-1)}">
     <script defer th:src="@{/js/catalogue-filters.js(v=1)}"></script>
     <script defer th:src="@{/js/catalogue-reveal.js(v=1)}"></script>
@@ -71,7 +71,8 @@
             </div>
             </a>
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
-            <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">
+            <a th:if="${signedIn and product.category == 'Clothing'}" class="cart-button" th:href="@{/products/{id}(id=${product.id})}" th:text="${zh ? '选择规格 / 加入购物车' : 'Choose options / Add to bag'}"></a>
+            <form th:if="${signedIn and product.category != 'Clothing'}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>

@@ -87,7 +87,7 @@ public class SupportService {
         if(ids.isEmpty()) return result;
         List<Object> args=new ArrayList<>(ids); args.add(conversation.customerId());
         String placeholders=String.join(",",Collections.nCopies(ids.size(),"?"));
-        jdbc.query("SELECT i.order_id,i.product_name,i.quantity,d.garment_image FROM order_items i JOIN shop_orders o ON o.id=i.order_id LEFT JOIN product_details d ON d.product_id=i.product_id WHERE i.order_id IN ("+placeholders+") AND o.user_id=? ORDER BY i.product_id",
+        jdbc.query("SELECT i.order_id,i.product_name,i.quantity,d.garment_image FROM order_all_items i JOIN shop_orders o ON o.id=i.order_id LEFT JOIN product_details d ON d.product_id=i.product_id WHERE i.order_id IN ("+placeholders+") AND o.user_id=? ORDER BY i.product_id",
             (org.springframework.jdbc.core.RowCallbackHandler) r -> result.computeIfAbsent(r.getString("order_id"),key->new ArrayList<>()).add(new OrderPreview(r.getString("product_name"),r.getInt("quantity"),r.getString("garment_image"))),args.toArray());
         return result;
     }
@@ -135,7 +135,7 @@ public class SupportService {
         if(viewer.staff() && thread==null) return List.of();
         long customerId=thread==null?viewer.id():get(viewer,thread).customerId();
         var rows=jdbc.query("SELECT id,total,status FROM shop_orders WHERE user_id=? ORDER BY created_at DESC,id",(r,n)->new OrderChoice(r.getString(1),r.getBigDecimal(2),r.getString(3),""),customerId);
-        return rows.stream().map(o -> new OrderChoice(o.id(),o.total(),o.status(),String.join(", ",jdbc.queryForList("SELECT product_name FROM order_items WHERE order_id=? ORDER BY product_id",String.class,o.id())))).toList();
+        return rows.stream().map(o -> new OrderChoice(o.id(),o.total(),o.status(),String.join(", ",jdbc.queryForList("SELECT product_name FROM order_all_items WHERE order_id=? ORDER BY product_id",String.class,o.id())))).toList();
     }
     public SupportImage image(Viewer viewer,long messageId) {
         String thread=jdbc.queryForList("SELECT conversation_id FROM support_messages WHERE id=?",String.class,messageId).stream().findFirst()

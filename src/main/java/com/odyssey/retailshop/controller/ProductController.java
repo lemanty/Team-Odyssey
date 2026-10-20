@@ -23,17 +23,20 @@ public class ProductController {
     private final ProductService productService;
     private final Environment environment;
     private final StoreText storeText;
+    private final com.odyssey.retailshop.service.VariantService variants;
 
-    public ProductController(ProductService productService, Environment environment, StoreText storeText) {
+    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants) {
         this.productService = productService;
         this.environment = environment;
         this.storeText = storeText;
+        this.variants=variants;
     }
 
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
+        model.addAttribute("variants",variants.list(id));
         return "product-detail";
     }
 

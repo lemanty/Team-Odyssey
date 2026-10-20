@@ -13,7 +13,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class CartController {
     private final CartService cart;
-    public CartController(CartService cart) { this.cart = cart; }
+    private final com.odyssey.retailshop.service.VariantService variants;
+    public CartController(CartService cart, com.odyssey.retailshop.service.VariantService variants) { this.cart = cart; this.variants=variants; }
     public static String token(HttpSession session) {
         synchronized (session) {
             if (session.getAttribute("cartToken") == null) session.setAttribute("cartToken", UUID.randomUUID().toString());
@@ -30,9 +31,12 @@ public class CartController {
     }
     @PostMapping("/cart/add")
     public String add(@RequestParam long productId, @RequestParam(defaultValue="1") int quantity,
-                      @RequestParam String csrf, HttpSession session, RedirectAttributes flash) {
+                      @RequestParam String csrf, @RequestParam(required=false) Long variantId, HttpSession session, RedirectAttributes flash) {
         verify(session, csrf);
-        try { cart.change(session, productId, quantity, true); flash.addFlashAttribute("cartMessage", "Added to your bag."); }
+        try {
+            if(productId<=0) throw new IllegalArgumentException("Invalid product. / 商品无效。");
+            if(variantId!=null && (variantId<=0 || variants.find(variantId).filter(v->v.productId()==productId).isEmpty())) throw new IllegalArgumentException("Invalid product option. / 商品规格不匹配。");
+            cart.change(session, variantId==null?productId:-variantId, quantity, true); flash.addFlashAttribute("cartMessage", "Added to your bag."); }
         catch (IllegalArgumentException e) { flash.addFlashAttribute("cartError", e.getMessage()); }
         return "redirect:/cart";
     }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=membership-live-1)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -34,6 +34,7 @@
 <span th:text="'€' + ${#numbers.formatDecimal(item.unitPrice,1,2)}">
 </span> × <span th:text="${item.quantity}">
 </span>
+<span th:if="${item.size!=''}" th:text="${item.size+' / '+storeText.text(item.color,zh)}"></span>
 <strong th:text="' · €' + ${#numbers.formatDecimal(item.subtotal(),1,2)}">
 </strong>
 </p>

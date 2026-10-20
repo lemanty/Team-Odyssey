@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -37,7 +37,7 @@
                 <span th:unless="${item.image != null and !#strings.isEmpty(item.image)}" th:text="${zh ? '暂无图片' : 'No image'}"></span>
             </a>
             <div class="order-preview-copy"><a th:href="@{/products/{id}(id=${item.productId})}" th:text="${storeText.text(item.name,zh)}"></a>
-                <p><span th:text="${zh ? '数量：' : 'Quantity: '}"></span><strong th:text="${item.quantity}"></strong><span th:text="' · €' + ${#numbers.formatDecimal(item.unitPrice,1,2)} + ${zh ? ' / 件' : ' each'}"></span></p></div>
+                <p th:if="${item.size!=''}" th:text="${item.size+' / '+storeText.text(item.color,zh)}"></p><p><span th:text="${zh ? '数量：' : 'Quantity: '}"></span><strong th:text="${item.quantity}"></strong><span th:text="' · €' + ${#numbers.formatDecimal(item.unitPrice,1,2)} + ${zh ? ' / 件' : ' each'}"></span></p></div>
         </div>
     </div>
     <div class="order-summary-footer">

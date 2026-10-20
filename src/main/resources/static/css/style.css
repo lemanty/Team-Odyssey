@@ -1297,3 +1297,24 @@ input, select, textarea { line-height: 1.5; }
 }
 
 .membership-price-breakdown{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;border-top:1px solid var(--line);padding-top:20px}.membership-price-breakdown dd{margin:0;text-align:right}.membership-price-breakdown strong{font-size:24px}
+
+.address-card { margin-bottom: 20px; }
+.address-text, .order-address { white-space: pre-line; overflow-wrap: anywhere; }
+.address-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.address-actions form { margin: 0; }
+.address-default { display: flex; gap: 12px; align-items: center; }
+.order-form .address-default input { width: auto; }
+.order-form input:not([type="hidden"]):not([type="checkbox"]) {
+    width: 100%; box-sizing: border-box; padding: 12px; font: inherit;
+    border: 1px solid #8a9b8d; border-radius: 8px; background: #fffdf7;
+}
+#delivery-details:not([hidden]), #manual-address:not([hidden]), #saved-addresses {
+    display: grid; gap: 14px; min-width: 0;
+}
+.variant-picker { margin: 16px 0; }
+.variant-picker label { display: block; margin-bottom: 10px; }
+.variant-picker select {
+    width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #a7b69b;
+    border-radius: 8px; font: inherit; background: #fffdf7;
+}
+.variant-picker p { font-size: 16px; line-height: 1.6; color: var(--muted); }

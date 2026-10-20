@@ -20,6 +20,7 @@ public class AccountCartRepository {
     public Map<Long,Integer> read(String email) {
         var values=new LinkedHashMap<Long,Integer>();
         jdbc.query("SELECT c.product_id,c.quantity FROM cart_items c JOIN users u ON u.id=c.user_id WHERE u.email=? ORDER BY c.product_id",r -> { values.put(r.getLong(1),r.getInt(2)); },email);
+        jdbc.query("SELECT c.variant_id,c.quantity FROM cart_variants c JOIN users u ON u.id=c.user_id WHERE u.email=? ORDER BY c.variant_id",r -> { values.put(-r.getLong(1),r.getInt(2)); },email);
         return values;
     }
     public void modify(String email, Consumer<Map<Long,Integer>> change) {
@@ -27,7 +28,11 @@ public class AccountCartRepository {
             Long id=jdbc.queryForObject("SELECT id FROM users WHERE email=? FOR UPDATE",Long.class,email);
             Map<Long,Integer> items=read(email); change.accept(items);
             jdbc.update("DELETE FROM cart_items WHERE user_id=?",id);
-            items.forEach((product,quantity)->jdbc.update("INSERT INTO cart_items(user_id,product_id,quantity) VALUES (?,?,?)",id,product,quantity));
+            jdbc.update("DELETE FROM cart_variants WHERE user_id=?",id);
+            items.forEach((product,quantity)-> {
+                if(product<0) jdbc.update("INSERT INTO cart_variants(user_id,variant_id,quantity) VALUES (?,?,?)",id,-product,quantity);
+                else jdbc.update("INSERT INTO cart_items(user_id,product_id,quantity) VALUES (?,?,?)",id,product,quantity);
+            });
         });
     }
 }

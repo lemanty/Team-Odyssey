@@ -27,7 +27,7 @@ class OrderTests {
     @Autowired MockMvc mvc;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","009-membership.sql","006-account-cart.sql")) {
+        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",name)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", "").replaceAll("(?m)^--.*$", "");
             for (String statement : sql.split(";")) if (!statement.isBlank()) jdbc.execute(statement);
         }
@@ -191,5 +191,75 @@ class OrderTests {
         var old=orders.list("a@test.com",false).get(0);
         assertEquals(0,membership.snapshot(old.id(),old.total()).discount().signum());
         assertEquals("500.00",membership.snapshot(old.id(),old.total()).payable().toString());
+    }
+
+    @Autowired com.odyssey.retailshop.service.AddressService addresses;
+    void variants() {
+        jdbc.update("INSERT INTO product_variants(id,product_id,size_label,color_label,stock_quantity) VALUES (101,1,'S','Original colour',1),(102,1,'M','Charcoal',2)");
+    }
+    @Test void variantLinesSnapshotsAndStockRestoration() throws Exception {
+        variants();
+        assertThrows(IllegalArgumentException.class,()->place("DELIVERY"));
+        jdbc.update("INSERT INTO cart_variants VALUES (1,101,1),(1,102,1)");
+        mvc.perform(get("/products/1?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("选择尺码")));
+        mvc.perform(get("/cart?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("炭灰色")));
+        String id=orders.placeFromCart("a@test.com",UUID.randomUUID().toString(),"DELIVERY","Road");
+        assertEquals(2,orders.items(id).size()); assertEquals(1,stock());
+        assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM cart_variants",Integer.class));
+        jdbc.update("UPDATE product_variants SET color_label='Changed' WHERE id=102");
+        assertTrue(orders.items(id).stream().anyMatch(i->i.color().equals("Charcoal")));
+        for(String path:List.of("/orders","/orders/"+id)) mvc.perform(get(path+"?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("炭灰色")));
+        orders.cancel(id,"a@test.com"); assertEquals(3,stock());
+        assertEquals(1,jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=101",Integer.class));
+        assertEquals(2,jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=102",Integer.class));
+    }
+    @Test void variantStockRollbackAndConcurrentLastItem() throws Exception {
+        variants();
+        assertThrows(IllegalArgumentException.class,()->orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(-101L,2,-102L,1),"COLLECTION",""));
+        assertEquals(3,stock()); assertEquals(2,jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=102",Integer.class));
+        var pool=Executors.newFixedThreadPool(2); var gate=new CountDownLatch(1);
+        try {
+            List<Future<Boolean>> results=new ArrayList<>();
+            for(String email:List.of("a@test.com","b@test.com")) results.add(pool.submit(()->{gate.await();try{orders.place(email,UUID.randomUUID().toString(),Map.of(-101L,1),"COLLECTION","");return true;}catch(IllegalArgumentException e){return false;}}));
+            gate.countDown(); int successes=0; for(var result:results)if(result.get(15,TimeUnit.SECONDS))successes++;
+            assertEquals(1,successes);assertEquals(2,stock());
+        } finally {pool.shutdownNow();}
+    }
+    @Test void addressDefaultsOwnershipAndCheckoutSnapshot() throws Exception {
+        addresses.save("a@test.com",null,"Alice","123456","Original road",false);
+        long first=addresses.list("a@test.com").get(0).id();
+        addresses.save("a@test.com",null,"Alice","987654","Second road",true);
+        assertEquals(1,addresses.list("a@test.com").stream().filter(a->a.isDefault()).count());
+        addresses.setDefault("a@test.com",first);
+        assertTrue(addresses.get("a@test.com",first).isDefault());
+        mvc.perform(get("/account/addresses?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("Original road")));
+        mvc.perform(get("/account/addresses?edit="+first).with(user("b@test.com"))).andExpect(status().isNotFound());
+        mvc.perform(post("/account/addresses/"+first+"/delete").with(user("a@test.com"))).andExpect(status().isForbidden());
+        mvc.perform(post("/account/addresses/"+first+"/default").with(user("b@test.com")).with(csrf())).andExpect(status().isNotFound());
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,()->addresses.save("b@test.com",first,"B","123","Other",true));
+        jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
+        var session=new org.springframework.mock.web.MockHttpSession();
+        mvc.perform(get("/checkout").session(session).with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("Original road")));
+        mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf()).param("token",(String)session.getAttribute("checkoutToken")).param("fulfillment","DELIVERY").param("addressId",String.valueOf(first))).andExpect(redirectedUrl("/orders"));
+        addresses.save("a@test.com",first,"Alice","000","Changed road",false);
+        addresses.delete("a@test.com",first);
+        assertTrue(addresses.list("a@test.com").get(0).isDefault());
+        assertEquals("Alice · 123456\nOriginal road",orders.list("a@test.com",false).get(0).address());
+        mvc.perform(post("/account/addresses").with(user("a@test.com")).with(csrf()).param("recipient","").param("phone","1").param("addressLine","Road")).andExpect(status().isOk()).andExpect(content().string(containsString("role=\"alert\"")));
+    }
+    @Test void cartRejectsForeignOptionsAndSeparatesChosenOptions() throws Exception {
+        variants();
+        var session=new org.springframework.mock.web.MockHttpSession();
+        String token=com.odyssey.retailshop.controller.CartController.token(session);
+        mvc.perform(post("/cart/add").session(session).with(user("a@test.com")).with(csrf()).param("csrf",token).param("productId","2").param("variantId","101"))
+            .andExpect(redirectedUrl("/cart")).andExpect(flash().attributeExists("cartError"));
+        assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM cart_variants",Integer.class));
+        for(String variant:List.of("101","102")) mvc.perform(post("/cart/add").session(session).with(user("a@test.com")).with(csrf()).param("csrf",token).param("productId","1").param("variantId",variant))
+            .andExpect(redirectedUrl("/cart")).andExpect(flash().attributeExists("cartMessage"));
+        assertEquals(2,jdbc.queryForObject("SELECT COUNT(*) FROM cart_variants WHERE user_id=1",Integer.class));
+        mvc.perform(post("/cart/update").session(session).with(user("a@test.com")).with(csrf()).param("csrf",token).param("productId","-101").param("quantity","2"))
+            .andExpect(flash().attributeExists("cartError"));
+        assertEquals(1,jdbc.queryForObject("SELECT quantity FROM cart_variants WHERE variant_id=101",Integer.class));
+        mvc.perform(get("/cart").with(user("b@test.com"))).andExpect(content().string(containsString("Your bag is empty")));
     }
 }

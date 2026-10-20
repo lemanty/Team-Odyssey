@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text(product.name, zh)} + ' | Odyssey'">Product | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <script th:src="@{/js/product-gallery.js}" defer></script>
 </head>
 <body>
@@ -51,10 +51,18 @@
             <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
+                <div class="variant-picker" th:unless="${#lists.isEmpty(variants)}">
+                    <label for="variantId" th:text="${zh ? '选择尺码 / 颜色' : 'Choose size / colour'}"></label>
+                    <select name="variantId" id="variantId" required>
+                        <option value="" disabled selected th:text="${zh ? '请选择商品规格' : 'Choose an option'}"></option>
+                        <option th:each="v:${variants}" th:value="${v.id}" th:disabled="${v.stock<=0}" th:text="${v.size + ' / ' + storeText.text(v.color,zh) + (zh ? ' · 剩余 ' : ' · Stock: ') + v.stock}"></option>
+                    </select>
+                    <p th:text="${zh ? '图片展示原色款；其他颜色为示例选项，暂不提供对应图片。' : 'Photos show the original colour. Other colours are sample options without separate photographs.'}"></p>
+                </div>
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>
             </form>
             <dl class="product-facts"><div><dt><span th:text="${storeText.text('Collection', zh)}">Collection</span></dt><dd><span th:text="${storeText.text('The Everyday Collection', zh)}">The Everyday Collection</span></dd></div><div><dt><span th:text="${storeText.text('Product reference', zh)}">Product reference</span></dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt><span th:text="${storeText.text('Availability', zh)}">Availability</span></dt><dd><span th:text="${storeText.text('Catalogue preview', zh)}">Catalogue preview</span></dd></div></dl>
-            <p class="detail-note"><span th:text="${product.category == 'Household' ? (zh ? '家居示例商品，图片由 AI 生成，价格和库存为演示数据。库存将在提交订单时扣减。' : 'Sample household collection with AI-generated photographs. Prices and stock are demonstration data. Stock is reserved at checkout.') : storeText.text('Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Size selection is not available yet.', zh)}">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Size selection is not available yet.</span></p>
+            <p class="detail-note"><span th:text="${product.category == 'Household' ? (zh ? '家居示例商品，图片由 AI 生成，价格和库存为演示数据。库存将在提交订单时扣减。' : 'Sample household collection with AI-generated photographs. Prices and stock are demonstration data. Stock is reserved at checkout.') : storeText.text('Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.', zh)}">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.</span></p>
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </section>
     </div>

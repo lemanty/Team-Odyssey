@@ -23,7 +23,8 @@ public class OrderService {
         this.tx = transactionManager == null ? null : new TransactionTemplate(transactionManager);
     }
     public record Order(String id, long userId, String status, String fulfillment, String address, BigDecimal total, LocalDateTime createdAt) {}
-    public record Item(long productId, String productName, BigDecimal unitPrice, int quantity) {
+    public record Item(long productId, String productName, BigDecimal unitPrice, int quantity, long variantId, String size, String color) {
+        public Item(long productId,String productName,BigDecimal unitPrice,int quantity) {this(productId,productName,unitPrice,quantity,0,"","");}
         public BigDecimal subtotal() { return unitPrice.multiply(BigDecimal.valueOf(quantity)); }
     }
     private void ready() {
@@ -37,15 +38,15 @@ public class OrderService {
         return staff ? jdbc.query("SELECT * FROM shop_orders ORDER BY created_at DESC, id", this::row)
             : jdbc.query("SELECT o.* FROM shop_orders o JOIN users u ON u.id=o.user_id WHERE u.email=? ORDER BY o.created_at DESC, o.id", this::row, email);
     }
-    public record Preview(long productId, String name, int quantity, BigDecimal unitPrice, String image) {}
+    public record Preview(long productId, String name, int quantity, BigDecimal unitPrice, String image, String size, String color) {}
     public Map<String,List<Preview>> previews(String email, boolean staff) {
         ready();
         Map<String,List<Preview>> result=new LinkedHashMap<>();
-        String sql="SELECT i.*, d.garment_image FROM order_items i JOIN shop_orders o ON o.id=i.order_id JOIN users u ON u.id=o.user_id LEFT JOIN product_details d ON d.product_id=i.product_id"
+        String sql="SELECT i.*, d.garment_image FROM order_all_items i JOIN shop_orders o ON o.id=i.order_id JOIN users u ON u.id=o.user_id LEFT JOIN product_details d ON d.product_id=i.product_id"
             + (staff ? "" : " WHERE u.email=?") + " ORDER BY i.order_id,i.product_id";
         jdbc.query(sql, r -> {
             result.computeIfAbsent(r.getString("order_id"), key -> new ArrayList<>()).add(
-                new Preview(r.getLong("product_id"),r.getString("product_name"),r.getInt("quantity"),r.getBigDecimal("unit_price"),r.getString("garment_image")));
+                new Preview(r.getLong("product_id"),r.getString("product_name"),r.getInt("quantity"),r.getBigDecimal("unit_price"),r.getString("garment_image"),r.getString("size_label"),r.getString("color_label")));
         }, staff ? new Object[]{} : new Object[]{email});
         return result;
     }
@@ -56,7 +57,7 @@ public class OrderService {
         return rows.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
     public List<Item> items(String id) {
-        return jdbc.query("SELECT * FROM order_items WHERE order_id=? ORDER BY product_id", (r,n) -> new Item(r.getLong("product_id"),r.getString("product_name"),r.getBigDecimal("unit_price"),r.getInt("quantity")), id);
+        return jdbc.query("SELECT * FROM order_all_items WHERE order_id=? ORDER BY variant_id DESC,product_id", (r,n) -> new Item(r.getLong("product_id"),r.getString("product_name"),r.getBigDecimal("unit_price"),r.getInt("quantity"),r.getLong("variant_id"),r.getString("size_label"),r.getString("color_label")), id);
     }
     private String address(String fulfillment, String address) {
         if (!Set.of("DELIVERY","COLLECTION").contains(fulfillment)) throw new IllegalArgumentException("Choose delivery or collection. / 请选择配送或自取。");
@@ -73,8 +74,10 @@ public class OrderService {
             if (!existing.isEmpty()) return existing.get(0);
             Map<Long,Integer> cart=new LinkedHashMap<>();
             jdbc.query("SELECT product_id,quantity FROM cart_items WHERE user_id=? ORDER BY product_id",r -> { cart.put(r.getLong(1),r.getInt(2)); },userId);
+            jdbc.query("SELECT variant_id,quantity FROM cart_variants WHERE user_id=? ORDER BY variant_id",r -> { cart.put(-r.getLong(1),r.getInt(2)); },userId);
             String id=place(email,token,cart,fulfillment,address);
             jdbc.update("DELETE FROM cart_items WHERE user_id=?",userId);
+            jdbc.update("DELETE FROM cart_variants WHERE user_id=?",userId);
             return id;
         });
     }
@@ -88,14 +91,36 @@ public class OrderService {
             var existing = jdbc.queryForList("SELECT id FROM shop_orders WHERE user_id=? AND checkout_token=?",String.class,userId,token);
             if (!existing.isEmpty()) return existing.get(0);
             if (cart.isEmpty()) throw new IllegalArgumentException("Your bag is empty. / 购物车为空。");
+            // Lock parent products first in ascending order for all SKU combinations.
+            var productIds = new TreeSet<Long>();
+            for (long key : cart.keySet()) {
+                if (key >= 0) productIds.add(key);
+                else productIds.addAll(jdbc.queryForList("SELECT product_id FROM product_variants WHERE id=?",Long.class,-key));
+            }
+            for (long pid : productIds) jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE",pid);
             List<Item> lines = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;
             // Consistent lock order avoids deadlocks between carts containing the same products.
             for (var entry : new TreeMap<>(cart).entrySet()) {
                 int quantity = entry.getValue();
                 if (quantity < 1 || quantity > 999) throw new IllegalArgumentException("Invalid quantity. / 数量无效。");
-                var product = jdbc.query("SELECT name,price FROM products WHERE id=? FOR UPDATE", (r,n) -> new Item(entry.getKey(),r.getString("name"),r.getBigDecimal("price"),quantity),entry.getKey());
-                if (product.isEmpty() || jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?",quantity,entry.getKey(),quantity) != 1)
+                long productId=entry.getKey();
+                long variantId=0; String size="",color="";
+                if(productId<0) {
+                    variantId=-productId;
+                    var variants=jdbc.queryForList("SELECT * FROM product_variants WHERE id=? FOR UPDATE",variantId);
+                    if(variants.isEmpty()) throw new IllegalArgumentException("Product option unavailable. / 商品规格不可用。");
+                    var variant=variants.get(0);
+                    productId=((Number)variant.get("product_id")).longValue();
+                    size=(String)variant.get("size_label"); color=(String)variant.get("color_label");
+                    if(jdbc.update("UPDATE product_variants SET stock_quantity=stock_quantity-? WHERE id=? AND stock_quantity>=?",quantity,variantId,quantity)!=1)
+                        throw new IllegalArgumentException("Selected option is out of stock. / 所选尺码颜色库存不足。");
+                } else if(jdbc.queryForObject("SELECT COUNT(*) FROM product_variants WHERE product_id=?",Integer.class,productId)>0) {
+                    throw new IllegalArgumentException("Please choose size and colour on the product page. / 请在商品详情选择尺码和颜色。");
+                }
+                final long pid=productId,vid=variantId; final String sz=size,cl=color;
+                var product = jdbc.query("SELECT name,price FROM products WHERE id=? FOR UPDATE", (r,n) -> new Item(pid,r.getString("name"),r.getBigDecimal("price"),quantity,vid,sz,cl),productId);
+                if (product.isEmpty() || jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?",quantity,productId,quantity) != 1)
                     throw new IllegalArgumentException("An item has insufficient stock. Please review your bag. / 商品库存不足，请检查购物车。");
                 lines.add(product.get(0)); total = total.add(product.get(0).subtotal());
             }
@@ -103,7 +128,10 @@ public class OrderService {
             String id = UUID.randomUUID().toString();
             jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,?,?,'PENDING',?,?,?)",id,userId,token,fulfillment,destination,quote.payable());
             membership.save(id,quote);
-            for (Item item : lines) jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES (?,?,?,?,?)",id,item.productId(),item.productName(),item.unitPrice(),item.quantity());
+            for (Item item : lines) {
+                if(item.variantId()>0) jdbc.update("INSERT INTO order_variant_items(order_id,variant_id,product_id,product_name,unit_price,quantity,size_label,color_label) VALUES (?,?,?,?,?,?,?,?)",id,item.variantId(),item.productId(),item.productName(),item.unitPrice(),item.quantity(),item.size(),item.color());
+                else jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES (?,?,?,?,?)",id,item.productId(),item.productName(),item.unitPrice(),item.quantity());
+            }
             return id;
         });
     }
@@ -119,7 +147,13 @@ public class OrderService {
         tx.executeWithoutResult(s -> {
             get(id,email,false);
             if (jdbc.update("UPDATE shop_orders SET status='CANCELLED',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='PENDING'",id) != 1) locked();
-            for (Item item : items(id)) jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity+? WHERE product_id=?",item.quantity(),item.productId());
+            var items = items(id);
+            for (long pid : new TreeSet<>(items.stream().map(Item::productId).toList()))
+                jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE",pid);
+            for (Item item : items) {
+                if(item.variantId()>0) jdbc.update("UPDATE product_variants SET stock_quantity=stock_quantity+? WHERE id=?",item.quantity(),item.variantId());
+                jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity+? WHERE product_id=?",item.quantity(),item.productId());
+            }
         });
     }
     public void confirmReceipt(String id,String email) {

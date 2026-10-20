@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=membership-live-1)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -27,7 +27,7 @@
 </h2>
 <p th:each="line : ${bag.lines}">
 <span th:text="${line.product != null ? storeText.text(line.product.name, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
-</span> × <span th:text="${line.quantity}">
+</span> <span th:if="${line.size!=''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></span> × <span th:text="${line.quantity}">
 </span>
 <strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">
 </strong>
@@ -46,10 +46,19 @@
 <option value="COLLECTION" th:selected="${order != null and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '门店自取' : 'Collect in store'}">
 </option>
 </select>
+<div id="delivery-details">
+<div id="saved-addresses" th:unless="${#lists.isEmpty(addresses)}">
+<label for="addressId" th:text="${zh?'选择已保存的地址':'Choose a saved address'}"></label>
+<select id="addressId" name="addressId"><option value="" th:text="${zh?'手动填写新地址':'Enter a new address manually'}"></option><option th:each="a:${addresses}" th:value="${a.id}" th:selected="${a.isDefault}" th:text="${(a.isDefault ? (zh?'默认 · ':'Default · ') : '') + a.recipient + ' · ' + a.phone + ' · ' + a.addressLine}"></option></select>
+<p th:text="${zh?'选择已保存的地址时，以下手动地址不使用。自取无需地址。':'A saved address takes precedence over the manual entry below. Collection needs no address.'}"></p></div>
+<a th:href="@{/account/addresses}" th:text="${zh?'管理收货地址 →':'Manage addresses →'}"></a>
+<div id="manual-address">
 <label for="address" th:text="${zh ? '配送地址（自取无需填写）' : 'Delivery address (not needed for collection)'}">
 </label>
 <textarea id="address" name="address" maxlength="500" rows="3" th:text="${order != null ? order.address : ''}">
 </textarea>
+</div>
+</div>
 <button class="order-button" type="submit" th:text="${zh ? '提交订单' : 'Place order'}">
 </button>
 </form>
@@ -57,5 +66,6 @@
 </main>
 <footer th:replace="~{fragments/layout :: footer}">
 </footer>
+<script th:src="@{/js/checkout-address.js(v=1)}" defer></script>
 </body>
 </html>

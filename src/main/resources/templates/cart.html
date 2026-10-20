@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Your bag | Odyssey', zh)}">Your bag | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('cart')}"></header>
@@ -21,12 +21,14 @@
     <div class="cart-layout" th:unless="${#lists.isEmpty(bag.lines)}">
         <section th:aria-label="${storeText.text('Items in your bag', zh)}">
             <article class="cart-line" th:each="line : ${bag.lines}">
-                <a class="cart-image" th:if="${line.product != null}" th:href="@{/products/{id}(id=${line.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(line.product.name, zh)}">
+                <a class="cart-image" th:if="${line.product != null}" th:href="@{/products/{id}(id=${line.product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(line.product.name, zh)}">
                     <img th:if="${line.product.garmentImage != null}" th:src="@{${line.product.garmentImage}}" th:alt="${storeText.text(line.product.name, zh)}" width="150" height="200">
                     <span th:unless="${line.product.garmentImage != null}">ODYSSEY</span>
                 </a>
                 <div class="cart-line-copy">
                     <h2 th:text="${line.product != null} ? ${storeText.text(line.product.name, zh)} : ${storeText.text('Product no longer available', zh)}">Product</h2>
+                    <p th:if="${line.size != ''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></p>
+                    <a th:if="${line.product!=null and line.size=='' and line.product.category=='Clothing' and !line.available}" th:href="@{/products/{id}(id=${line.product.id})}" th:text="${zh?'重新选择规格 →':'Choose options →'}"></a>
                     <p th:if="${line.product != null}" th:text="'€' + ${#numbers.formatDecimal(line.product.price, 1, 2)} + ${zh ? ' / 件' : ' each'}">Price</p>
                     <p class="cart-error" th:unless="${line.available}"><span th:text="${storeText.text('This quantity is no longer available. Please reduce it or remove this item.', zh)}">This quantity is no longer available. Please reduce it or remove this item.</span></p>
                     <form class="cart-quantity" method="post" th:action="@{/cart/update}" th:if="${line.product != null}">

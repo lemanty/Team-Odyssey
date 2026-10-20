@@ -14,7 +14,8 @@ public class OrderController {
     private final OrderService orders;
     private final CartService cart;
     private final MembershipService membership;
-    public OrderController(OrderService orders, CartService cart, MembershipService membership) { this.orders=orders; this.cart=cart; this.membership=membership; }
+    private final AddressService addresses;
+    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses) { this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
     @GetMapping("/checkout")
     public String checkout(HttpSession session, Model model, Principal user) {
         synchronized(session) {
@@ -24,10 +25,11 @@ public class OrderController {
             model.addAttribute("bag",bag);
             model.addAttribute("pricing",membership.quote(user.getName(),bag.total()));
         }
+        model.addAttribute("addresses",addresses.list(user.getName()));
         return "checkout";
     }
     @PostMapping("/orders")
-    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, Principal user, HttpSession session, RedirectAttributes flash) {
+    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, @RequestParam(required=false) Long addressId, Principal user, HttpSession session, RedirectAttributes flash) {
         synchronized(session) {
             // Old tokens can retry the existing order, but cannot create a new order.
             String previous=(String)session.getAttribute("lastCheckoutToken");
@@ -36,7 +38,8 @@ public class OrderController {
             }
             if (token.equals(previous)) return "redirect:/orders";
             try {
-                String id=orders.placeFromCart(user.getName(),token,fulfillment,address);
+                String destination="DELIVERY".equals(fulfillment)&&addressId!=null ? addresses.get(user.getName(),addressId).formatted() : address;
+                String id=orders.placeFromCart(user.getName(),token,fulfillment,destination);
                 session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
                 flash.addFlashAttribute("orderMessage", "Order placed successfully. / 订单提交成功。");
