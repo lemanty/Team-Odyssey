@@ -13,9 +13,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class OrderService {
+    private final MembershipService membership;
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
-    public OrderService(ObjectProvider<JdbcTemplate> jdbc, ObjectProvider<PlatformTransactionManager> manager) {
+    public OrderService(ObjectProvider<JdbcTemplate> jdbc, ObjectProvider<PlatformTransactionManager> manager, MembershipService membership) {
+        this.membership=membership;
         this.jdbc = jdbc.getIfAvailable();
         var transactionManager = manager.getIfAvailable();
         this.tx = transactionManager == null ? null : new TransactionTemplate(transactionManager);
@@ -97,8 +99,10 @@ public class OrderService {
                     throw new IllegalArgumentException("An item has insufficient stock. Please review your bag. / 商品库存不足，请检查购物车。");
                 lines.add(product.get(0)); total = total.add(product.get(0).subtotal());
             }
+            var quote = membership.quote(email,total);
             String id = UUID.randomUUID().toString();
-            jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,?,?,'PENDING',?,?,?)",id,userId,token,fulfillment,destination,total);
+            jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,?,?,'PENDING',?,?,?)",id,userId,token,fulfillment,destination,quote.payable());
+            membership.save(id,quote);
             for (Item item : lines) jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES (?,?,?,?,?)",id,item.productId(),item.productName(),item.unitPrice(),item.quantity());
             return id;
         });

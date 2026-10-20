@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
-<link rel="stylesheet" th:href="@{/css/style.css(v=readable-1)}">
+<link rel="stylesheet" th:href="@{/css/style.css(v=membership-live-1)}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -32,8 +32,7 @@
 <strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">
 </strong>
 </p>
-<h2 th:text="'€' + ${#numbers.formatDecimal(bag.total,1,2)}">
-</h2>
+<div th:replace="~{fragments/membership :: pricing}"></div>
 <p th:text="${zh ? '提交时将重新核对价格及库存。本项目暂不收取运费或在线付款。' : 'Prices and stock are checked when you place the order. No delivery charge or online payment in this project.'}">
 </p>
 </section>

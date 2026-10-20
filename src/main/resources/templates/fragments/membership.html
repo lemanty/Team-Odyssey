@@ -1,0 +1,12 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
+<section th:fragment="level" th:if="${memberLevel != null}" class="order-card" style="margin:24px 0">
+<p th:text="${zh ? '当前会员等级' : 'Your membership'}"></p><h2 th:text="${storeText.text(memberLevel.tier,zh)}"></h2>
+<p><span th:text="${zh ? '累计已完成订单实付：€' : 'Completed order spending: €'}"></span><strong th:text="${#numbers.formatDecimal(memberLevel.spent,1,2)}"></strong></p>
+<p th:if="${memberLevel.nextTier != ''}"><span th:text="${zh ? '距离下一档还需 €' : 'Spend another €'}"></span><strong th:text="${#numbers.formatDecimal(memberLevel.remaining,1,2)}"></strong> · <span th:text="${storeText.text(memberLevel.nextTier,zh)}"></span></p>
+<p th:if="${memberLevel.nextTier == ''}" th:text="${zh ? '已达到最高等级，享85折优惠。' : 'Top tier reached. Enjoy 15% off.'}"></p>
+</section>
+<dl th:fragment="pricing" class="membership-price-breakdown">
+<dt th:text="${zh ? '商品原价合计' : 'Original subtotal'}"></dt><dd th:text="'€' + ${#numbers.formatDecimal(pricing.original,1,2)}"></dd>
+<dt><span th:text="${zh ? '会员优惠 · ' : 'Member discount · '}"></span><span th:text="${storeText.text(pricing.tier,zh)}"></span></dt><dd th:text="'−€' + ${#numbers.formatDecimal(pricing.discount,1,2)}"></dd>
+<dt th:text="${zh ? '优惠后订单金额' : 'Order total after discount'}"></dt><dd><strong th:text="'€' + ${#numbers.formatDecimal(pricing.payable,1,2)}"></strong></dd>
+</dl></body></html>

@@ -13,13 +13,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class OrderController {
     private final OrderService orders;
     private final CartService cart;
-    public OrderController(OrderService orders, CartService cart) { this.orders=orders; this.cart=cart; }
+    private final MembershipService membership;
+    public OrderController(OrderService orders, CartService cart, MembershipService membership) { this.orders=orders; this.cart=cart; this.membership=membership; }
     @GetMapping("/checkout")
-    public String checkout(HttpSession session, Model model) {
+    public String checkout(HttpSession session, Model model, Principal user) {
         synchronized(session) {
             if (session.getAttribute("checkoutToken") == null) session.setAttribute("checkoutToken",UUID.randomUUID().toString());
             model.addAttribute("checkoutToken",session.getAttribute("checkoutToken"));
-            model.addAttribute("bag",cart.view(session));
+            var bag=cart.view(session);
+            model.addAttribute("bag",bag);
+            model.addAttribute("pricing",membership.quote(user.getName(),bag.total()));
         }
         return "checkout";
     }
@@ -54,7 +57,9 @@ public class OrderController {
     @GetMapping("/staff/orders/{id}")
     public String staffDetail(@PathVariable String id, Principal user, Model model) { return detail(id,user,model,true); }
     private String detail(String id, Principal user, Model model, boolean staff) {
-        model.addAttribute("order",orders.get(id,user.getName(),staff));
+        var order=orders.get(id,user.getName(),staff);
+        model.addAttribute("order",order);
+        model.addAttribute("pricing",membership.snapshot(id,order.total()));
         model.addAttribute("items",orders.items(id)); model.addAttribute("staffView",staff); return "order-detail";
     }
     @PostMapping("/orders/{id}/edit")

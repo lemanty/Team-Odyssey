@@ -27,7 +27,7 @@ class OrderTests {
     @Autowired MockMvc mvc;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql")) {
+        for (String name : List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","009-membership.sql","006-account-cart.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",name)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", "").replaceAll("(?m)^--.*$", "");
             for (String statement : sql.split(";")) if (!statement.isBlank()) jdbc.execute(statement);
         }
@@ -141,5 +141,55 @@ class OrderTests {
         mvc.perform(get("/staff/orders/"+id).with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk()).andExpect(content().string(containsString("Start preparing")));
         mvc.perform(post("/staff/orders/"+id+"/status").with(user("a@test.com")).with(csrf()).param("next","PREPARING")).andExpect(status().isForbidden());
         mvc.perform(post("/staff/orders/"+id+"/status").with(user("staff@test.com").roles("STAFF")).with(csrf()).param("next","PREPARING")).andExpect(status().is3xxRedirection());
+    }
+
+    @Autowired com.odyssey.retailshop.service.MembershipService membership;
+    void history(String status, String total) {
+        String id=UUID.randomUUID().toString();
+        jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,1,?,?,'DELIVERY','Past',?)",id,id,status,new java.math.BigDecimal(total));
+    }
+    @Test void membershipThresholdsAndAccountIsolation() {
+        history("PENDING","5000"); history("CANCELLED","5000");
+        assertEquals("Essential",membership.forAccount("a@test.com").tier());
+        history("COMPLETED","199.99");
+        assertEquals("Essential",membership.forAccount("a@test.com").tier());
+        history("COMPLETED","0.01");
+        assertEquals("Silver",membership.forAccount("a@test.com").tier());
+        history("COMPLETED","300");
+        assertEquals("Gold",membership.forAccount("a@test.com").tier());
+        history("COMPLETED","500");
+        assertEquals("Signature",membership.forAccount("a@test.com").tier());
+        assertEquals("Essential",membership.forAccount("b@test.com").tier());
+    }
+    @Test void discountSnapshotRoundingRetryAndCancellation() throws Exception {
+        history("COMPLETED","200");
+        String token=UUID.randomUUID().toString();
+        String id=orders.place("a@test.com",token,Map.of(1L,1),"DELIVERY","Road");
+        var order=orders.get(id,"a@test.com",false);
+        assertEquals("11.88",order.total().toString());
+        var snapshot=membership.snapshot(id,order.total());
+        assertEquals("12.50",snapshot.original().toString());
+        assertEquals("0.62",snapshot.discount().toString());
+        assertEquals("Silver",snapshot.tier());
+        history("COMPLETED","800");
+        assertEquals(id,orders.place("a@test.com",token,Map.of(1L,1),"DELIVERY","Road"));
+        assertEquals("Silver",membership.snapshot(id,order.total()).tier());
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM order_membership WHERE order_id=?",Integer.class,id));
+        mvc.perform(get("/orders/"+id+"?lang=zh").with(user("a@test.com")))
+            .andExpect(status().isOk()).andExpect(content().string(containsString("银卡会员")))
+            .andExpect(content().string(containsString("11.88")));
+        orders.cancel(id,"a@test.com");
+        assertEquals(3,stock());
+        assertEquals("1000.00",membership.forAccount("a@test.com").spent().toString());
+    }
+    @Test void checkoutUsesServerTierAndOlderOrdersKeepTheirTotal() throws Exception {
+        history("COMPLETED","500");
+        jdbc.update("INSERT INTO cart_items(user_id,product_id,quantity) VALUES (1,1,2)");
+        mvc.perform(get("/checkout?lang=zh").with(user("a@test.com")))
+            .andExpect(status().isOk()).andExpect(content().string(containsString("金卡会员")))
+            .andExpect(content().string(containsString("22.50")));
+        var old=orders.list("a@test.com",false).get(0);
+        assertEquals(0,membership.snapshot(old.id(),old.total()).discount().signum());
+        assertEquals("500.00",membership.snapshot(old.id(),old.total()).payable().toString());
     }
 }
