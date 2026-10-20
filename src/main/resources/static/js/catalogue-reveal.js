@@ -20,7 +20,7 @@
       const animation = card.animate([
         {opacity: 0, translate: '-6px 18px'},
         {opacity: 1, translate: '0 0'}
-      ], {duration: 520, delay: Math.min(index * 65, 325),
+      ], {duration: 440, delay: Math.min(index * 45, 180),
           easing: 'cubic-bezier(.22,.7,.25,1)', fill: 'backwards'});
       animations.set(card, animation);
       animation.onfinish = () => animations.delete(card);
