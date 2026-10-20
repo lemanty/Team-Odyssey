@@ -18,4 +18,8 @@ public class AdminUserController {
   try{users.change(actor.getName(),id,expected,role);flash.addFlashAttribute("roleMessage","Role saved. Effective on the next request. / 权限已保存，下次请求生效。");}catch(IllegalArgumentException e){flash.addFlashAttribute("roleError",e.getMessage());}
   return "redirect:/admin/users";
  }
+ @PostMapping("/admin/users/{id}/delete") public String delete(@PathVariable long id,@RequestParam String expected,Principal actor,RedirectAttributes flash){
+  try{users.delete(actor.getName(),id,expected);flash.addFlashAttribute("roleMessage","Account deleted; historical records retained. / 账号已删除，历史记录已保留。");}catch(IllegalArgumentException e){flash.addFlashAttribute("roleError",e.getMessage());}
+  return "redirect:/admin/users";
+ }
 }

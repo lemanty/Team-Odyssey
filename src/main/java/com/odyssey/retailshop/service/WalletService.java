@@ -23,7 +23,7 @@ public class WalletService {
     public boolean available(){return jdbc!=null && tx!=null;}
     public Account account(String email) {
         if(!available()) throw new IllegalArgumentException("Wallet requires database mode. / 储值需要数据库模式。");
-        return jdbc.query("SELECT id,display_name,email FROM users WHERE email=?",(r,n)->new Account(r.getLong(1),r.getString(2),r.getString(3)),email.strip())
+        return jdbc.query("SELECT id,display_name,email FROM users WHERE email=? AND role<>'DELETED'",(r,n)->new Account(r.getLong(1),r.getString(2),r.getString(3)),email.strip())
             .stream().findFirst().orElseThrow(()->new IllegalArgumentException("Account not found. / 未找到该账号。"));
     }
     public BigDecimal balance(long id){return jdbc.queryForObject("SELECT COALESCE(SUM(amount),0) FROM wallet_entries WHERE user_id=?",BigDecimal.class,id);}
@@ -43,6 +43,7 @@ public class WalletService {
             // Deterministic locks serialize balance edits and duplicate requests.
             for(long id:new TreeSet<>(List.of(actor.id(),target.id())))jdbc.queryForList("SELECT id FROM users WHERE id=? FOR UPDATE",id);
             if(!"ADMIN".equals(jdbc.queryForObject("SELECT role FROM users WHERE id=?",String.class,actor.id())))throw new AccessDeniedException("Administrator required");
+            if("DELETED".equals(jdbc.queryForObject("SELECT role FROM users WHERE id=?",String.class,target.id())))throw new IllegalArgumentException("Account deleted. / 账号已删除。");
             if(jdbc.queryForObject("SELECT COUNT(*) FROM wallet_entries WHERE actor_id=? AND request_token=?",Integer.class,actor.id(),token)>0)return;
             BigDecimal after=balance(target.id()).add(delta);
             if(after.signum()<0 || after.compareTo(new BigDecimal("9999999999.99"))>0)throw new IllegalArgumentException("Insufficient balance or balance limit exceeded. / 余额不足或超过余额上限。");

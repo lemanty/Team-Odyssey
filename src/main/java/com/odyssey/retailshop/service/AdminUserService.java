@@ -15,7 +15,7 @@ public class AdminUserService {
  public record Account(long id,String name,String email,String role,LocalDateTime created){}
  public boolean available(){return jdbc!=null;}
  public List<Account> list(String query,int page){
-  return jdbc.query("SELECT id,display_name,email,role,created_at FROM users WHERE LOWER(display_name) LIKE ? OR LOWER(email) LIKE ? ORDER BY id LIMIT 51 OFFSET ?",(r,n)->new Account(r.getLong(1),r.getString(2),r.getString(3),r.getString(4),r.getTimestamp(5).toLocalDateTime()),"%"+query.toLowerCase(Locale.ROOT)+"%","%"+query.toLowerCase(Locale.ROOT)+"%",page*50);
+  return jdbc.query("SELECT id,display_name,email,role,created_at FROM users WHERE role<>'DELETED' AND (LOWER(display_name) LIKE ? OR LOWER(email) LIKE ?) ORDER BY id LIMIT 51 OFFSET ?",(r,n)->new Account(r.getLong(1),r.getString(2),r.getString(3),r.getString(4),r.getTimestamp(5).toLocalDateTime()),"%"+query.toLowerCase(Locale.ROOT)+"%","%"+query.toLowerCase(Locale.ROOT)+"%",page*50);
  }
  public void change(String actorEmail,long id,String expected,String role){
   var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
@@ -30,10 +30,28 @@ public class AdminUserService {
    var target=rows.stream().filter(r->((Number)r.get("id")).longValue()==id).findFirst().orElseThrow(()->new IllegalArgumentException("Account not found. / 账号不存在。"));
    if(((Number)actor.get("id")).longValue()==id)throw new IllegalArgumentException("You cannot change your own role. / 不能修改自己的角色。");
    String old=(String)target.get("role");
+   if(old.equals("DELETED"))throw new IllegalArgumentException("Account deleted. / 账号已删除。");
    if(!old.equals(expected))throw new IllegalArgumentException("Role changed. Refresh before editing. / 角色已变化，请刷新后重试。");
    if(old.equals(role))return;
    jdbc.update("UPDATE users SET role=? WHERE id=?",role,id);
    jdbc.update("INSERT INTO account_role_audit(actor_id,user_id,old_role,new_role) VALUES (?,?,?,?)",actor.get("id"),id,old,role);
+  });
+ }
+ public void delete(String actorEmail,long id,String expected){
+  var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+  if(auth==null || !auth.getName().equals(actorEmail) || auth.getAuthorities().stream().noneMatch(a->a.getAuthority().equals("ROLE_ADMIN")))throw new AccessDeniedException("Administrator required");
+  if(tx==null)throw new IllegalArgumentException("Database mode required. / 需要数据库模式。");
+  tx.executeWithoutResult(s->{
+   var rows=jdbc.queryForList("SELECT id,email,role FROM users ORDER BY id FOR UPDATE");
+   var actor=rows.stream().filter(r->r.get("email").equals(actorEmail) && r.get("role").equals("ADMIN")).findFirst().orElseThrow(()->new AccessDeniedException("Administrator required"));
+   if(((Number)actor.get("id")).longValue()==id)throw new IllegalArgumentException("You cannot delete your own account. / 不能删除当前登录账号。");
+   var target=rows.stream().filter(r->((Number)r.get("id")).longValue()==id).findFirst().orElseThrow(()->new IllegalArgumentException("Account not found. / 账号不存在。"));
+   String old=(String)target.get("role");if(old.equals("DELETED"))return;
+   if(!old.equals(expected))throw new IllegalArgumentException("Role changed. Refresh before deleting. / 角色已变化，请刷新后再删除。");
+   var balance=jdbc.queryForObject("SELECT COALESCE(SUM(amount),0) FROM wallet_entries WHERE user_id=?",java.math.BigDecimal.class,id);
+   if(balance.signum()!=0)throw new IllegalArgumentException("Settle the wallet balance before deleting. / 请先处理该账号的储值余额，再删除账号。");
+   jdbc.update("UPDATE users SET role='DELETED' WHERE id=?",id);
+   jdbc.update("INSERT INTO account_role_audit(actor_id,user_id,old_role,new_role) VALUES (?,?,?,'DELETED')",actor.get("id"),id,old);
   });
  }
 }

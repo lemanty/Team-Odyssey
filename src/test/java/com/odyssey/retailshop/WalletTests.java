@@ -90,4 +90,23 @@ class WalletTests {
   mvc.perform(get("/staff").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isOk());
   mvc.perform(get("/account").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.not(containsString("href=\"/staff/support\""))));
  }
+
+ @Autowired org.springframework.security.core.userdetails.UserDetailsService userDetails;
+ @Test @WithMockUser(username="admin@test.com",roles="ADMIN") void deletionRetainsHistoryAndRevokesAccess() throws Exception {
+  change("CREDIT","10",UUID.randomUUID().toString());
+  assertThrows(IllegalArgumentException.class,()->adminUsers.delete("admin@test.com",2,"CUSTOMER"));
+  change("DEBIT","10",UUID.randomUUID().toString());
+  assertThrows(IllegalArgumentException.class,()->adminUsers.delete("admin@test.com",1,"ADMIN"));
+  adminUsers.delete("admin@test.com",2,"CUSTOMER");
+  assertEquals("DELETED",jdbc.queryForObject("SELECT role FROM users WHERE id=2",String.class));
+  assertEquals(2,wallets.history(2).size());
+  assertTrue(adminUsers.list("Alice",0).isEmpty());
+  assertFalse(userDetails.loadUserByUsername("a@test.com").isEnabled());
+  assertThrows(IllegalArgumentException.class,()->adminUsers.change("admin@test.com",2,"DELETED","CUSTOMER"));
+  mvc.perform(get("/account/wallet").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login?deleted"));
+  mvc.perform(post("/admin/users/3/delete").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+  mvc.perform(post("/admin/users/3/delete").with(user("b@test.com").roles("CUSTOMER")).with(csrf()).param("expected","CUSTOMER")).andExpect(status().isForbidden());
+  mvc.perform(post("/admin/users/3/delete").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("expected","CUSTOMER")).andExpect(status().is3xxRedirection());
+  assertEquals("DELETED",jdbc.queryForObject("SELECT role FROM users WHERE id=3",String.class));
+ }
 }
