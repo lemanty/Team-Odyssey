@@ -1350,3 +1350,12 @@ input, select, textarea { line-height: 1.5; }
 .address-empty { padding:28px; border:1px dashed #bac9af; border-radius:16px; line-height:1.7; }
 @media(max-width:800px) { .address-layout { grid-template-columns:1fr; } }
 @media(max-width:420px) { .address-page .address-card { padding:18px; } .address-icon { display:none; } .address-recipient h3 { font-size:21px; } }
+
+/* Address editor enters from the list side without shifting the page layout. */
+.address-editor { scroll-margin-top:24px; }
+.address-editor-enter { animation:address-editor-in 420ms cubic-bezier(.22,1,.36,1) both; }
+.address-page .address-card { transition:border-color 200ms ease, box-shadow 200ms ease; }
+.address-page .address-card.is-editing { border-color:#78966a; box-shadow:0 0 0 2px #78966a1a; }
+.address-editor[aria-busy="true"] { cursor:progress; }
+@keyframes address-editor-in { from { opacity:0; transform:translateX(-44px); } to { opacity:1; transform:translateX(0); } }
+@media(prefers-reduced-motion:reduce) { .address-editor-enter { animation:none; } .address-page .address-card { transition:none; } }
