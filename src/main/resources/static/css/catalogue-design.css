@@ -6,3 +6,17 @@
 @media(prefers-reduced-motion:reduce){.catalogue-page .product-card.reveal-pending{opacity:1}}
 @media print{.catalogue-page .product-card.reveal-pending{opacity:1}}
 .catalogue-page .catalogue-filters label{font-size:16px}.catalogue-page .catalogue-filters input,.catalogue-page .catalogue-filters select{font-size:16px;height:50px}.catalogue-page .product-heading h3{line-height:1.45}
+
+/* Keep link and form purchase actions in the same full-width layout. */
+.catalogue-page .product-card { display:flex; flex-direction:column; }
+.catalogue-page .product-card-link { display:flex; flex-direction:column; flex:1; }
+.catalogue-page .product-copy { display:flex; flex-direction:column; flex:1; }
+.catalogue-page .card-audience { margin-bottom:18px; }
+.catalogue-page .card-detail-link { margin-top:auto; }
+.catalogue-page .product-purchase-actions { margin:12px 8px 8px; }
+.catalogue-page .product-purchase-actions .add-to-cart { margin:0; }
+.catalogue-page .product-purchase-actions .cart-button {
+    display:flex; align-items:center; justify-content:center; box-sizing:border-box;
+    width:100%; margin:0; text-decoration:none; min-height:56px;
+}
+@media(max-width:760px) { .catalogue-page .product-purchase-actions { margin:12px 3px 4px; } }
