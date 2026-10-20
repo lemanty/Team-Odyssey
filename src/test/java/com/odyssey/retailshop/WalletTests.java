@@ -25,7 +25,7 @@ class WalletTests {
  @Autowired WalletService wallets; @Autowired JdbcTemplate jdbc; @Autowired MockMvc mvc;
  @BeforeEach void setup() throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String name:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql")){
+  for(String name:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","012-account-roles.sql")){
    String sql=Files.readString(Path.of("src/main/resources/db",name)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");
    for(String statement:sql.split(";"))if(!statement.isBlank())jdbc.execute(statement);
   }
@@ -64,5 +64,30 @@ class WalletTests {
    gate.countDown();int successes=0;for(var r:results)if(r.get(15,TimeUnit.SECONDS))successes++;
    assertEquals(1,successes);assertEquals(new BigDecimal("20.00"),wallets.balance(2));
   }finally{pool.shutdownNow();}
+ }
+
+ @Autowired com.odyssey.retailshop.service.AdminUserService adminUsers;
+ @Test @WithMockUser(username="admin@test.com",roles="ADMIN") void accountListAndRoleChanges() throws Exception {
+  adminUsers.change("admin@test.com",2,"CUSTOMER","STAFF");
+  assertEquals("STAFF",jdbc.queryForObject("SELECT role FROM users WHERE id=2",String.class));
+  assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM account_role_audit",Integer.class));
+  assertThrows(IllegalArgumentException.class,()->adminUsers.change("admin@test.com",1,"ADMIN","CUSTOMER"));
+  assertThrows(IllegalArgumentException.class,()->adminUsers.change("admin@test.com",2,"CUSTOMER","ADMIN"));
+  assertThrows(IllegalArgumentException.class,()->adminUsers.change("admin@test.com",2,"STAFF","OWNER"));
+  mvc.perform(get("/admin/users?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("Alice"))).andExpect(content().string(containsString("当前账号，不可修改")));
+  mvc.perform(get("/admin/users?q=nobody").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("No matching accounts")));
+  mvc.perform(post("/admin/users/2/role").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+ }
+ @Test void administratorCannotUseSupportAndStaleRolesAreRefreshed() throws Exception {
+  for(String path:List.of("/support","/staff/support","/support/updates","/staff/support/updates"))mvc.perform(get(path).with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+  mvc.perform(post("/staff/support/messages").with(user("admin@test.com").roles("ADMIN")).with(csrf())).andExpect(status().isForbidden());
+  // A demoted account cannot keep an old administrator session's capabilities.
+  mvc.perform(get("/admin/users").with(user("a@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+  mvc.perform(post("/admin/users/3/role").with(user("a@test.com").roles("ADMIN")).with(csrf()).param("role","ADMIN").param("expected","CUSTOMER")).andExpect(status().isForbidden());
+  jdbc.update("UPDATE users SET role='ADMIN' WHERE id=2");
+  mvc.perform(get("/admin/users").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isOk());
+  jdbc.update("UPDATE users SET role='STAFF' WHERE id=2");
+  mvc.perform(get("/staff").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isOk());
+  mvc.perform(get("/account").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.not(containsString("href=\"/staff/support\""))));
  }
 }

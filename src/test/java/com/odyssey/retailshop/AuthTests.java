@@ -86,7 +86,11 @@ class AuthTests {
                 .andExpect(content().string(containsString("href=\"/membership\"")))
                 .andExpect(content().string(containsString("data-new-account-window")))
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            assertTrue(result.contains("href=\""+(role.equals("CUSTOMER") ? "/support" : "/staff/support")+"\""));
+            if(role.equals("ADMIN")) {
+                assertFalse(result.contains("href=\"/staff/support\""));
+                assertFalse(result.contains("href=\"/support\""));
+                assertTrue(result.contains("href=\"/admin/users\""));
+            } else assertTrue(result.contains("href=\""+(role.equals("CUSTOMER") ? "/support" : "/staff/support")+"\""));
             assertEquals(role.equals("ADMIN"),result.contains("href=\"/admin\""));
             String header=result.substring(result.indexOf("<header"),result.indexOf("</header>"));
             assertFalse(header.contains("href=\"/orders\""));
