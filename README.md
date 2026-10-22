@@ -347,6 +347,8 @@ Windows 用 `py -3` 替换 `python3`。普通 Markdown 链接只会打开脚本�
 
 ### Windows 组员：双击启动
 
+**新电脑先双击 [Windows-Setup.cmd](scripts/Windows-Setup.cmd)**，自动检查并按需安装环境、配置 Java、下载依赖并编译。详细说明与排错见 [Windows 一键配置指南](docs/windows-setup.md)；只检查环境可运行 [Windows-Check.cmd](scripts/Windows-Check.cmd)。共享数据库凭据和 SSH 公钥仍需负责人提供与授权。
+
 1. 安装 JDK 17 或 21、Python 3.9+（安装时勾选 Add Python to PATH）以及 OpenSSH 客户端。设置 `JAVA_HOME` 为 JDK 安装目录。新开终端，用 `java -version`、`py -3 --version`、`ssh -V` 检查；若没有 `py`，脚本也会尝试 `python` 和 `python3`。
 2. 按上面的说明填写项目根目录 `.env.team`，保存为 UTF-8，注意文件名不能变成 `.env.team.txt`。管理员需提前添加你的 SSH 公钥。
 3. 打开项目的 `scripts` 文件夹，双击 [Member-Connect.cmd](scripts/Member-Connect.cmd)，保持隧道窗口打开。
@@ -403,7 +405,7 @@ git check-ignore .env.mysql .env.team
 Host-Start / Member-Website 会等待商品页面能够正常读取 MySQL 后，自动打开默认浏览器。
 再次启动时：已运行的 MySQL 模式网站会被复用，不再启动第二份 Java；仍在启动中的脚本会等待同一任务。
 如果端口被 demo 模式、旧版网站或其他程序占用，会明确提示，不会擅自关闭其他程序。先停止旧程序，再启动脚本。
-启动等待上限为 180 秒，超时会清理本次创建的进程。正常使用请保持终端打开；Ctrl+C 停止本次 Maven/Java 进程树，Docker 数据库继续运行。
+启动等待上限为 600 秒（可通过 `STARTUP_TIMEOUT` 调整），超时会清理本次创建的进程。正常使用请保持终端打开；Ctrl+C 停止本次 Maven/Java 进程树，Docker 数据库继续运行。
 更换端口可先设置环境变量 `PORT`，默认仍为 8080。关闭浏览器只关闭页面，不会停止服务器。
 
 ## 11. 服装样本与商品详情
