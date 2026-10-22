@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
+<link rel="stylesheet" th:href="@{/css/checkout-payment.css}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -26,39 +27,53 @@
 <h2 th:text="${zh ? '订单商品' : 'Your selection'}">
 </h2>
 <p th:each="line : ${bag.lines}">
-<span th:text="${line.product != null ? storeText.text(line.product.name, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
+<span th:text="${line.product != null ? storeText.productName(line.product, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
 </span> <span th:if="${line.size!=''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></span> × <span th:text="${line.quantity}">
 </span>
 <strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">
 </strong>
 </p>
 <div th:replace="~{fragments/membership :: pricing}"></div>
-<p th:text="${zh ? '提交时将重新核对价格及库存。本项目暂不收取运费或在线付款。' : 'Prices and stock are checked when you place the order. No delivery charge or online payment in this project.'}">
+<p th:text="${zh ? '提交时重新核对优惠、价格、余额及库存。可使用储值余额支付；暂不接入银行卡付款，不收取运费。' : 'Discounts, prices, balance and stock are checked at checkout. Wallet payment is available; card payment is not connected. No delivery charge.'}">
 </p>
 </section>
 <form class="order-card order-form" method="post" th:action="@{/orders}">
 <input type="hidden" name="token" th:value="${checkoutToken}">
+<section class="checkout-payment"><h2 th:text="${zh?'选择优惠券':'Choose a coupon'}"></h2>
+<p th:text="${zh?'每单限用一张，每个账号每张券限用一次。门槛按商品原价合计计算；可叠加时，先享会员优惠，再使用优惠券。':'One coupon per order, once per account. Minimum uses the original subtotal. Stackable coupons apply after membership discounts.'}"></p>
+<label for="couponCode" th:text="${zh?'可用活动':'Available offers'}"></label><select id="couponCode" name="couponCode"><option value="" th:text="${zh?'不使用优惠券':'No coupon'}"></option><option th:each="offer:${couponOffers}" th:value="${offer.coupon.code}" th:selected="${offer.coupon.code==selectedCoupon}" th:disabled="${offer.unavailable!=''}" th:text="${offer.coupon.title+' · '+offer.coupon.code+' · '+(offer.coupon.kind=='FIXED'?(zh?'减 €':'€ off ')+offer.coupon.value:offer.coupon.value+(zh?'% 减免':'% off'))+' · '+(offer.coupon.stack?(zh?'可叠加':'Stackable'):(zh?'不叠加':'Not stackable'))+(offer.unavailable!=''?' · '+storeText.text(offer.unavailable,zh):'')}"></option></select>
+<button id="coupon-preview" class="order-button" type="submit" formnovalidate th:formaction="@{/checkout/coupon}" th:text="${zh?'应用优惠券 / 更新金额':'Apply coupon / update total'}"></button>
+<p th:if="${#lists.isEmpty(couponOffers)}" th:text="${zh?'暂无进行中的优惠活动。':'No active offers.'}"></p><a th:href="@{/account/coupons}" th:text="${zh?'查看优惠券有效期与完整规则 →':'Validity and full terms →'}"></a>
+</section>
 <label for="fulfillment" th:text="${zh ? '收货方式' : 'Fulfilment'}">
 </label>
 <select id="fulfillment" name="fulfillment">
-<option value="DELIVERY" th:selected="${order != null and order.fulfillment == 'DELIVERY'}" th:text="${zh ? '配送' : 'Delivery'}">
+<option value="DELIVERY" th:selected="${selectedFulfillment == null or selectedFulfillment == 'DELIVERY'}" th:text="${zh ? '配送' : 'Delivery'}">
 </option>
-<option value="COLLECTION" th:selected="${order != null and order.fulfillment == 'COLLECTION'}" th:text="${zh ? '门店自取' : 'Collect in store'}">
+<option value="COLLECTION" th:selected="${selectedFulfillment == 'COLLECTION'}" th:text="${zh ? '门店自取' : 'Collect in store'}">
 </option>
 </select>
 <div id="delivery-details">
 <div id="saved-addresses" th:unless="${#lists.isEmpty(addresses)}">
 <label for="addressId" th:text="${zh?'选择已保存的地址':'Choose a saved address'}"></label>
-<select id="addressId" name="addressId"><option value="" th:text="${zh?'手动填写新地址':'Enter a new address manually'}"></option><option th:each="a:${addresses}" th:value="${a.id}" th:selected="${a.isDefault}" th:text="${(a.isDefault ? (zh?'默认 · ':'Default · ') : '') + a.recipient + ' · ' + a.phone + ' · ' + a.addressLine}"></option></select>
+<select id="addressId" name="addressId"><option value="" th:text="${zh?'手动填写新地址':'Enter a new address manually'}"></option><option th:each="a:${addresses}" th:value="${a.id}" th:selected="${selectedAddressId != null ? a.id == selectedAddressId : a.isDefault}" th:text="${(a.isDefault ? (zh?'默认 · ':'Default · ') : '') + a.recipient + ' · ' + a.phone + ' · ' + a.addressLine}"></option></select>
 <p th:text="${zh?'选择已保存的地址时，以下手动地址不使用。自取无需地址。':'A saved address takes precedence over the manual entry below. Collection needs no address.'}"></p></div>
 <a th:href="@{/account/addresses}" th:text="${zh?'管理收货地址 →':'Manage addresses →'}"></a>
 <div id="manual-address">
 <label for="address" th:text="${zh ? '配送地址（自取无需填写）' : 'Delivery address (not needed for collection)'}">
 </label>
-<textarea id="address" name="address" maxlength="500" rows="3" th:text="${order != null ? order.address : ''}">
+<textarea id="address" name="address" maxlength="500" rows="3" th:text="${checkoutAddress != null ? checkoutAddress : ''}">
 </textarea>
 </div>
 </div>
+<section class="checkout-payment" aria-labelledby="payment-title">
+<h2 id="payment-title" th:text="${zh?'支付方式':'Payment method'}"></h2>
+<div class="payment-balance"><span th:text="${zh?'可用储值余额':'Available wallet balance'}"></span><strong th:text="${'€'+#numbers.formatDecimal(walletBalance,1,2)}"></strong></div>
+<label class="payment-option"><input type="radio" name="paymentMethod" value="WALLET" th:checked="${selectedPayment==null or selectedPayment=='WALLET'}"><span><strong th:text="${zh?'储值余额支付':'Pay with wallet'}"></strong><small th:text="${zh?'按优惠后的实付金额扣款；待备货时取消订单，款项退回余额。':'Pay the discounted total. Cancelling before preparation returns the payment to your wallet.'}"></small></span></label>
+<p class="payment-shortfall" role="status" th:if="${walletBalance.compareTo(pricing.payable) < 0}" th:text="${(zh?'余额不足，还差 €':'Insufficient balance. You need another €')+#numbers.formatDecimal(pricing.payable.subtract(walletBalance),1,2)+(zh?'。请联系管理员确认入账，或选择线下付款。':'. Contact an administrator about crediting funds, or choose offline payment.')}"></p>
+<label class="payment-option"><input type="radio" name="paymentMethod" value="OFFLINE" th:checked="${selectedPayment=='OFFLINE'}"><span><strong th:text="${zh?'线下付款':'Pay offline'}"></strong><small th:text="${zh?'仅提交订单，本次不扣余额；系统不会标记为已支付。':'Place the order without deducting your balance. It will not be marked as paid.'}"></small></span></label>
+<a th:href="@{/account/wallet}" th:text="${zh?'查看我的储值 →':'View my wallet →'}"></a>
+</section>
 <button class="order-button" type="submit" th:text="${zh ? '提交订单' : 'Place order'}">
 </button>
 </form>
@@ -67,5 +82,6 @@
 <footer th:replace="~{fragments/layout :: footer}">
 </footer>
 <script th:src="@{/js/checkout-address.js(v=1)}" defer></script>
+<script th:src="@{/js/checkout-coupon.js}" defer></script>
 </body>
 </html>

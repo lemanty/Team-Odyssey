@@ -38,7 +38,7 @@ class SupportHttpTests {
     }
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","004-login-names.sql","005-orders.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql")) {
+        for(String file:List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","004-login-names.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","016_support_returns.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",file)).replaceAll("(?m)^--.*$","").replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","");
             for(String statement:sql.split(";")) if(!statement.isBlank()) jdbc.execute(statement);
         }
@@ -72,6 +72,20 @@ class SupportHttpTests {
         assertTrue(ajax.body().contains("\"redirect\":\"/support\""));
         assertEquals(403,post("/support/messages?_csrf=invalid","multipart/form-data; boundary="+boundary,body.toString()).statusCode());
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM support_messages",Integer.class));
+    }
+    @Test void returnFormMultipartWorksInRealBrowserRequest() throws Exception {
+        jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (1,'Vase','Household','Ceramic',12.50)");
+                jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES ('return-http',1,?,'COMPLETED','COLLECTION','',12.50)",UUID.randomUUID().toString());
+        jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES ('return-http',1,'Vase',12.50,1)");
+        loginWindow("","http@test.com");
+        String html=get("/orders/return-http/return").body();
+        String action=match(html,"action=\"([^\"]*return[^\"]*)\"");
+        String token=match(html,"name=\"token\"[^>]*value=\"([^\"]+)\"");
+        String boundary="ReturnBrowserBoundary";var body=new StringBuilder();
+        for(var field:Map.of("itemKey","1","quantity","1","reason","Damaged","token",token).entrySet())body.append("--"+boundary+"\r\nContent-Disposition: form-data; name=\""+field.getKey()+"\"\r\n\r\n"+field.getValue()+"\r\n");
+        body.append("--"+boundary+"--\r\n");
+        assertEquals(302,post(action,"multipart/form-data; boundary="+boundary,body.toString()).statusCode());
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM return_requests",Integer.class));
     }
     private String csrf(String html) { return match(html,"name=\"_csrf\"[^>]*value=\"([^\"]+)\""); }
     private void loginWindow(String window,String email) throws Exception {

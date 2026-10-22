@@ -21,17 +21,17 @@ public class SupportService {
         this.tx=tm==null ? null : new TransactionTemplate(tm);
     }
     public record Viewer(long id, String name, String role) {
-        public boolean staff() { return role.equals("STAFF") || role.equals("ADMIN"); }
+        public boolean staff() { return role.equals("STAFF"); }
     }
     public record Conversation(String id, long customerId, String customerName, boolean waiting, boolean resolved,
                                boolean unread, long latestId, LocalDateTime updatedAt, String preview) {}
-    public record Message(long id, long senderId, String senderName, boolean staff, String body, LocalDateTime createdAt, String orderId, boolean image) {}
+    public record Message(long id, long senderId, String senderName, boolean staff, String body, LocalDateTime createdAt, String orderId, boolean image, String returnId) {}
     public record History(List<Message> messages, long before, long latestVisible) {}
     public record Counts(long waiting, long unread, long resolved) {}
     public Viewer viewer(String email) {
         if (jdbc==null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Support requires MySQL mode.");
         return jdbc.query("SELECT id,display_name,role FROM users WHERE email=?",(r,n)->new Viewer(r.getLong(1),r.getString(2),r.getString(3)),email)
-            .stream().findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.FORBIDDEN));
+            .stream().filter(v->!v.role().equals("ADMIN")).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
     private String select() {
         return "SELECT c.*,u.display_name,COALESCE(rd.last_message_id,0) AS seen,"
@@ -72,8 +72,8 @@ public class SupportService {
     }
     public History history(Viewer viewer,String id,long before) {
         get(viewer,id);
-        List<Message> rows=jdbc.query("SELECT m.*,u.display_name,e.order_id,(e.image_data IS NOT NULL) AS has_image FROM support_messages m JOIN users u ON u.id=m.sender_id LEFT JOIN support_message_extras e ON e.message_id=m.id WHERE m.conversation_id=? AND m.id<? ORDER BY m.id DESC LIMIT 51",
-            (r,n)->new Message(r.getLong("id"),r.getLong("sender_id"),r.getString("display_name"),!r.getString("sender_role").equals("CUSTOMER"),r.getString("body"),r.getTimestamp("created_at").toLocalDateTime(),r.getString("order_id"),r.getBoolean("has_image")),
+        List<Message> rows=jdbc.query("SELECT m.*,u.display_name,e.order_id,rl.return_id,(e.image_data IS NOT NULL) AS has_image FROM support_messages m JOIN users u ON u.id=m.sender_id LEFT JOIN support_message_extras e ON e.message_id=m.id LEFT JOIN support_return_links rl ON rl.message_id=m.id WHERE m.conversation_id=? AND m.id<? ORDER BY m.id DESC LIMIT 51",
+            (r,n)->new Message(r.getLong("id"),r.getLong("sender_id"),r.getString("display_name"),!r.getString("sender_role").equals("CUSTOMER"),r.getString("body"),r.getTimestamp("created_at").toLocalDateTime(),r.getString("order_id"),r.getBoolean("has_image"),r.getString("return_id")),
             id,before>0?before:Long.MAX_VALUE);
         boolean more=rows.size()>50; if (more) rows=new ArrayList<>(rows.subList(0,50));
         Collections.reverse(rows);
@@ -95,9 +95,13 @@ public class SupportService {
         return send(viewer,id,body,token,null,null);
     }
     public String send(Viewer viewer,String id,String body,String token,String orderId,SupportImage image) {
+        return send(viewer,id,body,token,orderId,image,null);
+    }
+    public String send(Viewer viewer,String id,String body,String token,String orderId,SupportImage image,String returnId) {
+        String linkedReturn=returnId==null||returnId.isBlank()?null:returnId;
         String clean=body==null?"":body.strip();
         String order=orderId==null || orderId.isBlank()?null:orderId;
-        if ((clean.isEmpty() && order==null && image==null) || clean.length()>2000) throw new IllegalArgumentException("Add text, an image or an order; text must be at most 2000 characters. / 请填写文字、添加图片或选择订单，文字最多2000字。");
+        if ((clean.isEmpty() && order==null && image==null && linkedReturn==null) || clean.length()>2000) throw new IllegalArgumentException("Add text, an image or an order; text must be at most 2000 characters. / 请填写文字、添加图片或选择订单，文字最多2000字。");
         try { UUID.fromString(token); } catch(RuntimeException e) { throw new IllegalArgumentException("Reload the conversation and try again. / 请刷新对话后重试。"); }
         return tx.execute(status -> {
             // Serialize retries from one sender; lock the conversation before allocating message IDs.
@@ -122,13 +126,22 @@ public class SupportService {
             long customerId=get(viewer,thread).customerId();
             if(order!=null && jdbc.queryForObject("SELECT COUNT(*) FROM shop_orders WHERE id=? AND user_id=?",Integer.class,order,customerId)!=1)
                 throw new IllegalArgumentException("Choose an order belonging to this customer. / 只能选择当前顾客自己的订单。");
+            if(linkedReturn!=null && jdbc.queryForObject("SELECT COUNT(*) FROM return_requests WHERE id=? AND user_id=?"+(order==null?"":" AND order_id=?"),Integer.class,order==null?new Object[]{linkedReturn,customerId}:new Object[]{linkedReturn,customerId,order})!=1)
+                throw new IllegalArgumentException("Choose this customer's matching return. / 请选择当前顾客的售后申请，关联订单须一致。");
             jdbc.update("INSERT INTO support_messages(conversation_id,sender_id,sender_role,body,request_token) VALUES (?,?,?,?,?)",thread,viewer.id(),viewer.role(),clean,token);
             Long message=jdbc.queryForObject("SELECT id FROM support_messages WHERE sender_id=? AND request_token=?",Long.class,viewer.id(),token);
+            if(linkedReturn!=null)jdbc.update("INSERT INTO support_return_links(message_id,return_id) VALUES (?,?)",message,linkedReturn);
             if(order!=null || image!=null) jdbc.update("INSERT INTO support_message_extras(message_id,order_id,image_data,image_type) VALUES (?,?,?,?)",
                 message,order,image==null?null:image.bytes(),image==null?null:image.type());
             jdbc.update("UPDATE support_conversations SET "+(viewer.staff()?"last_staff_message":"last_customer_message")+"=?,resolved=FALSE,updated_at=CURRENT_TIMESTAMP WHERE id=?",message,thread);
             return thread;
         });
+    }
+    public record ReturnChoice(String id,String status) {}
+    public List<ReturnChoice> returnChoices(Viewer viewer,String thread) {
+        if(viewer.staff()&&thread==null)return List.of();
+        long customer=thread==null?viewer.id():get(viewer,thread).customerId();
+        return jdbc.query("SELECT id,status FROM return_requests WHERE user_id=? ORDER BY created_at DESC",(r,n)->new ReturnChoice(r.getString(1),r.getString(2)),customer);
     }
     public record OrderChoice(String id, java.math.BigDecimal total, String status, String products) {}
     public List<OrderChoice> orderChoices(Viewer viewer,String thread) {

@@ -28,7 +28,7 @@ class SupportTests {
     SupportService.Viewer customer,staff,otherStaff,other;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql")) {
+        for(String file:List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","016_support_returns.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",file)).replaceAll("(?m)^--.*$","").replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","");
             for(String statement:sql.split(";")) if(!statement.isBlank()) jdbc.execute(statement);
         }
@@ -76,7 +76,7 @@ class SupportTests {
             .andExpect(content().string(containsString("&lt;script&gt;"))).andExpect(content().string(not(containsString("<script>alert"))));
         mvc.perform(get("/staff/support?id="+id+"&lang=zh").with(user("s@test.com").roles("STAFF")))
             .andExpect(status().isOk()).andExpect(content().string(containsString("needs-reply"))).andExpect(content().string(containsString("未读")));
-        mvc.perform(get("/staff/support/updates?id="+id).with(user("admin@test.com").roles("ADMIN")))
+        mvc.perform(get("/staff/support/updates?id="+id).with(user("s@test.com").roles("STAFF")))
             .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"));
         mvc.perform(get("/support").with(user("s@test.com").roles("STAFF"))).andExpect(redirectedUrl("/staff/support"));
         mvc.perform(post("/staff/support/messages").with(user("s@test.com").roles("STAFF")).with(csrf()).param("id",id).param("body","Reply").param("token",UUID.randomUUID().toString())).andExpect(redirectedUrl("/staff/support?id="+id));

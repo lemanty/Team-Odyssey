@@ -58,14 +58,14 @@
     <div class="product-grid">
         <article class="product-card" th:each="product, status : ${products}"
                  th:id="${product.id == products.^[category == #vars.product.category].id} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
-            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(product.name, zh)}">
+            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
             <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}">
-                <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.text(product.name, zh)}" loading="lazy" width="600" height="800">
+                <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)}" loading="lazy" width="600" height="800">
                 <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category == 'Clothing' ? '穿着' : '居家') : (product.category == 'Clothing' ? 'WEAR' : 'LIVE')}">GOODS</span>
             </div>
             <div class="product-copy">
                 <span class="eyebrow" th:text="${storeText.text(product.category, zh)}">Category</span>
-                <div class="product-heading"><h3 th:text="${storeText.text(product.name, zh)}">Product</h3><span class="price" th:text="'€' + ${product.price}">€0.00</span></div>
+                <div class="product-heading"><h3 th:text="${storeText.productName(product, zh)}">Product</h3><span class="price" th:text="'€' + ${product.price}">€0.00</span></div>
                 <p class="card-audience" th:if="${product.audience != null}" th:text="${storeText.text(product.audience, zh)} + ${zh ? '系列' : ' collection'}"><span th:text="${storeText.text('Collection', zh)}">Collection</span></p>
                 <span class="card-detail-link"><span th:text="${storeText.text('Discover this piece', zh)}">Discover this piece</span> <span aria-hidden="true">↗</span></span>
             </div>

@@ -22,7 +22,10 @@ public class PreferenceAdvice {
             .build(true).getQuery();
     }
     @ModelAttribute("supportStaff") public boolean supportStaff(org.springframework.security.core.Authentication auth) {
-        return auth!=null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STAFF") || a.getAuthority().equals("ROLE_ADMIN"));
+        return auth!=null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STAFF"));
+    }
+    @ModelAttribute("isAdmin") public boolean isAdmin(org.springframework.security.core.Authentication auth) {
+        return auth!=null && auth.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_ADMIN"));
     }
     @ModelAttribute("zh") public boolean chinese(HttpServletRequest request) { return Boolean.TRUE.equals(request.getAttribute("zh")); }
     @ModelAttribute("newAccountWindowUrl") public String newAccountWindowUrl() { return "/login?window="+java.util.UUID.randomUUID().toString().replace("-",""); }

@@ -18,6 +18,12 @@ public class StoreText {
             }
         }
     }
+    public String productName(com.odyssey.retailshop.model.Product p, boolean zh) {
+        return zh && p.getNameZh()!=null && !p.getNameZh().isBlank() ? p.getNameZh() : text(p.getName(),zh);
+    }
+    public String productDescription(com.odyssey.retailshop.model.Product p, boolean zh) {
+        return zh && p.getDescriptionZh()!=null && !p.getDescriptionZh().isBlank() ? p.getDescriptionZh() : text(p.getDescription(),zh);
+    }
     public String text(String source, boolean zh) {
         if (source == null) return "";
         // Existing order feedback carries both languages separated by this delimiter.

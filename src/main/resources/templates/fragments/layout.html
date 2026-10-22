@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/site-motion.css(v=1)}">
     <script defer th:src="@{/js/site-motion.js(v=1)}"></script>
     <script defer th:src="@{/js/navigation.js(v=2)}"></script>
+    <script defer th:src="@{/js/search-clear.js(v=1)}"></script>
     <script defer th:src="@{/js/account-window.js(v=1)}"></script>
     <nav th:aria-label="${zh ? '主导航' : 'Main navigation'}">
         <a th:href="@{/}" th:attr="aria-current=${activePage == 'home' ? 'page' : null}" th:text="${zh ? '首页' : 'Home'}">Home</a>

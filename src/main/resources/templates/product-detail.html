@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${storeText.text(product.name, zh)} + ' | Odyssey'">Product | Odyssey</title>
+    <title th:text="${storeText.productName(product, zh)} + ' | Odyssey'">Product | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <script th:src="@{/js/product-gallery.js}" defer></script>
 </head>
@@ -15,10 +15,10 @@
         <section class="product-gallery" th:aria-label="${storeText.text('Product photographs', zh)}" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
             <div class="gallery-stage" tabindex="0" th:aria-label="${storeText.text('Product photos. Use left and right arrow keys to change photo.', zh)}">
                 <figure class="gallery-slide is-active" data-slide role="group" aria-roledescription="slide" th:aria-label="${product.category == 'Household' ? (zh ? '商品图片' : 'Product photograph') : storeText.text('1 of 2: garment photograph', zh)}">
-                    <img th:src="@{${product.garmentImage}}" th:alt="${storeText.text(product.name, zh)} + ${product.category == 'Household' ? (zh ? ' — 商品图' : ' — product photograph') : (zh ? ' — 服装实物图' : ' — garment photograph')}" width="900" height="1200" fetchpriority="high">
+                    <img th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)} + ${product.category == 'Household' ? (zh ? ' — 商品图' : ' — product photograph') : (zh ? ' — 服装实物图' : ' — garment photograph')}" width="900" height="1200" fetchpriority="high">
                 </figure>
                 <figure class="gallery-slide" data-slide role="group" aria-roledescription="slide" th:aria-label="${storeText.text('2 of 2: styled on model', zh)}" aria-hidden="true" th:if="${product.modelImage != null and product.category != 'Household'}">
-                    <img th:src="@{${product.modelImage}}" th:alt="${storeText.text(product.name, zh)} + ${zh ? ' — 模特穿搭图' : ' — styled on an adult model'}" width="900" height="1200" decoding="async">
+                    <img th:src="@{${product.modelImage}}" th:alt="${storeText.productName(product, zh)} + ${zh ? ' — 模特穿搭图' : ' — styled on an adult model'}" width="900" height="1200" decoding="async">
                 </figure>
                 <div class="gallery-arrows" hidden data-gallery-controls>
                     <button type="button" data-prev th:aria-label="${storeText.text('Previous photo', zh)}">←</button>
@@ -38,9 +38,9 @@
         <div class="detail-no-image" th:if="${product.garmentImage == null}"><span>ODYSSEY</span><p><span th:text="${storeText.text('Photography coming soon', zh)}">Photography coming soon</span></p></div>
         <section class="detail-copy" aria-labelledby="product-title">
             <p class="eyebrow"><span th:text="${storeText.text(product.category, zh)}"><span th:text="${storeText.text('Clothing', zh)}">Clothing</span></span><span th:if="${product.audience != null}" th:text="' / ' + ${storeText.text(product.audience, zh)}"> / Women</span></p>
-            <h1 id="product-title" th:text="${storeText.text(product.name, zh)}">Product name</h1>
+            <h1 id="product-title" th:text="${storeText.productName(product, zh)}">Product name</h1>
             <p class="detail-price" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
-            <p class="detail-description" th:text="${storeText.text(product.description, zh)}">Description</p>
+            <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
                 <span class="stock-dot" aria-hidden="true"></span>
                 <span th:text="${product.stockQuantity > 0 ? (zh ? '现货 · 剩余 ' + product.stockQuantity + ' 件' : 'In stock · ' + product.stockQuantity + ' available') : (zh ? '暂时缺货' : 'Out of stock')}">In stock</span>

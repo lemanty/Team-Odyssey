@@ -36,6 +36,7 @@ public class SupportController {
         model.addAttribute("history",history);
         model.addAttribute("linkedOrderPreviews",selected==null ? Map.of() : support.orderPreviews(viewer,selected.id(),history));
         model.addAttribute("orderChoices",support.orderChoices(viewer,selected==null?null:selected.id()));
+        model.addAttribute("returnChoices",support.returnChoices(viewer,selected==null?null:selected.id()));
         model.addAttribute("supportBase",viewer.staff()?"/staff/support":"/support");
         if(viewer.staff()) {
             var rows=support.inbox(viewer,filter,page);
@@ -46,11 +47,11 @@ public class SupportController {
     }
     @PostMapping({"/support/messages","/staff/support/messages"})
     public Object send(Principal principal,@RequestParam(required=false) String id,@RequestParam(defaultValue="") String body,@RequestParam String token,
-                       @RequestParam(required=false) String orderId,@RequestParam(required=false) org.springframework.web.multipart.MultipartFile image,RedirectAttributes flash,
+                       @RequestParam(required=false) String returnId,@RequestParam(required=false) String orderId,@RequestParam(required=false) org.springframework.web.multipart.MultipartFile image,RedirectAttributes flash,
                        @RequestHeader(value="Accept",defaultValue="") String accept) {
         var viewer=support.viewer(principal.getName());
         try {
-            String thread=support.send(viewer,id,body,token,orderId,com.odyssey.retailshop.service.SupportImage.from(image));
+            String thread=support.send(viewer,id,body,token,orderId,com.odyssey.retailshop.service.SupportImage.from(image),returnId);
             String destination=viewer.staff()?"/staff/support?id="+thread:"/support";
             if(accept.contains("application/json")) return ResponseEntity.ok(Map.of("redirect",destination));
             return "redirect:"+destination;
