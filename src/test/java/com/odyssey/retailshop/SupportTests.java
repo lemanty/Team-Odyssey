@@ -76,7 +76,7 @@ class SupportTests {
             .andExpect(content().string(containsString("&lt;script&gt;"))).andExpect(content().string(not(containsString("<script>alert"))));
         mvc.perform(get("/staff/support?id="+id+"&lang=zh").with(user("s@test.com").roles("STAFF")))
             .andExpect(status().isOk()).andExpect(content().string(containsString("needs-reply"))).andExpect(content().string(containsString("未读")));
-        mvc.perform(get("/staff/support/updates?id="+id).with(user("admin@test.com").roles("ADMIN")))
+        mvc.perform(get("/staff/support/updates?id="+id).with(user("s@test.com").roles("STAFF")))
             .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"));
         mvc.perform(get("/support").with(user("s@test.com").roles("STAFF"))).andExpect(redirectedUrl("/staff/support"));
         mvc.perform(post("/staff/support/messages").with(user("s@test.com").roles("STAFF")).with(csrf()).param("id",id).param("body","Reply").param("token",UUID.randomUUID().toString())).andExpect(redirectedUrl("/staff/support?id="+id));

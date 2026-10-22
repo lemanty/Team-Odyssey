@@ -7,7 +7,9 @@
     <h1 th:if="${administrator}" th:text="${zh ? '管理员工作台' : 'Administrator workspace'}"></h1>
     <h1 th:unless="${administrator}" th:text="${zh ? '员工工作台' : 'Staff workspace'}"></h1>
     <p class="auth-notice" th:text="${zh ? '订单管理与客服工作台已开放；其他计划模块将陆续加入。' : 'Order management and customer support are available. Other planned modules will follow.'}"></p>
-    <a class="detail-back" th:href="@{/staff/support}" th:text="${zh ? '客服对话与待回复列表 →' : 'Customer conversations and reply queue →'}"></a>
+    <a class="detail-back" th:unless="${isAdmin}" th:href="@{/staff/support}" th:text="${zh ? '客服对话与待回复列表 →' : 'Customer conversations and reply queue →'}"></a>
+    <a class="detail-back" th:if="${administrator}" th:href="@{/admin/wallet}" th:text="${zh ? '用户储值管理 →' : 'Manage user wallets →'}"></a>
+    <a class="detail-back" th:if="${isAdmin}" th:href="@{/admin/users}" th:text="${zh?'注册账号与权限管理 →':'Registered accounts and roles →'}"></a>
     <h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
     <ul th:unless="${administrator}">
         <li th:text="${zh ? '维护商品信息与上下架' : 'Maintain products and catalogue availability'}"></li>
@@ -16,7 +18,7 @@
         <li th:text="${zh ? '查看并回复顾客咨询' : 'Read and reply to customer enquiries'}"></li>
     </ul>
     <ul th:if="${administrator}">
-        <li th:text="${zh ? '拥有全部员工操作权限' : 'Access all staff operations'}"></li>
+        <li th:text="${zh ? '管理订单、账号权限与储值（不包含客服）' : 'Manage orders, accounts and wallets (excluding support)'}"></li>
         <li th:text="${zh ? '管理账号状态、员工身份和角色授权' : 'Manage account status, staff access and role assignments'}"></li>
         <li th:text="${zh ? '维护系统设置并查看操作记录' : 'Maintain system settings and review audit records'}"></li>
     </ul>

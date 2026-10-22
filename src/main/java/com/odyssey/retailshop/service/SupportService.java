@@ -21,7 +21,7 @@ public class SupportService {
         this.tx=tm==null ? null : new TransactionTemplate(tm);
     }
     public record Viewer(long id, String name, String role) {
-        public boolean staff() { return role.equals("STAFF") || role.equals("ADMIN"); }
+        public boolean staff() { return role.equals("STAFF"); }
     }
     public record Conversation(String id, long customerId, String customerName, boolean waiting, boolean resolved,
                                boolean unread, long latestId, LocalDateTime updatedAt, String preview) {}
@@ -31,7 +31,7 @@ public class SupportService {
     public Viewer viewer(String email) {
         if (jdbc==null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Support requires MySQL mode.");
         return jdbc.query("SELECT id,display_name,role FROM users WHERE email=?",(r,n)->new Viewer(r.getLong(1),r.getString(2),r.getString(3)),email)
-            .stream().findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.FORBIDDEN));
+            .stream().filter(v->!v.role().equals("ADMIN")).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
     private String select() {
         return "SELECT c.*,u.display_name,COALESCE(rd.last_message_id,0) AS seen,"
