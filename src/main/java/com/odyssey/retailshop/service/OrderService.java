@@ -119,7 +119,7 @@ public class OrderService {
                     throw new IllegalArgumentException("Please choose size and colour on the product page. / 请在商品详情选择尺码和颜色。");
                 }
                 final long pid=productId,vid=variantId; final String sz=size,cl=color;
-                var product = jdbc.query("SELECT name,price FROM products WHERE id=? FOR UPDATE", (r,n) -> new Item(pid,r.getString("name"),r.getBigDecimal("price"),quantity,vid,sz,cl),productId);
+                var product = jdbc.query("SELECT name,price FROM products WHERE id=? AND NOT EXISTS (SELECT 1 FROM product_management m WHERE m.product_id=products.id AND m.published=FALSE) FOR UPDATE", (r,n) -> new Item(pid,r.getString("name"),r.getBigDecimal("price"),quantity,vid,sz,cl),productId);
                 if (product.isEmpty() || jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?",quantity,productId,quantity) != 1)
                     throw new IllegalArgumentException("An item has insufficient stock. Please review your bag. / 商品库存不足，请检查购物车。");
                 lines.add(product.get(0)); total = total.add(product.get(0).subtotal());

@@ -103,7 +103,7 @@ public class ProductController {
 
     private String searchable(Product p) {
         return normalize(p.getName() + " " + p.getDescription() + " " + p.getCategory() + " "
-            + storeText.text(p.getName(), true) + " " + storeText.text(p.getDescription(), true)
+            + storeText.productName(p, true) + " " + storeText.productDescription(p, true)
             + " " + storeText.text(p.getCategory(), true));
     }
 }
