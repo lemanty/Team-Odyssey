@@ -1,0 +1,27 @@
+Team Odyssey - COMP3019J Milestone 1 Design Report
+
+这份英文报告按老师的四个标题组织：
+1. Project Idea：小型服装/家居商店的问题、顾客/员工/管理员职责与范围。
+2. Main Functions：核心购物闭环优先，会员、地址簿和储值为扩展。
+3. Application Design：架构图、数据记录表、从下单到确认收货的跨角色流程，以及最后一件库存竞争的异常处理。
+4. Technology Choices：Java 17、Spring MVC/Security/Session、Thymeleaf、MySQL/JDBC、前端 JavaScript 与测试取舍。
+
+封面信息：
+Team Odyssey
+LuoZizhen 24107742
+PangXikuan 24107749
+DuanYuchen 24107753
+
+编辑与提交：
+- 将随附的 Overleaf ZIP 上传到 Overleaf，打开 main.tex，选择 pdfLaTeX，编译并下载 PDF。
+- Odyssey-Design-Report.tex 是内容相同的单文件版，可在 Codex 的 LaTeX 编辑器预览。
+- 最终提交 PDF，不是 ZIP；请按课程要求由一名成员提交到 Moodle。
+- 报告保持模板的 A4、11pt、22mm 页边距及四个主标题。
+
+提交前请团队共同核对：
+- 姓名、学号是否与课程登记一致。
+- 哪些技术已在课堂讲授。报告没有擅自声称哪些一定没学过，使用了条件说明；可按课堂实际情况具体化。
+- 报告中的管理员不参与客服；员工负责客服，顾客只能访问自己的记录。
+- 储值目前仅管理员确认入账，无在线支付、提现或结算抵扣，不能描述成完整支付系统。
+- 商品规格颜色为演示选项；账号删除为停用并保留历史记录，不是彻底抹除个人数据。
+- 本稿依据当前 feature/admin-users 的项目代码整理，未提交或上传 GitHub，也未代交作业。
