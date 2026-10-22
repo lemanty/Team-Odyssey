@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Team database commands. Python 3 standard library only; never prints passwords."""
 import argparse
+import re
 import os
 from pathlib import Path
 import shutil
@@ -21,12 +22,17 @@ os.chdir(ROOT)
 def config(filename):
     path = ROOT / filename
     if not path.exists():
-        raise RuntimeError(f'Prepare {filename} from {filename}.example first; see README.')
+        raise RuntimeError(f'Prepare {filename} from {filename}.example first; make sure Windows did not append .txt. See docs/windows-setup.md.')
     values = {}
-    for line in path.read_text(encoding='utf-8-sig').splitlines():
+    for number, line in enumerate(path.read_text(encoding='utf-8-sig').splitlines(), 1):
         if line.strip() and not line.lstrip().startswith('#'):
+            if '=' not in line:
+                raise RuntimeError(f'{filename}, line {number}: expected KEY=value (value omitted).')
             key, value = line.split('=', 1)
-            values[key.strip()] = value.strip()
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in (chr(34), chr(39)):
+                value = value[1:-1]
+            values[key.strip()] = value
     return values
 
 
@@ -75,10 +81,16 @@ def tunnel():
     port = int(values.get('DB_PORT', '13307'))
     if not 1024 <= port <= 65535:
         raise RuntimeError('DB_PORT must be between 1024 and 65535')
-    command = ['ssh', '-N', '-o', 'ExitOnForwardFailure=yes', '-o', 'ServerAliveInterval=30',
+    ssh = shutil.which('ssh')
+    if not ssh:
+        raise RuntimeError('OpenSSH client not found. On Windows run scripts/Windows-Setup.cmd.')
+    command = [ssh, '-N', '-o', 'ExitOnForwardFailure=yes', '-o', 'ServerAliveInterval=30',
                '-o', 'ServerAliveCountMax=3', '-L', f'127.0.0.1:{port}:127.0.0.1:3307']
     if values.get('SSH_KEY'):
-        command += ['-i', str(Path(values['SSH_KEY']).expanduser()), '-o', 'IdentitiesOnly=yes']
+        key = Path(values['SSH_KEY']).expanduser()
+        if not key.is_file():
+            raise RuntimeError('SSH_KEY does not point to an existing private key file. Check .env.team; do not send your private key to anyone.')
+        command += ['-i', str(key), '-o', 'IdentitiesOnly=yes']
     command += [f'{user}@{host}']
     print(f'Tunnel: 127.0.0.1:{port} -> database host. Keep this window open; Ctrl+C closes it.', flush=True)
     subprocess.run(command, check=True)
@@ -165,11 +177,39 @@ def stop_website(process):
     process.wait()
 
 
+def startup_timeout(env):
+    try:
+        timeout = int(env.get('STARTUP_TIMEOUT', '600'))
+    except ValueError:
+        raise RuntimeError('STARTUP_TIMEOUT must be an integer between 60 and 3600 seconds.')
+    if not 60 <= timeout <= 3600:
+        raise RuntimeError('STARTUP_TIMEOUT must be between 60 and 3600 seconds.')
+    return timeout
+
+
+def check_java(env):
+    home = env.get('JAVA_HOME')
+    suffix = '.exe' if os.name == 'nt' else ''
+    java = str(Path(home) / 'bin' / ('java' + suffix)) if home else shutil.which('java', path=env.get('PATH'))
+    javac = str(Path(home) / 'bin' / ('javac' + suffix)) if home else shutil.which('javac', path=env.get('PATH'))
+    if not java or not javac:
+        raise RuntimeError('JDK 17+ is required, not just JRE. On Windows run scripts/Windows-Setup.cmd, then reopen your terminal.')
+    for executable, pattern in [(java, r'version "(\d+)'), (javac, r'javac (\d+)')]:
+        try:
+            result = subprocess.run([executable, '-version'], capture_output=True, text=True, timeout=15)
+        except (OSError, subprocess.TimeoutExpired):
+            raise RuntimeError('JAVA_HOME or Java executable is invalid. Set JAVA_HOME to a JDK root (not its bin folder); on Windows rerun Windows-Setup.cmd.') from None
+        match = re.search(pattern, result.stdout + result.stderr)
+        if result.returncode or not match or int(match.group(1)) < 17:
+            raise RuntimeError('Java and javac must both be version 17 or newer. JDK 17/21 is recommended; rerun Windows-Setup.cmd on Windows.')
+
+
 def run_website(command, env, port):
+    timeout = startup_timeout(env)
     with launch_lock(port) as acquired:
         if not acquired:
             print('另一个启动脚本正在运行，等待它就绪；不会重复启动。', flush=True)
-            deadline = time.monotonic() + 180
+            deadline = time.monotonic() + timeout
             while time.monotonic() < deadline:
                 if website_state(port) == 'mysql':
                     open_website(port)
@@ -186,7 +226,7 @@ def run_website(command, env, port):
         options = {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == 'nt' else {'start_new_session': True}
         process = subprocess.Popen(command, env=env, cwd=ROOT, **options)
         try:
-            deadline = time.monotonic() + 180
+            deadline = time.monotonic() + timeout
             while time.monotonic() < deadline:
                 if process.poll() is not None:
                     raise RuntimeError('网站在就绪前退出，请查看上方启动日志。')
@@ -198,7 +238,7 @@ def run_website(command, env, port):
                         raise RuntimeError(f'网站进程退出，状态码 {code}。')
                     return
                 time.sleep(1)
-            raise RuntimeError('网站启动超过 180 秒，已停止本次启动，请检查日志后重试。')
+            raise RuntimeError(f'网站启动超过 {timeout} 秒，已停止本次启动。首次下载依赖可能较慢；检查网络或设置 STARTUP_TIMEOUT 后重试。')
         finally:
             stop_website(process)
 
@@ -227,6 +267,14 @@ def website(role):
     web_port = int(env.get('PORT', '8080'))
     if not 1024 <= web_port <= 65535:
         raise RuntimeError('PORT must be between 1024 and 65535')
+    if not 1024 <= port <= 65535:
+        raise RuntimeError('Database port must be between 1024 and 65535.')
+    check_java(env)
+    try:
+        with socket.create_connection(('127.0.0.1', port), timeout=3):
+            pass
+    except OSError:
+        raise RuntimeError(f'Cannot reach local database port {port}. Start and keep Member-Connect open first (host: start Docker/MySQL). Check .env.team DB_PORT.') from None
     run_website(maven_command(os.name == 'nt'), env, web_port)
 
 
