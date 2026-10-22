@@ -24,7 +24,7 @@
 </p>
 <span class="order-badge" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}">
 </span>
-<div class="order-grid">
+<p th:if="${!staffView and order.status=='COMPLETED'}"><a class="order-view-link" th:href="@{/orders/{id}/return(id=${order.id})}" th:text="${zh?'申请退货 / 售后':'Request return / aftersales'}"></a></p><div class="order-grid">
 <section class="order-card">
 <h2 th:text="${zh ? '商品明细' : 'Order details'}">
 </h2>
@@ -42,6 +42,7 @@
 </div>
 <div th:replace="~{fragments/membership :: pricing}"></div>
 <div class="order-payment-summary">
+<p th:if="${returnRefunded>0}" th:text="${(zh?'售后累计退款 €':'Aftersales refunds €')+#numbers.formatDecimal(returnRefunded,1,2)}"></p>
 <h2 th:text="${zh?'支付信息':'Payment information'}"></h2>
 <p th:text="${payment.method=='WALLET'?(zh?'储值余额支付':'Wallet payment'):(payment.method=='OFFLINE'?(zh?'线下付款':'Offline payment'):(zh?'历史订单：未记录支付方式':'Historical order: payment method not recorded'))}"></p>
 <strong th:text="${payment.status=='PAID'?(zh?'已支付':'Paid'):(payment.status=='REFUNDED'?(zh?'已退回储值余额':'Refunded to wallet'):(payment.status=='UNPAID'?(zh?'未记录收款':'Payment not recorded'):(payment.status=='CANCELLED'?(zh?'已取消，未扣款':'Cancelled, no charge'):(zh?'支付状态未记录':'Payment status not recorded'))))}"></strong>

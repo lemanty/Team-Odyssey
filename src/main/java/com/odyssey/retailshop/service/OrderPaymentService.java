@@ -45,6 +45,13 @@ public class OrderPaymentService {
         }
         jdbc.update("UPDATE order_payments SET status='REFUNDED',refund_entry_id=?,refunded_at=CURRENT_TIMESTAMP WHERE order_id=? AND status='PAID'",entry,orderId);
     }
+    Long returnRefund(long userId,BigDecimal amount) {
+        transactionRequired();
+        if(amount.signum()==0)return null;
+        BigDecimal after=wallets.balance(userId).add(amount);
+        if(after.compareTo(new BigDecimal("9999999999.99"))>0)throw new IllegalArgumentException("Wallet limit exceeded. / 退款将超过储值上限，请先联系管理员处理。");
+        return entry(userId,amount,after,"Aftersales refund / 售后退款");
+    }
     private long entry(long userId,BigDecimal amount,BigDecimal after,String note) {
         var key=new GeneratedKeyHolder();
         jdbc.update(c->{var ps=c.prepareStatement("INSERT INTO wallet_entries(user_id,actor_id,request_token,amount,balance_after,note) VALUES (?,?,?,?,?,?)",new String[]{"id"});

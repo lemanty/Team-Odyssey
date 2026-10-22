@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS return_requests (
+ id VARCHAR(36) PRIMARY KEY, order_id VARCHAR(36) NOT NULL, user_id BIGINT NOT NULL,
+ product_id BIGINT NOT NULL, variant_id BIGINT NOT NULL DEFAULT 0, quantity INT NOT NULL,
+ reason VARCHAR(1000) NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'REQUESTED',
+ request_token VARCHAR(36) NOT NULL, image_data MEDIUMBLOB, image_type VARCHAR(40),
+ refund_amount DECIMAL(14,2) NOT NULL DEFAULT 0, refund_method VARCHAR(20), refund_entry_id BIGINT,
+ restocked BOOLEAN NOT NULL DEFAULT FALSE, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE(user_id,request_token), UNIQUE(refund_entry_id),
+ FOREIGN KEY(order_id) REFERENCES shop_orders(id), FOREIGN KEY(user_id) REFERENCES users(id),
+ FOREIGN KEY(refund_entry_id) REFERENCES wallet_entries(id), CHECK(quantity>0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS return_events (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY, return_id VARCHAR(36) NOT NULL, actor_id BIGINT NOT NULL,
+ status VARCHAR(20) NOT NULL, note VARCHAR(1000) NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(return_id) REFERENCES return_requests(id), FOREIGN KEY(actor_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

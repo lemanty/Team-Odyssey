@@ -57,6 +57,7 @@
                         <div class="support-message-meta"><strong th:text="${message.staff ? (zh ? '客服 · ' : 'Support · ') + message.senderName : message.senderName}"></strong><time th:text="${#temporals.format(message.createdAt,'MM-dd HH:mm')}"></time></div>
                         <p th:if="${!#strings.isEmpty(message.body)}" th:text="${message.body}"></p>
                         <a class="support-image-link" th:if="${message.image}" th:href="@{/support/images/{id}(id=${message.id})}" target="_blank" rel="noopener" th:aria-label="${zh ? '查看完整图片（新窗口）' : 'Open full image (opens another tab)'}"><img th:src="@{/support/images/{id}(id=${message.id})}" th:alt="${zh ? '对话图片' : 'Conversation image'}" width="280" height="210" loading="lazy"></a>
+                        <a class="support-order-link" th:if="${message.returnId != null}" th:href="@{${(staffView?'/staff/returns/':'/orders/returns/')+message.returnId}}" th:text="${(zh?'关联售后 #':'Linked return #')+#strings.substring(message.returnId,0,8)}"></a>
                         <a class="support-order-link" th:if="${message.orderId != null}" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + message.orderId}}"><span th:text="${zh ? '关联订单' : 'Linked order'}"></span><strong th:text="${'#' + #strings.substring(message.orderId,0,8)}"></strong>
                             <span class="support-order-products" th:if="${linkedOrderPreviews[message.orderId] != null}">
                                 <span class="support-order-product" th:each="item : ${linkedOrderPreviews[message.orderId]}">
@@ -89,8 +90,9 @@
                         <span data-upload-error role="alert"></span>
                     </div>
                     <div class="support-order-picker">
-                        <label for="support-order" th:text="${staffView ? (zh ? '选择此顾客的订单' : 'Choose this customer’s order') : (zh ? '选择我的订单' : 'Choose my order')}"></label>
-                        <select id="support-order" name="orderId"><option value="" th:text="${zh ? '不关联订单' : 'No linked order'}"></option><option th:each="choice : ${orderChoices}" th:value="${choice.id}" th:selected="${selectedOrder == choice.id}" th:text="${'#' + #strings.substring(choice.id,0,8) + ' · €' + choice.total + ' · ' + choice.products}"></option></select>
+
+                        <label for="support-return" th:text="${zh?'关联售后申请':'Link return request'}"></label><select id="support-return" name="returnId"><option value="" th:text="${zh?'不关联售后':'No linked return'}"></option><option th:each="r:${returnChoices}" th:value="${r.id}" th:text="${'#'+#strings.substring(r.id,0,8)}"></option></select>
+                        <label for="support-order" th:text="${zh?'关联订单':'Linked order'}"></label><select id="support-order" name="orderId"><option value="" th:text="${zh ? '不关联订单' : 'No linked order'}"></option><option th:each="choice : ${orderChoices}" th:value="${choice.id}" th:selected="${selectedOrder == choice.id}" th:text="${'#' + #strings.substring(choice.id,0,8) + ' · €' + choice.total + ' · ' + choice.products}"></option></select>
                         <small th:if="${#lists.isEmpty(orderChoices)}" th:text="${zh ? '暂无已提交的订单，仍可发送文字或图片。' : 'No orders yet. You can still send text or an image.'}"></small>
                     </div>
                 </div>
