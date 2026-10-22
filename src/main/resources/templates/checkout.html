@@ -39,6 +39,12 @@
 </section>
 <form class="order-card order-form" method="post" th:action="@{/orders}">
 <input type="hidden" name="token" th:value="${checkoutToken}">
+<section class="checkout-payment"><h2 th:text="${zh?'选择优惠券':'Choose a coupon'}"></h2>
+<p th:text="${zh?'每单限用一张，每个账号每张券限用一次。门槛按商品原价合计计算；可叠加时，先享会员优惠，再使用优惠券。':'One coupon per order, once per account. Minimum uses the original subtotal. Stackable coupons apply after membership discounts.'}"></p>
+<label for="couponCode" th:text="${zh?'可用活动':'Available offers'}"></label><select id="couponCode" name="couponCode"><option value="" th:text="${zh?'不使用优惠券':'No coupon'}"></option><option th:each="offer:${couponOffers}" th:value="${offer.coupon.code}" th:selected="${offer.coupon.code==selectedCoupon}" th:disabled="${offer.unavailable!=''}" th:text="${offer.coupon.title+' · '+offer.coupon.code+' · '+(offer.coupon.kind=='FIXED'?(zh?'减 €':'€ off ')+offer.coupon.value:offer.coupon.value+(zh?'% 减免':'% off'))+' · '+(offer.coupon.stack?(zh?'可叠加':'Stackable'):(zh?'不叠加':'Not stackable'))+(offer.unavailable!=''?' · '+storeText.text(offer.unavailable,zh):'')}"></option></select>
+<button id="coupon-preview" class="order-button" type="submit" formnovalidate th:formaction="@{/checkout/coupon}" th:text="${zh?'应用优惠券 / 更新金额':'Apply coupon / update total'}"></button>
+<p th:if="${#lists.isEmpty(couponOffers)}" th:text="${zh?'暂无进行中的优惠活动。':'No active offers.'}"></p><a th:href="@{/account/coupons}" th:text="${zh?'查看优惠券有效期与完整规则 →':'Validity and full terms →'}"></a>
+</section>
 <label for="fulfillment" th:text="${zh ? '收货方式' : 'Fulfilment'}">
 </label>
 <select id="fulfillment" name="fulfillment">
@@ -76,5 +82,6 @@
 <footer th:replace="~{fragments/layout :: footer}">
 </footer>
 <script th:src="@{/js/checkout-address.js(v=1)}" defer></script>
+<script th:src="@{/js/checkout-coupon.js}" defer></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
     <a class="detail-back" th:if="${administrator}" th:href="@{/admin/wallet}" th:text="${zh ? '用户储值管理 →' : 'Manage user wallets →'}"></a>
     <a class="detail-back" th:if="${isAdmin}" th:href="@{/admin/users}" th:text="${zh?'注册账号与权限管理 →':'Registered accounts and roles →'}"></a>
     <a class="detail-back" th:href="@{/staff/products}" th:text="${zh ? '商品与库存管理 →' : 'Products and inventory →'}"></a>
-    <h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
+    <a class="detail-back" th:href="@{/staff/coupons}" th:text="${zh?'优惠券与活动管理 →':'Manage coupons &amp; offers →'}"></a><h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
     <ul th:unless="${administrator}">
         <li th:text="${zh ? '维护商品信息与上下架' : 'Maintain products and catalogue availability'}"></li>
         <li th:text="${zh ? '处理订单、备货、发货及自取交付' : 'Prepare orders, dispatch deliveries and complete collections'}"></li>

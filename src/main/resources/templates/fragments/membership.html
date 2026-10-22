@@ -8,5 +8,6 @@
 <dl th:fragment="pricing" class="membership-price-breakdown">
 <dt th:text="${zh ? '商品原价合计' : 'Original subtotal'}"></dt><dd th:text="'€' + ${#numbers.formatDecimal(pricing.original,1,2)}"></dd>
 <dt><span th:text="${zh ? '会员优惠 · ' : 'Member discount · '}"></span><span th:text="${storeText.text(pricing.tier,zh)}"></span></dt><dd th:text="'−€' + ${#numbers.formatDecimal(pricing.discount,1,2)}"></dd>
-<dt th:text="${zh ? '优惠后订单金额' : 'Order total after discount'}"></dt><dd><strong th:text="'€' + ${#numbers.formatDecimal(pricing.payable,1,2)}"></strong></dd>
+<dt th:if="${couponPricing!=null}"><span th:text="${zh?'优惠券 · ':'Coupon · '}"></span><span th:text="${couponPricing.title}"></span><small th:text="${couponPricing.stack?(zh?'（叠加会员优惠）':' (with membership)'):(zh?'（不叠加会员优惠）':' (without membership)')}"></small></dt><dd th:if="${couponPricing!=null}" th:text="${'−€'+#numbers.formatDecimal(couponPricing.discount,1,2)}"></dd>
+<dt th:text="${zh ? '优惠后订单金额'  : 'Order total after discount'}"></dt><dd><strong th:text="'€' + ${#numbers.formatDecimal(pricing.payable,1,2)}"></strong></dd>
 </dl></body></html>
