@@ -19,7 +19,7 @@ public class MembershipService {
     }
     public Level forAccount(String email) {
         if (jdbc==null) return level(BigDecimal.ZERO);
-        BigDecimal spent=jdbc.queryForObject("SELECT COALESCE(SUM(o.total),0) FROM shop_orders o JOIN users u ON u.id=o.user_id WHERE u.email=? AND o.status='COMPLETED'",BigDecimal.class,email);
+        BigDecimal spent=jdbc.queryForObject("SELECT COALESCE(SUM(o.total-COALESCE((SELECT SUM(r.refund_amount) FROM return_requests r WHERE r.order_id=o.id AND r.status='COMPLETED'),0)),0) FROM shop_orders o JOIN users u ON u.id=o.user_id WHERE u.email=? AND o.status='COMPLETED'",BigDecimal.class,email);
         return level(spent);
     }
     public Quote quote(String email, BigDecimal original) {

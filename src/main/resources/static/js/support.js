@@ -36,7 +36,7 @@
         composer.addEventListener('submit', async event => {
             event.preventDefault();
             if (sending) return;
-            if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value) {
+            if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value && !document.getElementById('support-return').value) {
                 uploadError.textContent = zh ? '请填写消息、添加图片或选择订单。' : 'Add a message, image or order.';
                 return;
             }

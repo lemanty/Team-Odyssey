@@ -12,12 +12,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class OrderController {
     private final OrderService orders;
+    private final OrderWorkspaceService workspace;
+    private final ReturnService returns;
     private final CartService cart;
     private final MembershipService membership;
     private final AddressService addresses;
     private final WalletService wallets;
     private final OrderPaymentService payments;
-    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses, WalletService wallets, OrderPaymentService payments) { this.wallets=wallets; this.payments=payments; this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
+    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses, WalletService wallets, OrderPaymentService payments, OrderWorkspaceService workspace, ReturnService returns) { this.returns=returns; this.workspace=workspace; this.wallets=wallets; this.payments=payments; this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
     @GetMapping("/checkout")
     public String checkout(HttpSession session, Model model, Principal user) {
         synchronized(session) {
@@ -60,7 +62,12 @@ public class OrderController {
     @GetMapping("/orders")
     public String mine(Principal user, Model model) { return listing(user,model,false); }
     @GetMapping("/staff/orders")
-    public String staff(Principal user, Model model) { return listing(user,model,true); }
+    public String staff(Principal user, Model model,@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="ALL") String status,@RequestParam(defaultValue="") String from,@RequestParam(defaultValue="") String to,@RequestParam(defaultValue="0") int page) {
+        page=Math.max(0,Math.min(page,100000));
+        try{model.addAttribute("result",workspace.search(q,status,from,to,page));}
+        catch(IllegalArgumentException e){model.addAttribute("orderError",e.getMessage());model.addAttribute("result",workspace.search("","ALL","","",0));}
+        model.addAttribute("q",q);model.addAttribute("status",status);model.addAttribute("from",from);model.addAttribute("to",to);model.addAttribute("page",page);return "staff-orders";
+    }
     private String listing(Principal user, Model model, boolean staff) {
         model.addAttribute("orderPreviews",orders.previews(user.getName(),staff));
         model.addAttribute("orders",orders.list(user.getName(),staff)); model.addAttribute("staffView",staff); return "orders";
@@ -73,6 +80,7 @@ public class OrderController {
         var order=orders.get(id,user.getName(),staff);
         model.addAttribute("order",order);
         model.addAttribute("payment",payments.snapshot(id));
+        model.addAttribute("returnRefunded",returns.refunded(id));
         model.addAttribute("pricing",membership.snapshot(id,order.total()));
         model.addAttribute("items",orders.items(id)); model.addAttribute("staffView",staff); return "order-detail";
     }
