@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
+<link rel="stylesheet" th:href="@{/css/checkout-payment.css}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('orders')}">
@@ -40,6 +41,13 @@
 </p>
 </div>
 <div th:replace="~{fragments/membership :: pricing}"></div>
+<div class="order-payment-summary">
+<h2 th:text="${zh?'支付信息':'Payment information'}"></h2>
+<p th:text="${payment.method=='WALLET'?(zh?'储值余额支付':'Wallet payment'):(payment.method=='OFFLINE'?(zh?'线下付款':'Offline payment'):(zh?'历史订单：未记录支付方式':'Historical order: payment method not recorded'))}"></p>
+<strong th:text="${payment.status=='PAID'?(zh?'已支付':'Paid'):(payment.status=='REFUNDED'?(zh?'已退回储值余额':'Refunded to wallet'):(payment.status=='UNPAID'?(zh?'未记录收款':'Payment not recorded'):(payment.status=='CANCELLED'?(zh?'已取消，未扣款':'Cancelled, no charge'):(zh?'支付状态未记录':'Payment status not recorded'))))}"></strong>
+<p th:if="${payment.method=='WALLET'}" th:text="${(payment.status=='REFUNDED'?(zh?'退款金额 €':'Refund €'):(zh?'实际支付 €':'Amount paid €'))+#numbers.formatDecimal(payment.amount,1,2)}"></p>
+<a th:unless="${staffView}" th:href="@{/account/wallet}" th:text="${zh?'查看余额流水 →':'View wallet activity →'}"></a>
+</div>
 </section>
 <section class="order-card">
 <h2 th:text="${order.fulfillment == 'DELIVERY' ? (zh ? '配送' : 'Delivery') : (zh ? '门店自取' : 'Store collection')}">
