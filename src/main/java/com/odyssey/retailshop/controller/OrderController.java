@@ -15,7 +15,9 @@ public class OrderController {
     private final CartService cart;
     private final MembershipService membership;
     private final AddressService addresses;
-    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses) { this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
+    private final WalletService wallets;
+    private final OrderPaymentService payments;
+    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses, WalletService wallets, OrderPaymentService payments) { this.wallets=wallets; this.payments=payments; this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
     @GetMapping("/checkout")
     public String checkout(HttpSession session, Model model, Principal user) {
         synchronized(session) {
@@ -25,11 +27,12 @@ public class OrderController {
             model.addAttribute("bag",bag);
             model.addAttribute("pricing",membership.quote(user.getName(),bag.total()));
         }
+        model.addAttribute("walletBalance",wallets.available()?wallets.balance(wallets.account(user.getName()).id()):java.math.BigDecimal.ZERO);
         model.addAttribute("addresses",addresses.list(user.getName()));
         return "checkout";
     }
     @PostMapping("/orders")
-    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, @RequestParam(required=false) Long addressId, Principal user, HttpSession session, RedirectAttributes flash) {
+    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, @RequestParam(required=false) Long addressId, @RequestParam(defaultValue="OFFLINE") String paymentMethod, Principal user, HttpSession session, RedirectAttributes flash) {
         synchronized(session) {
             // Old tokens can retry the existing order, but cannot create a new order.
             String previous=(String)session.getAttribute("lastCheckoutToken");
@@ -39,12 +42,19 @@ public class OrderController {
             if (token.equals(previous)) return "redirect:/orders";
             try {
                 String destination="DELIVERY".equals(fulfillment)&&addressId!=null ? addresses.get(user.getName(),addressId).formatted() : address;
-                String id=orders.placeFromCart(user.getName(),token,fulfillment,destination);
+                String id=orders.placeFromCart(user.getName(),token,fulfillment,destination,paymentMethod);
                 session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
-                flash.addFlashAttribute("orderMessage", "Order placed successfully. / 订单提交成功。");
+                flash.addFlashAttribute("orderMessage", "WALLET".equals(paymentMethod)?"Order placed and paid from your wallet. / 订单提交成功，已使用储值余额支付。":"Order placed; offline payment is not yet recorded. / 订单提交成功，线下付款尚未记录。");
                 return "redirect:/orders";
-            } catch (IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); return "redirect:/checkout"; }
+            } catch (IllegalArgumentException e) {
+                flash.addFlashAttribute("orderError",e.getMessage());
+                flash.addFlashAttribute("selectedPayment",paymentMethod);
+                flash.addFlashAttribute("selectedFulfillment",fulfillment);
+                flash.addFlashAttribute("checkoutAddress",address);
+                flash.addFlashAttribute("selectedAddressId",addressId==null?0L:addressId);
+                return "redirect:/checkout";
+            }
         }
     }
     @GetMapping("/orders")
@@ -62,6 +72,7 @@ public class OrderController {
     private String detail(String id, Principal user, Model model, boolean staff) {
         var order=orders.get(id,user.getName(),staff);
         model.addAttribute("order",order);
+        model.addAttribute("payment",payments.snapshot(id));
         model.addAttribute("pricing",membership.snapshot(id,order.total()));
         model.addAttribute("items",orders.items(id)); model.addAttribute("staffView",staff); return "order-detail";
     }
@@ -73,7 +84,7 @@ public class OrderController {
     }
     @PostMapping("/orders/{id}/cancel")
     public String cancel(@PathVariable String id, Principal user, RedirectAttributes flash) {
-        try { orders.cancel(id,user.getName()); flash.addFlashAttribute("orderMessage","Order cancelled; stock released. / 订单已取消，库存已释放。"); }
+        try { orders.cancel(id,user.getName()); flash.addFlashAttribute("orderMessage","Order cancelled; stock released and any wallet payment refunded. / 订单已取消，库存已释放；如使用储值支付，款项已退回余额。"); }
         catch (IllegalArgumentException e) { flash.addFlashAttribute("orderError",e.getMessage()); }
         return "redirect:/orders/"+id;
     }

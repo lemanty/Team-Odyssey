@@ -19,7 +19,7 @@ public class WalletService {
         tx=tm==null?null:new TransactionTemplate(tm);
     }
     public record Account(long id,String name,String email) {}
-    public record Entry(BigDecimal amount,BigDecimal balance,String note,String actor,LocalDateTime time) {}
+    public record Entry(BigDecimal amount,BigDecimal balance,String note,String actor,LocalDateTime time,String orderId,String kind) {}
     public boolean available(){return jdbc!=null && tx!=null;}
     public Account account(String email) {
         if(!available()) throw new IllegalArgumentException("Wallet requires database mode. / 储值需要数据库模式。");
@@ -28,7 +28,7 @@ public class WalletService {
     }
     public BigDecimal balance(long id){return jdbc.queryForObject("SELECT COALESCE(SUM(amount),0) FROM wallet_entries WHERE user_id=?",BigDecimal.class,id);}
     public List<Entry> history(long id) {
-        return jdbc.query("SELECT w.*,u.display_name AS actor FROM wallet_entries w JOIN users u ON u.id=w.actor_id WHERE w.user_id=? ORDER BY w.id DESC LIMIT 100",(r,n)->new Entry(r.getBigDecimal("amount"),r.getBigDecimal("balance_after"),r.getString("note"),r.getString("actor"),r.getTimestamp("created_at").toLocalDateTime()),id);
+        return jdbc.query("SELECT w.*,u.display_name AS actor,p.order_id,CASE WHEN p.payment_entry_id=w.id THEN 'PAYMENT' WHEN p.refund_entry_id=w.id THEN 'REFUND' ELSE 'ADJUSTMENT' END AS kind FROM wallet_entries w JOIN users u ON u.id=w.actor_id LEFT JOIN order_payments p ON p.payment_entry_id=w.id OR p.refund_entry_id=w.id WHERE w.user_id=? ORDER BY w.id DESC LIMIT 100",(r,n)->new Entry(r.getBigDecimal("amount"),r.getBigDecimal("balance_after"),r.getString("note"),r.getString("actor"),r.getTimestamp("created_at").toLocalDateTime(),r.getString("order_id"),r.getString("kind")),id);
     }
     public void adjust(String actorEmail,String targetEmail,String direction,BigDecimal amount,String note,String token) {
         var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
