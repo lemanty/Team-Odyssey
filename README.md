@@ -2,9 +2,13 @@
 
 COMP3019J Web Application Development — Online Shopping Website
 
-面向本地零售商的在线购物项目，目标是让服装和家居用品的线上购物流程与门店日常运营保持一致。团队成员暂用 **A、B、C、D** 表示。
+面向本地零售商的在线购物项目，目标是让服装和家居用品的线上购物流程与门店日常运营保持一致。团队成员为 **LuoZizhen、PangXikuan、DuanYuchen、LiuYiming**。
 
 > 当前已实现主页、商品列表/详情、会话购物车，以及 MySQL 注册登录。默认 demo 模式使用内存商品且不提供账号存储；mysql 模式使用数据库（见第 10 节）。库存仍为演示数据，真实库存预留与下单尚未实现。页面 EUR 价格仅为示例。
+
+## 设计报告
+
+[最终 PDF](docs/design-report/Odyssey-Design-Report-Final.pdf) · [LaTeX 源文件与 Overleaf 上传包](docs/design-report/README.md)
 
 ## 1. 技术选择
 
