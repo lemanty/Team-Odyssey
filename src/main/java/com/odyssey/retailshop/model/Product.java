@@ -2,7 +2,7 @@ package com.odyssey.retailshop.model;
 
 import java.math.BigDecimal;
 
-/** Read-only product summary. SKU-level inventory will be added later. */
+/** Catalogue view; order lines keep their own purchase snapshots. */
 public class Product {
     private final Long id;
     private final String name;
@@ -30,6 +30,14 @@ public class Product {
         this.stockQuantity = stockQuantity;
         this.garmentImage = garmentImage;
         this.modelImage = modelImage;
+    }
+
+    private String nameZh;
+    private String descriptionZh;
+    public String getNameZh() { return nameZh; }
+    public String getDescriptionZh() { return descriptionZh; }
+    public Product translated(String nameZh, String descriptionZh) {
+        this.nameZh = nameZh; this.descriptionZh = descriptionZh; return this;
     }
 
     public String getAudience() { return audience; }

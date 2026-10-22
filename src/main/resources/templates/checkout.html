@@ -26,7 +26,7 @@
 <h2 th:text="${zh ? '订单商品' : 'Your selection'}">
 </h2>
 <p th:each="line : ${bag.lines}">
-<span th:text="${line.product != null ? storeText.text(line.product.name, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
+<span th:text="${line.product != null ? storeText.productName(line.product, zh) : (zh ? '已下架商品' : 'Unavailable product')}">
 </span> <span th:if="${line.size!=''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></span> × <span th:text="${line.quantity}">
 </span>
 <strong th:text="' · €' + ${#numbers.formatDecimal(line.subtotal,1,2)}">

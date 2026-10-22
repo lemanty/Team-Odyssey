@@ -21,12 +21,12 @@
     <div class="cart-layout" th:unless="${#lists.isEmpty(bag.lines)}">
         <section th:aria-label="${storeText.text('Items in your bag', zh)}">
             <article class="cart-line" th:each="line : ${bag.lines}">
-                <a class="cart-image" th:if="${line.product != null}" th:href="@{/products/{id}(id=${line.product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.text(line.product.name, zh)}">
-                    <img th:if="${line.product.garmentImage != null}" th:src="@{${line.product.garmentImage}}" th:alt="${storeText.text(line.product.name, zh)}" width="150" height="200">
+                <a class="cart-image" th:if="${line.product != null}" th:href="@{/products/{id}(id=${line.product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(line.product, zh)}">
+                    <img th:if="${line.product.garmentImage != null}" th:src="@{${line.product.garmentImage}}" th:alt="${storeText.productName(line.product, zh)}" width="150" height="200">
                     <span th:unless="${line.product.garmentImage != null}">ODYSSEY</span>
                 </a>
                 <div class="cart-line-copy">
-                    <h2 th:text="${line.product != null} ? ${storeText.text(line.product.name, zh)} : ${storeText.text('Product no longer available', zh)}">Product</h2>
+                    <h2 th:text="${line.product != null} ? ${storeText.productName(line.product, zh)} : ${storeText.text('Product no longer available', zh)}">Product</h2>
                     <p th:if="${line.size != ''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></p>
                     <a th:if="${line.product!=null and line.size=='' and line.product.category=='Clothing' and !line.available}" th:href="@{/products/{id}(id=${line.product.id})}" th:text="${zh?'重新选择规格 →':'Choose options →'}"></a>
                     <p th:if="${line.product != null}" th:text="'€' + ${#numbers.formatDecimal(line.product.price, 1, 2)} + ${zh ? ' / 件' : ' each'}">Price</p>
@@ -41,7 +41,7 @@
                     <form method="post" th:action="@{/cart/remove}">
                         <input type="hidden" name="csrf" th:value="${cartToken}">
                         <input type="hidden" name="productId" th:value="${line.id}">
-                        <button class="text-button" type="submit" th:attr="aria-label=${(zh ? '移除' : 'Remove ') + (line.product != null ? storeText.text(line.product.name, zh) : (zh ? '已下架商品' : 'unavailable product'))}"><span th:text="${storeText.text('Remove', zh)}">Remove</span></button>
+                        <button class="text-button" type="submit" th:attr="aria-label=${(zh ? '移除' : 'Remove ') + (line.product != null ? storeText.productName(line.product, zh) : (zh ? '已下架商品' : 'unavailable product'))}"><span th:text="${storeText.text('Remove', zh)}">Remove</span></button>
                     </form>
                 </div>
                 <strong class="line-total" th:text="'€' + ${#numbers.formatDecimal(line.subtotal, 1, 2)}">€0.00</strong>
