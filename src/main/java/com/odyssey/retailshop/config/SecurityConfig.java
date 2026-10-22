@@ -49,7 +49,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/staff/support", "/staff/support/**").hasRole("STAFF")
                 .requestMatchers("/support", "/support/**").hasAnyRole("CUSTOMER", "STAFF")
-                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/account", "/account/**").authenticated()
+                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**").authenticated()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())

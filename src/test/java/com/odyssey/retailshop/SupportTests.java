@@ -28,7 +28,7 @@ class SupportTests {
     SupportService.Viewer customer,staff,otherStaff,other;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for(String file:List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","016_support_returns.sql")) {
+        for(String file:List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","016_support_returns.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",file)).replaceAll("(?m)^--.*$","").replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","");
             for(String statement:sql.split(";")) if(!statement.isBlank()) jdbc.execute(statement);
         }
