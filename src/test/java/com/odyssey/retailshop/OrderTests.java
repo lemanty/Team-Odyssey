@@ -27,7 +27,7 @@ class OrderTests {
     @Autowired MockMvc mvc;
     @BeforeEach void setup() throws Exception {
         jdbc.execute("DROP ALL OBJECTS");
-        for (String name : List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql")) {
+        for (String name : List.of("001-products.sql","013-product-management.sql","002-product-details.sql","003-users.sql","005-orders.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","009-membership.sql","010-variants-addresses.sql","006-account-cart.sql")) {
             String sql=Files.readString(Path.of("src/main/resources/db",name)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", "").replaceAll("(?m)^--.*$", "");
             for (String statement : sql.split(";")) if (!statement.isBlank()) jdbc.execute(statement);
         }

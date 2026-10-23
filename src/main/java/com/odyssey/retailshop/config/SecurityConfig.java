@@ -47,6 +47,7 @@ public class SecurityConfig {
             }
         }, org.springframework.security.web.access.intercept.AuthorizationFilter.class);
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/products/*/reviews", "/products/*/reviews/**").authenticated()
                 .requestMatchers("/staff/support", "/staff/support/**").hasRole("STAFF")
                 .requestMatchers("/support", "/support/**").hasAnyRole("CUSTOMER", "STAFF")
                 .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**").authenticated()
