@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.productName(product, zh)} + ' | Odyssey'">Product | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
-    <script th:src="@{/js/product-gallery.js}" defer></script>
+    <script th:src="@{/js/product-gallery.js(v=colours-2)}" defer></script>
 <link rel="stylesheet" th:href="@{/css/product-reviews.css}">
-<link rel="stylesheet" th:href="@{/css/variant-picker.css(v=1)}">
+<link rel="stylesheet" th:href="@{/css/variant-picker.css(v=2)}">
 <script th:src="@{/js/variant-picker.js(v=1)}" defer></script>
 </head>
 <body>
@@ -19,10 +19,10 @@
         <section class="product-gallery" th:aria-label="${storeText.text('Product photographs', zh)}" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
             <div class="gallery-stage" tabindex="0" th:aria-label="${storeText.text('Product photos. Use left and right arrow keys to change photo.', zh)}">
                 <figure class="gallery-slide is-active" data-slide role="group" aria-roledescription="slide" th:aria-label="${product.category == 'Household' ? (zh ? '商品图片' : 'Product photograph') : storeText.text('1 of 2: garment photograph', zh)}">
-                    <img th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)} + ${product.category == 'Household' ? (zh ? ' — 商品图' : ' — product photograph') : (zh ? ' — 服装实物图' : ' — garment photograph')}" width="900" height="1200" fetchpriority="high">
+                    <img data-garment-photo th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)} + ${product.category == 'Household' ? (zh ? ' — 商品图' : ' — product photograph') : (zh ? ' — 服装实物图' : ' — garment photograph')}" width="900" height="1200" fetchpriority="high">
                 </figure>
                 <figure class="gallery-slide" data-slide role="group" aria-roledescription="slide" th:aria-label="${storeText.text('2 of 2: styled on model', zh)}" aria-hidden="true" th:if="${product.modelImage != null and product.category != 'Household'}">
-                    <img th:src="@{${product.modelImage}}" th:alt="${storeText.productName(product, zh)} + ${zh ? ' — 模特穿搭图' : ' — styled on an adult model'}" width="900" height="1200" decoding="async">
+                    <img data-model-photo th:src="@{${product.modelImage}}" th:alt="${storeText.productName(product, zh)} + ${zh ? ' — 模特穿搭图' : ' — styled on an adult model'}" width="900" height="1200" decoding="async">
                 </figure>
                 <div class="gallery-arrows" hidden data-gallery-controls>
                     <button type="button" data-prev th:aria-label="${storeText.text('Previous photo', zh)}">←</button>
@@ -35,6 +35,10 @@
                     <button type="button" data-photo="1" aria-pressed="false" th:if="${product.modelImage != null and product.category != 'Household'}"><span th:text="${storeText.text('02 / On model', zh)}">02 / On model</span></button>
                 </div>
                 <button type="button" class="gallery-play" data-play th:aria-label="${storeText.text('Pause automatic slideshow', zh)}"><span th:text="${storeText.text('Pause', zh)}">Pause</span></button>
+            </div>
+            <div class="gallery-colours" th:with="charcoalGarment=${@variantImages.image(product.garmentImage, 'Charcoal')},charcoalModel=${@variantImages.image(product.modelImage, 'Charcoal')}" th:if="${product.category != 'Household' and @variantImages.image(product.garmentImage, 'Charcoal') != null}" role="group" th:aria-label="${zh ? '查看不同颜色' : 'Preview colours'}">
+                <button type="button" data-gallery-colour="Original colour" aria-pressed="true" th:attr="data-garment=${product.garmentImage},data-model=${product.modelImage}" th:text="${zh ? '原色' : 'Original colour'}"></button>
+                <button type="button" data-gallery-colour="Charcoal" aria-pressed="false" th:attr="data-garment=${charcoalGarment},data-model=${charcoalModel}" th:text="${zh ? '炭灰色' : 'Charcoal'}"></button>
             </div>
             <p class="gallery-caption"><span th:text="${storeText.text('A closer look, from every perspective.', zh)}">A closer look, from every perspective.</span></p>
             <span class="sr-only" aria-live="polite" data-gallery-status></span>
@@ -60,7 +64,7 @@
                     <p class="variant-scroll-hint" th:text="${zh ? '同色合并展示 · 点击图片后选择尺码' : 'Choose a colour image, then select your size'}"></p>
                     <div class="variant-image-grid" tabindex="0" th:aria-label="${zh?'商品颜色，可上下滚动':'Product colours, scroll vertically'}">
                         <label class="variant-image-option" th:each="group,stat:${colours}" th:with="photo=${@variantImages.image(product.garmentImage,group.color)}">
-                            <input type="radio" name="variantColour" th:value="${stat.index}" th:disabled="${group.stock<=0}" required data-variant-colour th:attr="aria-controls=${'variant-sizes-'+stat.index}">
+                            <input type="radio" name="variantColour" th:value="${stat.index}" th:disabled="${group.stock<=0}" required data-variant-colour th:attr="aria-controls=${'variant-sizes-'+stat.index},data-colour=${group.color}">
                             <span class="variant-image-card">
                                 <img th:if="${photo!=null}" th:src="@{${photo}}" alt="" width="180" height="180" loading="lazy">
                                 <span class="variant-image-missing" th:unless="${photo!=null}" th:text="${zh?'图片待补充':'Image coming soon'}"></span>

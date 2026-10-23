@@ -17,9 +17,12 @@ public class VariantImages {
         if (original == null) return null;
         if ("Original colour".equalsIgnoreCase(color) || "原色".equals(color)) return original;
         if (("Charcoal".equalsIgnoreCase(color) || "炭灰色".equals(color))
-                && original.matches("/images/products/[a-z0-9-]+-product\\.webp")) {
-            String filename = original.substring(original.lastIndexOf('/') + 1).replace("-product.webp", "-charcoal.png");
-            String path = "/images/products/variants/" + filename;
+                && original.matches("/images/products/[a-z0-9-]+-(product|model-v2)\\.webp")) {
+            boolean model = original.endsWith("-model-v2.webp");
+            String filename = original.substring(original.lastIndexOf('/') + 1)
+                    .replace(model ? "-model-v2.webp" : "-product.webp",
+                            model ? "-model-charcoal.png" : "-charcoal.png");
+            String path = "/images/products/variants/" + (model ? "models/" : "") + filename;
             if (new ClassPathResource("static" + path).exists()) return path;
         }
         return null;

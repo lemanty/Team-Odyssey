@@ -33,7 +33,10 @@ class ProductDetailTests {
             .andExpect(content().string(containsString("12 available")))
             .andExpect(content().string(containsString("sand-linen-shirt-product.webp")))
             .andExpect(content().string(containsString("sand-linen-shirt-model-v2.webp")))
-            .andExpect(content().string(containsString("data-next")));
+            .andExpect(content().string(containsString("data-next")))
+            .andExpect(content().string(containsString("data-gallery-colour=\"Charcoal\"")))
+            .andExpect(content().string(containsString("data-model=\"/images/products/variants/models/sand-linen-shirt-model-charcoal.png\"")))
+            .andExpect(content().string(containsString("data-garment=\"/images/products/variants/sand-linen-shirt-charcoal.png\"")));
     }
 
     @Test
