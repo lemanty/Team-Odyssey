@@ -6,6 +6,7 @@
     <title th:text="${storeText.productName(product, zh)} + ' | Odyssey'">Product | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <script th:src="@{/js/product-gallery.js}" defer></script>
+<link rel="stylesheet" th:href="@{/css/product-reviews.css}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('products')}"></header>
@@ -66,6 +67,7 @@
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </section>
     </div>
+<section th:replace="~{fragments/reviews :: reviews}"></section>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>

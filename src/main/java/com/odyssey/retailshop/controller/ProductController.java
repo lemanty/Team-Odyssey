@@ -21,11 +21,13 @@ import org.springframework.http.HttpStatus;
 @Controller
 public class ProductController {
     private final ProductService productService;
+    private final com.odyssey.retailshop.service.ReviewService reviews;
     private final Environment environment;
     private final StoreText storeText;
     private final com.odyssey.retailshop.service.VariantService variants;
 
-    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants) {
+    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants, com.odyssey.retailshop.service.ReviewService reviews) {
+        this.reviews=reviews;
         this.productService = productService;
         this.environment = environment;
         this.storeText = storeText;
@@ -33,10 +35,19 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public String productDetail(@PathVariable Long id, Model model) {
+    public String productDetail(@PathVariable Long id, Model model, java.security.Principal user, @RequestParam(defaultValue="0") int reviewPage) {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
         model.addAttribute("variants",variants.list(id));
+        String email=user==null?null:user.getName();
+        reviewPage=Math.max(0,Math.min(reviewPage,100000));
+        var reviewData=reviews.page(id,reviewPage);model.addAttribute("reviewData",reviewData);var replies=reviews.replies(id,reviewData.reviews());model.addAttribute("reviewReplies",replies);
+        var replyTargets=new java.util.HashMap<Long,com.odyssey.retailshop.service.ReviewService.Review>();
+        for(var root:reviewData.reviews())replyTargets.put(root.id(),root);
+        for(var thread:replies.values())for(var reply:thread)replyTargets.put(reply.id(),reply);
+        model.addAttribute("reviewTargets",replyTargets);model.addAttribute("reviewViewer",reviews.viewer(email));model.addAttribute("reviewPage",reviewPage);
+        model.addAttribute("reviewsAvailable",reviews.available());
+        model.addAttribute("reviewPurchases",reviews.purchases(id,email));
         return "product-detail";
     }
 
