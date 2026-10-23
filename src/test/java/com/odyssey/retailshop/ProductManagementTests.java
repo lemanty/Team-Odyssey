@@ -78,13 +78,15 @@ class ProductManagementTests {
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","20")).andExpect(status().isForbidden());
  }
  @Test void adminEmbeddedCreationAndWorkspaceRender() throws Exception {
-  mvc.perform(get("/admin?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("/admin/products/create"))).andExpect(content().string(containsString("data-stock-tools")));
+  mvc.perform(get("/admin?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("admin-sidebar"))).andExpect(content().string(containsString("data-stock-tools")));
+  mvc.perform(get("/admin?section=new").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("/admin/products/create")));
+  mvc.perform(get("/staff").with(user("admin@test.com").roles("ADMIN"))).andExpect(redirectedUrl("/admin"));
   mvc.perform(get("/staff").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk());
   mvc.perform(post("/admin/products/create").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
    .param("name","Admin vase").param("nameZh","管理员花瓶").param("description","Vase").param("descriptionZh","花瓶")
    .param("price","10.00").param("stock","5").param("category","Household").param("audience","Home"))
-   .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin"));
+   .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin?section=new"));
   assertEquals(1,manager.list("Admin vase","draft").size());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("name","Retained title"))
    .andExpect(status().isOk()).andExpect(content().string(containsString("Retained title")));

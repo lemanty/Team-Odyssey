@@ -38,15 +38,15 @@ public class ProductManagementController {
     @PostMapping("/admin/products/create")
     public String adminCreate(@ModelAttribute("form") ProductEditForm form,BindingResult result,
             @RequestParam(required=false) MultipartFile mainPhoto,@RequestParam(required=false) MultipartFile extraPhoto,Model model,RedirectAttributes flash) {
-        model.addAttribute("administrator",true);model.addAttribute("available",products.available());model.addAttribute("newProductOpen",true);
-        if(result.hasErrors()) { model.addAttribute("error","Check numeric fields. / 请检查数字字段。"); return "workspace"; }
+        model.addAttribute("administrator",true);model.addAttribute("available",products.available());model.addAttribute("newProductOpen",true);model.addAttribute("adminSection","new");
+        if(result.hasErrors()) { model.addAttribute("error","Check numeric fields. / 请检查数字字段。"); return "admin-workspace"; }
         try {
             if(form.getId()!=null) throw new IllegalArgumentException("New products only. / 此处仅用于新增商品。");
             products.save(form,mainPhoto,extraPhoto);
             flash.addFlashAttribute("success","Product created. / 商品已新增。");flash.addFlashAttribute("newProductOpen",true);
-            return "redirect:/admin";
+            return "redirect:/admin?section=new";
         } catch(IllegalArgumentException ex) { model.addAttribute("error",ex.getMessage()); }
-        return "workspace";
+        return "admin-workspace";
     }
     @GetMapping("/staff/products")
     public String list(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="all") String status,Model model){
