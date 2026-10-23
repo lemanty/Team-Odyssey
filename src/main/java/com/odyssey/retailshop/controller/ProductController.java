@@ -41,10 +41,13 @@ public class ProductController {
         model.addAttribute("variants",variants.list(id));
         String email=user==null?null:user.getName();
         reviewPage=Math.max(0,Math.min(reviewPage,100000));
-        model.addAttribute("reviewData",reviews.page(id,reviewPage));model.addAttribute("reviewPage",reviewPage);
-        model.addAttribute("reviewsAvailable",reviews.available());model.addAttribute("ownReview",reviews.own(id,email));
+        var reviewData=reviews.page(id,reviewPage);model.addAttribute("reviewData",reviewData);var replies=reviews.replies(id,reviewData.reviews());model.addAttribute("reviewReplies",replies);
+        var replyTargets=new java.util.HashMap<Long,com.odyssey.retailshop.service.ReviewService.Review>();
+        for(var root:reviewData.reviews())replyTargets.put(root.id(),root);
+        for(var thread:replies.values())for(var reply:thread)replyTargets.put(reply.id(),reply);
+        model.addAttribute("reviewTargets",replyTargets);model.addAttribute("reviewViewer",reviews.viewer(email));model.addAttribute("reviewPage",reviewPage);
+        model.addAttribute("reviewsAvailable",reviews.available());
         model.addAttribute("reviewPurchases",reviews.purchases(id,email));
-        if(!model.containsAttribute("reviewPurchase"))model.addAttribute("reviewPurchase",reviews.selected(id,email));
         return "product-detail";
     }
 

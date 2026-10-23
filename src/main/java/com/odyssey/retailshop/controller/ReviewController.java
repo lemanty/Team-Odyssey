@@ -14,6 +14,17 @@ public class ReviewController {
         catch(IllegalArgumentException e){flash.addFlashAttribute("reviewError",e.getMessage());flash.addFlashAttribute("reviewDraft",body);flash.addFlashAttribute("reviewRating",rating);flash.addFlashAttribute("reviewPurchase",purchaseKey);}
         return "redirect:/products/"+id+"#reviews";
     }
-    @PostMapping("/products/{id}/reviews/delete")
-    public String delete(@PathVariable long id,Principal user,RedirectAttributes flash){reviews.delete(id,user.getName());flash.addFlashAttribute("reviewMessage","Review deleted. / 评论已删除。");return "redirect:/products/"+id+"#reviews";}
+
+    @PostMapping("/products/{id}/reviews/{review}/reply")
+    public String reply(@PathVariable long id,@PathVariable long review,Principal user,@RequestParam String body,@RequestParam(defaultValue="0") int reviewPage,RedirectAttributes flash){
+        try{reviews.reply(id,review,user.getName(),body);}catch(IllegalArgumentException e){flash.addFlashAttribute("reviewError",e.getMessage());}
+        return "redirect:/products/"+id+"?reviewPage="+Math.max(0,Math.min(reviewPage,100000))+"#review-"+review;
+    }
+    @PostMapping("/products/{id}/reviews/{review}/edit")
+    public String edit(@PathVariable long id,@PathVariable long review,Principal user,@RequestParam int rating,@RequestParam String body,RedirectAttributes flash){
+        try{reviews.edit(id,review,user.getName(),rating,body);}catch(IllegalArgumentException e){flash.addFlashAttribute("reviewError",e.getMessage());}
+        return "redirect:/products/"+id+"#review-"+review;
+    }
+    @PostMapping("/products/{id}/reviews/{review}/delete")
+    public String delete(@PathVariable long id,@PathVariable long review,Principal user){reviews.delete(id,review,user.getName());return "redirect:/products/"+id+"#reviews";}
 }
