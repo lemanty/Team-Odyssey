@@ -35,6 +35,31 @@ class SupportTests {
         jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Staff One','s@test.com','unused','STAFF'),(4,'Staff Two','t@test.com','unused','STAFF'),(5,'Admin','admin@test.com','unused','ADMIN')");
         customer=support.viewer("a@test.com"); other=support.viewer("b@test.com");staff=support.viewer("s@test.com");otherStaff=support.viewer("t@test.com");
     }
+    @Autowired com.odyssey.retailshop.service.OrderService designOrders;
+    @Autowired com.odyssey.retailshop.service.CouponService designCoupons;
+    @Test void selectedOperationsLayoutsRenderAndKeepRoleRestrictions() throws Exception {
+        jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (1,'Linen shirt','Clothing','Soft linen',39)");
+        jdbc.update("INSERT INTO product_details VALUES (1,'Men',20,'/images/auth-bedroom.png','/images/auth-bedroom.png')");
+        String id=designOrders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,1),"DELIVERY","Dublin, Test Street");
+        designOrders.advance(id,"PREPARING"); designOrders.advance(id,"SHIPPED"); designOrders.confirmReceipt(id,"a@test.com");
+        jdbc.update("INSERT INTO return_requests(id,order_id,user_id,product_id,quantity,reason,request_token) VALUES ('12345678-design-return',?,1,1,1,'Size does not fit','design-token')",id);
+        mvc.perform(post("/staff/coupons").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("code","DESIGN10").param("title","Summer offer").param("kind","FIXED").param("value","10").param("minimum","50").param("starts",java.time.LocalDateTime.now().minusDays(1).toString()).param("ends",java.time.LocalDateTime.now().plusDays(30).toString()).param("stack","true")).andExpect(status().is3xxRedirection());
+        for(String path:List.of("/admin","/admin?section=inventory","/admin?section=new","/admin/users","/staff/products","/staff/products/1/edit","/staff/coupons","/staff/orders")) {
+            String html=mvc.perform(get(path).param("lang","zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            assertTrue(html.contains("operations-design.css"),path);exportDesign(path,html);
+            if(path.equals("/admin")){assertTrue(html.contains("overview-metrics"));assertFalse(html.contains("href=\"/staff/support\""));}
+            if(path.equals("/staff/orders"))assertTrue(html.contains("staff-order-card"));
+        }
+        exportDesign("/staff/orders/"+id,mvc.perform(get("/staff/orders/"+id).with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8));
+        for(String path:List.of("/account/wallet","/account/coupons","/account/addresses","/orders/"+id+"/return","/orders/returns/12345678-design-return","/support")) {
+            String html=mvc.perform(get(path).param("lang","zh").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);assertTrue(html.contains("operations-design.css"),path);exportDesign(path,html);
+        }
+        for(String path:List.of("/admin/users","/staff/products","/staff/coupons"))mvc.perform(get(path).with(user("s@test.com").roles("STAFF"))).andExpect(status().isForbidden());
+        String stock=mvc.perform(get("/staff").with(user("s@test.com").roles("STAFF"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();assertTrue(stock.contains("data-stock-tools"));assertFalse(stock.contains("href=\"/staff/products\""));exportDesign("/staff",stock);
+    }
+    private void exportDesign(String path,String html) throws Exception {
+        String destination=System.getProperty("odyssey.previewDir");if(destination!=null){Files.createDirectories(Path.of(destination));Files.writeString(Path.of(destination,path.replaceAll("[^a-zA-Z0-9]","_")+".html"),html);}
+    }
     String message(SupportService.Viewer sender,String id,String body) { return support.send(sender,id,body,UUID.randomUUID().toString()); }
     @Test void replyQueueReadStateAndResolutionAreDistinct() {
         String id=message(customer,null,"Where is my order?");
