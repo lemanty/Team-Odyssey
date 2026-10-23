@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"></head>
+<head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"></head>
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="account-page">
     <a class="detail-back" th:href="@{/staff/orders}" th:text="${zh ? '订单管理 →' : 'Manage orders →'}"></a><a class="detail-back" th:href="@{/staff/returns}" th:text="${zh?'售后工作台 →':'Aftersales workspace →'}"></a><p class="eyebrow"><span th:text="${storeText.text('ODYSSEY TEAM', zh)}">ODYSSEY TEAM</span></p>

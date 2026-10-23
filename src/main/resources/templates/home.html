@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${zh ? '奥德赛 | 身边好物，美好日常' : 'Odyssey | Local goods, everyday living'}">Odyssey | Local goods, everyday living</title>
