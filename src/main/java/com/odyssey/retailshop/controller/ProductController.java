@@ -60,6 +60,10 @@ public class ProductController {
             @RequestParam(defaultValue = "default") String sort,
             @RequestParam(defaultValue = "") String priceRange) {
         var all = productService.getProducts();
+        var highestPrice = all.stream().map(Product::getPrice).filter(java.util.Objects::nonNull)
+            .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+        model.addAttribute("priceSliderMax", highestPrice.divide(BigDecimal.valueOf(100), 0,
+            java.math.RoundingMode.CEILING).max(BigDecimal.ONE).multiply(BigDecimal.valueOf(100)));
         var categories = all.stream().map(Product::getCategory).distinct().sorted().toList();
         model.addAttribute("categories", categories);
         model.addAttribute("q", q);

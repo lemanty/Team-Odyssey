@@ -60,13 +60,13 @@
                 </linearGradient></defs>
                 <path stroke="url(#thread-mobile)" d="M 177 178 A 105 260 8 1 1 150 280" />
             </svg>
-            <a class="category-card category-clothing" th:href="@{/products#category-clothing}" th:attr="aria-label=${zh ? '探索服装' : 'Browse clothing'}">
+            <a class="category-card category-clothing" th:href="@{/products(category='Clothing')}" th:attr="aria-label=${zh ? '探索服装' : 'Browse clothing'}">
                 <span class="eyebrow"><span th:text="${zh ? '01 / 服装' : '01 / CLOTHING'}">01 / CLOTHING</span></span>
                 <h3><span th:if="${!zh}">Made for<br>everyday.</span><span th:if="${zh}">自在穿着，<br>日日相伴。</span></h3>
                 <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span><span th:text="${zh ? '探索服装' : 'Browse clothing'}">Browse clothing</span></span></span>
                 <img class="category-object" th:src="@{/images/category-clothing.png}" alt="" width="1122" height="1402" loading="lazy">
             </a>
-            <a class="category-card category-household" th:href="@{/products#category-household}" th:attr="aria-label=${zh ? '探索家居' : 'Browse household'}">
+            <a class="category-card category-household" th:href="@{/products(category='Household')}" th:attr="aria-label=${zh ? '探索家居' : 'Browse household'}">
                 <span class="eyebrow"><span th:text="${zh ? '02 / 家居' : '02 / HOUSEHOLD'}">02 / HOUSEHOLD</span></span>
                 <h3><span th:if="${!zh}">Make yourself<br>at home.</span><span th:if="${zh}">舒心好物，<br>自在居家。</span></h3>
                 <span class="category-action"><span class="category-arrow" aria-hidden="true">→</span><span><span th:text="${zh ? '探索家居' : 'Browse household'}">Browse household</span></span></span>

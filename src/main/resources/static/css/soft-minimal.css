@@ -1,0 +1,119 @@
+/* Shared visual language for the storefront and both workspaces. */
+:root{--ink:#243f3d;--paper:#f7f8f6;--line:#dfe5df;--muted:#62726a;--surface:#fff;--surface-soft:#edf1ec;--radius:16px}
+body:not(.catalogue-page){background:var(--paper);color:var(--ink);font-size:17px;line-height:1.7}
+body:not(.catalogue-page) :is(h1,h2,h3){font-family:inherit;letter-spacing:-.025em;font-weight:600;line-height:1.35}
+body:not(.catalogue-page) h1{font-size:clamp(30px,3.6vw,46px)}
+body:not(.catalogue-page) h2{font-size:clamp(23px,2.2vw,30px)}
+body:not(.catalogue-page) .site-header,body:not(.catalogue-page) .site-footer{width:calc(100% - 64px);max-width:1480px;padding:22px 0}
+body:not(.catalogue-page) .site-header{border-bottom:0}
+body:not(.catalogue-page) main:not(.admin-shell main){width:calc(100% - 64px);max-width:1280px;padding:32px 0 64px}
+body:not(.catalogue-page) :is(.button,.order-button,.cart-button,.support-send,.auth-switch-button,.btn){border-radius:10px;min-height:46px;box-shadow:none;font-size:16px;font-weight:500}
+body:not(.catalogue-page) :is(.button,.order-button,.cart-button,.support-send,.btn):not(:disabled){background:#294b45;color:#fff}
+body:not(.catalogue-page) :is(input:not([type=radio]):not([type=checkbox]):not([type=range]):not([type=hidden]),select,textarea){border-color:#d7e0d7;border-radius:10px;background:#fafbf8;color:var(--ink);font-size:16px}
+body:not(.catalogue-page) :is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid #6a9287;outline-offset:4px}
+body:not(.catalogue-page) :is(.eyebrow,.small-note){color:#667b70}
+body:not(.catalogue-page) .eyebrow{font-size:12px;letter-spacing:.14em}
+body:not(.catalogue-page) :is(.cart-feedback,.auth-notice,.auth-alert){border-radius:10px}
+body:not(.catalogue-page) :is(.order-card,.cart-summary,.account-tile,.account-workspace,.member-tier,.membership-calculator,.member-rules,.wallet-search,.inventory-panel,.support-inbox,.support-conversation,.coupon-card){background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:none}
+/* Home: restrained composition, photographs rather than decorative paths. */
+.home-page .hero{min-height:0;gap:0;overflow:hidden;background:#eceee7;border-radius:18px;margin-bottom:54px}
+.home-page .hero-copy{padding:clamp(28px,4vw,54px)}
+.home-page .hero h1{font-size:clamp(36px,4vw,58px);line-height:1.25;margin:18px 0 24px}
+.home-page .hero .intro{font-size:17px;line-height:1.8}
+.home-page .hero-art{min-height:380px;border-radius:0;margin:0;overflow:hidden}
+.home-page .hero-voyage{border-radius:0;filter:saturate(.65);width:100%;height:100%;object-fit:cover}
+.home-page :is(.section-journey,.category-thread){display:none}
+.home-page .category-section:before,.home-page .category-card:before,.home-page .story-art:after{display:none}
+.home-page .category-section{padding:0;margin:0 0 64px}
+.home-page .category-grid{gap:24px}
+.home-page .category-card{border-radius:16px;border:1px solid var(--line);background:#edf0e9;box-shadow:none;overflow:hidden}
+.home-page .category-household{background:#f0ede7}
+.home-page .category-card h3{font-size:32px}
+.home-page .brand-story{border-top:1px solid var(--line);padding-top:48px;gap:48px}
+.home-page .story-art{border-radius:16px;overflow:hidden}
+.home-page .story-copy{font-size:17px;line-height:1.9}
+.home-page .story-copy p:first-child{font-size:20px}
+/* Product and basket: calm images, compact actions, visible totals. */
+.product-detail .detail-layout{gap:clamp(28px,5vw,72px);align-items:start}
+.product-detail .gallery-stage,.product-detail .detail-no-image{border-radius:16px;overflow:hidden;background:#efeee9}
+.product-detail .detail-copy{padding-top:12px}
+.product-detail .detail-price{font-size:28px;margin:14px 0 22px}
+.product-detail .product-facts{font-size:15px}
+.product-detail .detail-note{font-size:14px;line-height:1.75;color:var(--muted)}
+.product-detail .detail-back{background:transparent;color:var(--ink);padding:14px 0;width:auto}
+.product-detail .variant-image-card,.product-detail .variant-size-option span{border-radius:12px;box-shadow:none}
+.product-detail .variant-image-grid{gap:12px}
+.product-detail .gallery-caption{font-size:14px;color:var(--muted)}
+.cart-page h1{margin:12px 0 32px}
+.cart-page .cart-layout{gap:32px}
+.cart-page .cart-line{padding:24px 0;gap:20px}
+.cart-page .cart-image{border-radius:12px}
+.cart-page .cart-summary{padding:28px;position:sticky;top:24px}
+.cart-page .cart-summary h2{font-size:24px}
+/* Account: a compact service grid with quieter secondary settings. */
+.account-center .account-welcome{margin-bottom:28px}
+.account-center .account-destinations{gap:16px}
+.account-center .account-tile{min-height:220px;padding:24px;transform:none}
+.account-center .account-tile h2{font-size:23px;margin:16px 0 10px}
+.account-center .account-tile p{font-size:16px;line-height:1.7;margin-bottom:20px}
+.account-center .account-tile-icon{width:40px;height:40px;border-radius:12px;background:#eef2ed}
+.account-center .account-role{background:#eaf0e9;border-color:transparent;font-size:14px}
+.account-center .account-workspace{padding:24px;margin-top:18px}
+.account-center .account-workspace h2{margin:0 0 10px;font-size:23px}
+.account-center .account-workspace p{font-size:16px;color:var(--muted)}
+.account-center .account-settings{margin:0;padding:24px 0 8px;border:0;gap:28px}
+.account-center .account-bottom{margin-top:24px}
+.address-page .address-card,.address-page .address-card.is-default{background:#fff;border-color:var(--line);box-shadow:none;border-radius:16px}
+.address-page .address-card.is-default{border-color:#a9beb2}
+.address-page .address-editor{background:#f0f3ee;border-radius:16px}
+.address-page .address-text{font-size:17px}
+.wallet-page .wallet-balance{background:#eaf0e9;border-color:#d5dfd4;border-radius:16px;padding:28px}
+.wallet-page .wallet-amount{font-size:clamp(36px,5vw,56px);letter-spacing:-.04em}
+.wallet-page .wallet-emblem{display:none}
+.wallet-page .wallet-entry{padding:20px 0}
+.membership-page .member-tier{padding:24px}
+.membership-page .member-rules{padding:24px}
+.membership-page .membership-calculator{padding:28px}
+/* Forms and operational screens retain their existing workflows. */
+body:not(.catalogue-page) .auth-page{max-width:1100px;gap:48px;align-items:stretch}
+.auth-page .auth-art{min-height:520px;border-radius:18px;padding:40px;background-color:#eaf0e9;filter:saturate(.7)}
+.auth-page .auth-panel{padding:32px;border:1px solid var(--line);border-radius:18px;background:#fff;max-width:none}
+.auth-page .auth-panel h2{font-size:32px}
+body:not(.catalogue-page) :is(.order-page,.support-page,.fulfillment-page)>h1{margin:12px 0 24px}
+body:not(.catalogue-page) :is(.order-grid,.order-detail-layout){gap:24px}
+body:not(.catalogue-page) :is(.fulfillment-filters,.inventory-filters,.users-filters){background:#eef2ed;border-radius:12px;padding:20px}
+body:not(.catalogue-page) :is(.fulfillment-tabs a,.order-status,.support-tab){border-radius:24px}
+body:not(.catalogue-page) :is(.fulfillment-table,.inventory-table,.users-table-wrap){border-radius:12px;border-color:var(--line)}
+body:not(.catalogue-page) :is(.fulfillment-table,.inventory-table,.users-table-wrap) th{background:#f0f3ee;font-size:14px;font-weight:600}
+body:not(.catalogue-page) :is(.fulfillment-table,.inventory-table,.users-table-wrap) td{font-size:16px;border-color:#e7ece5}
+.admin-shell{width:calc(100% - 64px);max-width:1480px;gap:24px;margin-top:24px}
+.admin-shell .admin-sidebar{background:#edf1ec;border-color:#e0e6dd;border-radius:16px}
+.admin-shell .admin-sidebar h2{font-size:21px}
+.admin-shell .admin-sidebar nav a{font-size:15px;border-radius:10px;padding:12px 14px}
+.admin-shell .admin-sidebar nav a[aria-current=page]{background:#294b45}
+.admin-shell>main{background:#fff;border-color:var(--line);border-radius:16px;padding:28px;min-height:620px}
+.admin-shell>main>h1{font-size:32px}
+.admin-shell .stock-tools{border:0;padding:0;background:transparent}
+.admin-shell .inventory-panel{background:#f8faf6;border-radius:12px}
+.admin-shell .support-conversation{background:#fff}
+/* Opt-in details: one clear label, contents stay accessible without JS. */
+.soft-disclosure{border-top:1px solid var(--line);margin:24px 0 0;padding:0}
+.soft-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:20px;list-style:none;padding:18px 0;cursor:pointer;font-size:16px;font-weight:500}
+.soft-disclosure>summary::-webkit-details-marker{display:none}
+.soft-disclosure>summary:after{content:'+';font-size:22px;font-weight:400;color:#6b8074}
+.soft-disclosure[open]>summary:after{content:'−'}
+.soft-disclosure-content{padding:0 0 20px}
+.soft-disclosure-content>p:first-child{margin-top:0}
+@media(hover:hover) and (pointer:fine){.account-center .account-tile:hover{transform:translateY(-2px);border-color:#b5c9bc;box-shadow:0 8px 24px #243f3d08}}
+@media(max-width:800px){body:not(.catalogue-page) .auth-page{gap:24px}.auth-page .auth-art{padding:28px;min-height:400px}.home-page .hero-art{min-height:300px}.admin-shell{width:calc(100% - 32px);gap:16px}.admin-shell>main{padding:22px}}
+@media(max-width:650px){body:not(.catalogue-page) .site-header,body:not(.catalogue-page) .site-footer,body:not(.catalogue-page) main:not(.admin-shell main){width:calc(100% - 36px)}body:not(.catalogue-page) main:not(.admin-shell main){padding-top:20px;padding-bottom:40px}.home-page .hero{margin-bottom:36px}.home-page .hero-copy{padding:28px}.home-page .hero-art{min-height:240px}.home-page .brand-story{gap:24px;padding-top:28px}.home-page .category-grid{gap:16px}.cart-page .cart-summary{position:static}.auth-page .auth-panel{padding:24px}.auth-page .auth-art{min-height:220px}.account-center .account-tile{min-height:0}.admin-shell>main{padding:20px 16px}.soft-disclosure>summary{padding:16px 0}}
+@media(prefers-reduced-motion:no-preference){.soft-disclosure>summary:after{transition:color 180ms ease}.admin-shell .admin-sidebar nav a,.account-center .account-tile{transition:background-color 180ms ease,border-color 180ms ease,transform 240ms cubic-bezier(.22,.7,.25,1),box-shadow 240ms ease}}
+@media(prefers-reduced-motion:reduce){.account-center .account-tile:hover{transform:none}}
+body:not(.catalogue-page) .member-tier{color:var(--ink)}
+.membership-page .membership-pass{background:#294b45;box-shadow:0 12px 30px #243f3d0c;border-radius:16px}
+.membership-page .member-tier.tier-black{border-color:#91ab9c;background:#edf2ed}
+.membership-page .member-tier h3{font-size:24px;margin-top:16px}
+.membership-page .tier-discount{font-size:34px;margin:14px 0 8px}
+.membership-page .member-rules details.soft-disclosure{padding:0;margin:0;border-bottom:0}
+.membership-page .member-rules details.soft-disclosure>summary{padding:18px 0}
+.membership-page .member-rules{max-width:none}
