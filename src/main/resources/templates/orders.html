@@ -6,11 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
-</head>
-<body>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=1)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body th:class="${!staffView ? 'chosen-design chosen-orders' : ''}">
 <header th:replace="~{fragments/layout :: header('orders')}">
 </header>
-<main class="order-page">
+<div th:class="${!staffView?'customer-shell':null}"><th:block th:unless="${staffView}"><aside th:replace="~{fragments/customer-sidebar :: sidebar('orders')}"></aside></th:block><main class="order-page">
 <p><a th:href="@{/orders/returns}" th:text="${zh?'我的售后 →':'My returns →'}"></a></p><p class="eyebrow"><span th:text="${storeText.text('YOUR ODYSSEY', zh)}">YOUR ODYSSEY</span></p>
 <p class="cart-feedback cart-error" role="alert" th:if="${orderError != null and !#strings.isEmpty(orderError)}" th:text="${storeText.text(orderError, zh)}">
 </p>
@@ -22,7 +22,9 @@
 </p>
 <p class="order-card" th:if="${#lists.isEmpty(orders)}" th:text="${zh ? '暂无订单。' : 'No orders yet.'}">
 </p>
-<article class="order-card order-summary-card" th:each="order, card : ${orders}" th:classappend="${'order-wash-' + (card.index % 4)}">
+<nav class="chosen-status-tabs" data-filter-for="orders" hidden th:unless="${staffView}" th:aria-label="${zh?'订单状态':'Order status'}">
+<button type="button" data-status="ALL" aria-pressed="true" th:text="${zh?'全部':'All'}"></button><button type="button" data-status="PENDING,PREPARING" aria-pressed="false" th:text="${zh?'备货中':'Preparing'}"></button><button type="button" data-status="SHIPPED" aria-pressed="false" th:text="${zh?'配送中':'Shipped'}"></button><button type="button" data-status="READY" aria-pressed="false" th:text="${zh?'待自提':'Ready'}"></button><button type="button" data-status="COMPLETED" aria-pressed="false" th:text="${zh?'已完成':'Completed'}"></button><button type="button" data-status="CANCELLED" aria-pressed="false" th:text="${zh?'已取消':'Cancelled'}"></button></nav>
+<p data-filter-empty="orders" hidden th:text="${zh?'此状态暂无订单。':'No orders with this status.'}"></p><article class="order-card order-summary-card" th:each="order, card : ${orders}" data-filter-row="orders" th:attr="data-status=${order.status}" th:classappend="${'order-wash-' + (card.index % 4)}">
     <div class="order-summary-header">
         <div><a class="order-number-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${(zh ? '订单 #' : 'Order #') + #strings.substring(order.id,0,8)}"></a>
             <p class="order-date" th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}"></p></div>
@@ -48,7 +50,7 @@
             <a class="order-view-link" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + order.id}}" th:text="${!staffView and order.status == 'SHIPPED' and order.fulfillment == 'DELIVERY' ? (zh ? '查看并确认收货 →' : 'View and confirm receipt →') : (zh ? '查看订单 →' : 'View order →')}"></a></div>
     </div>
 </article>
-</main>
+</main></div>
 <footer th:replace="~{fragments/layout :: footer}">
 </footer>
 </body>

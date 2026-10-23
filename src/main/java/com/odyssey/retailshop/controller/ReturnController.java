@@ -10,11 +10,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.*;
 @Controller
 public class ReturnController {
-    private final ReturnService returns;private final OrderService orders;
-    public ReturnController(ReturnService returns,OrderService orders){this.returns=returns;this.orders=orders;}
+    private final ReturnService returns;private final OrderService orders;private final ProductService products;
+    public ReturnController(ReturnService returns,OrderService orders,ProductService products){this.returns=returns;this.orders=orders;this.products=products;}
     @GetMapping("/orders/returns") public String mine(Principal user,Model model){return listing(user,model,false);}
     @GetMapping("/staff/returns") public String staff(Principal user,Model model){return listing(user,model,true);}
-    private String listing(Principal user,Model model,boolean staff){model.addAttribute("requests",returns.list(user.getName(),staff));model.addAttribute("staffView",staff);return "returns";}
+    private String listing(Principal user,Model model,boolean staff){model.addAttribute("requests",returns.list(user.getName(),staff));if(!staff){var images=new java.util.HashMap<Long,String>();for(var p:products.getProducts())if(p.getGarmentImage()!=null)images.put(p.getId(),p.getGarmentImage());model.addAttribute("returnImages",images);}model.addAttribute("staffView",staff);return "returns";}
     @GetMapping("/orders/{id}/return") public String form(@PathVariable String id,Principal user,Model model){model.addAttribute("order",orders.get(id,user.getName(),false));model.addAttribute("items",orders.items(id));model.addAttribute("token",UUID.randomUUID().toString());return "return-form";}
     @PostMapping("/orders/{id}/return") public String create(@PathVariable String id,@RequestParam long itemKey,@RequestParam int quantity,@RequestParam String reason,@RequestParam String token,@RequestParam(required=false) MultipartFile image,Principal user,RedirectAttributes flash){
         try{return "redirect:/orders/returns/"+returns.create(id,user.getName(),itemKey,quantity,reason,token,SupportImage.from(image));}

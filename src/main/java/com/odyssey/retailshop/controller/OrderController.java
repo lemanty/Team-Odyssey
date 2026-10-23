@@ -95,6 +95,7 @@ public class OrderController {
     private String detail(String id, Principal user, Model model, boolean staff) {
         var order=orders.get(id,user.getName(),staff);
         model.addAttribute("order",order);
+        if(!staff) model.addAttribute("detailPreviews",orders.previews(user.getName(),false).getOrDefault(id,java.util.List.of()));
         model.addAttribute("payment",payments.snapshot(id));
         model.addAttribute("couponPricing",coupons.snapshot(id));
         model.addAttribute("returnRefunded",returns.refunded(id));

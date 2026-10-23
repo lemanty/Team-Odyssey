@@ -37,6 +37,23 @@ class OrderTests {
     }
     String place(String mode) { return orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,2),mode,"Test address"); }
     int stock() { return jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class); }
+    @Test void selectedCustomerLayoutsRenderRealDataAndLeaveStaffUnstyled() throws Exception {
+        String id=place("DELIVERY");
+        jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
+        jdbc.update("INSERT INTO return_requests(id,order_id,user_id,product_id,quantity,reason,request_token) VALUES ('12345678-return',?,1,1,1,'Size does not fit','preview-token')",id);
+        for (String path : List.of("/account","/membership","/cart","/checkout","/orders","/orders/"+id,"/orders/returns","/products/1")) {
+            String html=mvc.perform(get(path).param("lang","zh").with(user("a@test.com"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            assertTrue(html.contains("chosen-design"),path);
+            if (path.equals("/checkout")) { assertTrue(html.contains("form=\"selected-checkout-form\"")); assertTrue(html.contains("id=\"selected-checkout-form\"")); }
+            if (path.equals("/orders/returns")) { assertTrue(html.contains("Size does not fit")); assertTrue(html.contains("/shirt.webp")); }
+            if (path.equals("/orders/"+id)) { assertTrue(html.contains("/shirt.webp")); assertTrue(html.contains("25.00")); }
+            String destination=System.getProperty("odyssey.previewDir");
+            if (destination!=null) { Files.createDirectories(Path.of(destination)); Files.writeString(Path.of(destination,path.replace('/','_')+".html"),html); }
+        }
+        String staff=mvc.perform(get("/staff/orders/"+id).with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertFalse(staff.contains("class=\"chosen-design"));
+        mvc.perform(get("/orders/returns").with(user("b@test.com"))).andExpect(content().string(org.hamcrest.Matchers.not(containsString("Size does not fit"))));
+    }
     @Test void checkoutSnapshotsRetryAndCancellation() {
         String token=UUID.randomUUID().toString();
         String id=orders.place("a@test.com",token,Map.of(1L,2),"DELIVERY","Road 1");

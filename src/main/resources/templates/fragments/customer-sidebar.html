@@ -1,0 +1,9 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body><aside th:fragment="sidebar(active)" class="customer-sidebar">
+<a class="customer-brand" th:href="@{/account}" th:text="${navUsername != null ? navUsername : (zh?'我的账号':'My account')}"></a>
+<a class="customer-membership" th:href="@{/membership}" th:text="${zh?'查看会员权益 →':'Membership benefits →'}"></a>
+<nav th:aria-label="${zh?'账号服务':'Account services'}">
+<a th:each="entry:${ {'account','orders','addresses','wallet','coupons','membership','returns'} }" th:href="@{${entry=='account'?'/account':(entry=='orders'?'/orders':(entry=='membership'?'/membership':(entry=='returns'?'/orders/returns':'/account/'+entry)))}}" th:attr="aria-current=${entry==active?'page':null}" th:text="${entry=='account'?(zh?'我的账号':'My account'):(entry=='orders'?(zh?'我的订单':'Orders'):(entry=='addresses'?(zh?'收货地址':'Addresses'):(entry=='wallet'?(zh?'我的钱包':'Wallet'):(entry=='coupons'?(zh?'优惠券':'Coupons'):(entry=='membership'?(zh?'会员权益':'Membership'):(zh?'退货 / 售后':'Returns'))))))}"></a>
+<a th:unless="${isAdmin}" th:href="@{${supportStaff?'/staff/support':'/support'}}" th:text="${zh?'联系客服':'Contact support'}"></a>
+<a th:if="${isAdmin}" th:href="@{/admin}" th:text="${zh?'管理员工作台':'Admin workspace'}"></a>
+<a th:if="${supportStaff}" th:href="@{/staff}" th:text="${zh?'员工工作台':'Staff workspace'}"></a>
+</nav></aside></body></html>

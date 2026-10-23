@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><script defer th:src="@{/js/password-visibility.js}"></script></head>
-<body>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '登录 | Odyssey' : 'Sign in | Odyssey'}">Sign in | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><script defer th:src="@{/js/password-visibility.js}"></script><link rel="stylesheet" th:href="@{/css/selected-design.css(v=1)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body class="chosen-design chosen-login">
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="auth-page">
     <aside class="auth-art auth-art-login"><p class="eyebrow"><span th:text="${storeText.text('THE ODYSSEY CONTINUES', zh)}">THE ODYSSEY CONTINUES</span></p><h1 th:text="${zh ? '每次相遇，都是新的旅程。' : 'A familiar place. A new discovery.'}">A familiar place. A new discovery.</h1><p th:text="${zh ? '从日常所需，到意外惊喜。欢迎回到 Odyssey。' : 'From everyday essentials to unexpected favourites. Welcome back to Odyssey.'}"></p></aside>
