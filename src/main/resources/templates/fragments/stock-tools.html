@@ -7,14 +7,24 @@
 <p th:unless="${available}" th:text="${zh?'请启用数据库模式后管理库存。':'Enable database mode to manage stock.'}"></p>
 <th:block th:if="${available}">
 <form method="get" th:action="@{/staff/inventory}" class="stock-search"><label><span th:text="${zh?'搜索名称或商品编号':'Search name or product ID'}"></span><input type="search" name="q" th:value="${q}"></label><button type="submit" th:text="${zh?'搜索':'Search'}"></button></form>
-<form method="get" th:action="@{/staff/inventory}" class="stock-search"><label><span th:text="${zh?'选择商品':'Choose a product'}"></span><select name="productId" required><option value="" th:text="${zh?'请选择商品':'Choose a product'}"></option><option th:each="p:${items}" th:value="${p.id}" th:selected="${stockForm!=null and stockForm.id==p.id}" th:text="${(zh?p.nameZh:p.name)+' · #'+p.id+' · '+p.stock}"></option></select></label><button th:text="${zh?'查看库存':'View stock'}"></button></form>
+<div class="stock-browser" th:classappend="${stockForm!=null?'has-selection':''}">
+<div class="stock-catalogue" tabindex="0" th:aria-label="${zh?'商品库存列表':'Product inventory list'}">
+<form th:each="p:${items}" method="get" th:action="@{/staff/inventory}" class="stock-product-row" th:classappend="${stockForm!=null and stockForm.id==p.id?'is-selected':''}">
+<input type="hidden" name="productId" th:value="${p.id}"><input type="hidden" name="q" th:value="${q}">
+<img th:if="${p.image!=null and !p.image.isBlank()}" th:src="${p.image}" th:alt="${zh?p.nameZh:p.name}" loading="lazy">
+<span class="stock-no-image" th:unless="${p.image!=null and !p.image.isBlank()}" th:text="${zh?'暂无图片':'No image'}"></span>
+<div class="stock-product-info"><strong th:text="${zh?p.nameZh:p.name}"></strong><small th:text="${'#'+p.id+' · '+storeText.text(p.category,zh)}"></small><span th:text="${(zh?'库存：':'Stock: ')+p.stock}"></span><small th:if="${p.lowOptions>0}" class="stock-low" th:text="${zh?'低库存 · 需要补货':'Low stock · Restock needed'}"></small></div>
+<button type="submit" th:attr="aria-label=${(zh?'调整库存：':'Adjust stock: ')+(zh?p.nameZh:p.name)}" th:text="${zh?'调整库存':'Adjust stock'}"></button>
+</form>
 <p th:if="${items.isEmpty()}" th:text="${zh?'没有找到商品。':'No products found.'}"></p>
+</div><div class="stock-selection">
+<p th:if="${stockForm==null}" class="stock-prompt" th:text="${zh?'选择商品以调整库存。':'Select a product to adjust stock.'}"></p>
 <p role="status" th:if="${stockSuccess}" th:text="${zh?'库存已保存。':'Stock saved.'}"></p><p role="alert" th:if="${stockError}" th:text="${storeText.text(stockError,zh)}"></p>
 <form th:if="${stockForm!=null}" method="post" th:action="@{/staff/inventory}" class="stock-editor">
-<input type="hidden" name="productId" th:value="${stockForm.id}"><input type="hidden" name="revision" th:value="${stockForm.revision}">
-<h3 th:text="${zh?stockForm.nameZh:stockForm.name}"></h3><p th:text="${zh?'填写可售库存。有规格的商品按尺码、颜色分别保存，总数自动合计。':'Enter available stock. Products with options are counted by size and colour.'}"></p>
+<input type="hidden" name="q" th:value="${q}"><input type="hidden" name="productId" th:value="${stockForm.id}"><input type="hidden" name="revision" th:value="${stockForm.revision}">
+<div class="stock-selected-heading"><img th:if="${stockForm.image!=null and !stockForm.image.isBlank()}" th:src="${stockForm.image}" alt=""><h3 tabindex="-1" data-stock-heading th:text="${zh?stockForm.nameZh:stockForm.name}"></h3></div><p th:text="${zh?'填写可售库存。有规格的商品按尺码、颜色分别保存，总数自动合计。':'Enter available stock. Products with options are counted by size and colour.'}"></p>
 <div class="stock-options"><label th:if="${stockForm.options.isEmpty()}"><span th:text="${zh?'可售库存':'Available stock'}"></span><input type="number" name="quantity" th:value="${stockForm.stock}" min="0" max="1000000" required></label>
 <label th:each="o:${stockForm.options}"><span th:text="${storeText.text(o.color,zh)+' / '+o.size}"></span><input type="number" th:name="${'stock_'+o.id}" th:value="${o.stock}" min="0" max="1000000" required></label></div>
 <button type="submit" th:text="${zh?'保存库存':'Save stock'}"></button>
-</form></th:block></section>
+</form></div></div></th:block></section>
 </body></html>

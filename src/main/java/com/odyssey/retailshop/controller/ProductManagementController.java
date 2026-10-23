@@ -33,7 +33,7 @@ public class ProductManagementController {
         } catch(IllegalArgumentException ex) {
             model.addAttribute("stockError",ex instanceof NumberFormatException ? "Invalid quantity. / 数量格式无效。" : ex.getMessage());
         }
-        return inventory("",productId,model);
+        return inventory(params.getOrDefault("q",""),productId,model);
     }
     @PostMapping("/admin/products/create")
     public String adminCreate(@ModelAttribute("form") ProductEditForm form,BindingResult result,

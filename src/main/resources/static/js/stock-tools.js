@@ -10,8 +10,11 @@
    try {
     const response=await fetch(url,{...options,headers:{'X-Requested-With':'XMLHttpRequest'}});
     if(!response.ok || response.redirected)throw new Error();
+    const scroll=content.querySelector('.stock-catalogue')?.scrollTop || 0;
     const html=await response.text();
     content.innerHTML=html;loaded=true;
+    const list=content.querySelector('.stock-catalogue');if(list)list.scrollTop=scroll;
+    content.querySelector('[data-stock-heading]')?.focus({preventScroll:true});
    } catch {
     let notice=content.querySelector('[data-load-error]');
     if(!notice){notice=document.createElement('p');notice.dataset.loadError='';notice.setAttribute('role','alert');content.prepend(notice);}
