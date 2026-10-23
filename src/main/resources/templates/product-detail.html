@@ -8,6 +8,8 @@
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <script th:src="@{/js/product-gallery.js}" defer></script>
 <link rel="stylesheet" th:href="@{/css/product-reviews.css}">
+<link rel="stylesheet" th:href="@{/css/variant-picker.css(v=1)}">
+<script th:src="@{/js/variant-picker.js(v=1)}" defer></script>
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('products')}"></header>
@@ -53,14 +55,33 @@
             <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
-                <div class="variant-picker" th:unless="${#lists.isEmpty(variants)}">
-                    <label for="variantId" th:text="${zh ? '选择尺码 / 颜色' : 'Choose size / colour'}"></label>
-                    <select name="variantId" id="variantId" required>
-                        <option value="" disabled selected th:text="${zh ? '请选择商品规格' : 'Choose an option'}"></option>
-                        <option th:each="v:${variants}" th:value="${v.id}" th:disabled="${v.stock<=0}" th:text="${v.size + ' / ' + storeText.text(v.color,zh) + (zh ? ' · 剩余 ' : ' · Stock: ') + v.stock}"></option>
-                    </select>
-                    <p th:text="${zh ? '图片展示原色款；其他颜色为示例选项，暂不提供对应图片。' : 'Photos show the original colour. Other colours are sample options without separate photographs.'}"></p>
-                </div>
+                <fieldset class="variant-image-picker" data-variant-picker th:unless="${#lists.isEmpty(variants)}" th:with="colours=${@variantImages.groups(variants)}">
+                    <legend th:text="${zh ? '1. 选择颜色' : '1. Choose a colour'}"></legend>
+                    <p class="variant-scroll-hint" th:text="${zh ? '同色合并展示 · 点击图片后选择尺码' : 'Choose a colour image, then select your size'}"></p>
+                    <div class="variant-image-grid" tabindex="0" th:aria-label="${zh?'商品颜色，可上下滚动':'Product colours, scroll vertically'}">
+                        <label class="variant-image-option" th:each="group,stat:${colours}" th:with="photo=${@variantImages.image(product.garmentImage,group.color)}">
+                            <input type="radio" name="variantColour" th:value="${stat.index}" th:disabled="${group.stock<=0}" required data-variant-colour th:attr="aria-controls=${'variant-sizes-'+stat.index}">
+                            <span class="variant-image-card">
+                                <img th:if="${photo!=null}" th:src="@{${photo}}" alt="" width="180" height="180" loading="lazy">
+                                <span class="variant-image-missing" th:unless="${photo!=null}" th:text="${zh?'图片待补充':'Image coming soon'}"></span>
+                                <strong th:text="${storeText.text(group.color,zh)}"></strong>
+                                <small th:text="${group.stock>0?(zh?'点击选择尺码':'Choose a size'):(zh?'暂时缺货':'Out of stock')}"></small>
+                                <span class="variant-check" aria-hidden="true">✓</span>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="variant-size-prompt" data-size-prompt th:text="${zh?'请先选择颜色，再选择尺码。':'Choose a colour to see available sizes.'}"></p>
+                    <fieldset class="variant-size-panel" th:each="group,stat:${colours}" th:id="${'variant-sizes-'+stat.index}" data-size-panel th:attr="data-colour-index=${stat.index}">
+                        <legend th:text="${(zh?'2. 选择尺码 · ':'2. Choose a size · ')+storeText.text(group.color,zh)}"></legend>
+                        <div class="variant-size-grid">
+                            <label class="variant-size-option" th:each="v:${group.variants}">
+                                <input type="radio" name="variantId" th:value="${v.id}" th:disabled="${v.stock<=0}" th:attr="data-out-of-stock=${v.stock<=0}" required>
+                                <span><strong th:text="${v.size}"></strong><small th:text="${v.stock>0?(zh?'剩余 '+v.stock+' 件':'Stock: '+v.stock):(zh?'缺货':'Sold out')}"></small></span>
+                            </label>
+                        </div>
+                    </fieldset>
+                    <p class="variant-scroll-hint" th:text="${zh?'颜色图片为 AI 生成的示例展示。':'Colour images are AI-generated illustrations.'}"></p>
+                </fieldset>
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>
             </form>
             <dl class="product-facts"><div><dt><span th:text="${storeText.text('Collection', zh)}">Collection</span></dt><dd><span th:text="${storeText.text('The Everyday Collection', zh)}">The Everyday Collection</span></dd></div><div><dt><span th:text="${storeText.text('Product reference', zh)}">Product reference</span></dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt><span th:text="${storeText.text('Availability', zh)}">Availability</span></dt><dd><span th:text="${storeText.text('Catalogue preview', zh)}">Catalogue preview</span></dd></div></dl>
