@@ -94,6 +94,7 @@ class AuthTests {
             } else assertTrue(result.contains("href=\""+(role.equals("CUSTOMER") ? "/support" : "/staff")+"\""));
             assertEquals(role.equals("ADMIN"),result.contains("href=\"/admin\""));
             String header=result.substring(result.indexOf("<header"),result.indexOf("</header>"));
+            assertTrue(header.contains(">Center</a>"));
             assertFalse(header.contains("href=\"/orders\""));
             assertFalse(header.contains("href=\"/membership\""));
             assertFalse(header.contains("data-new-account-window"));

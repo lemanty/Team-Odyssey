@@ -7,16 +7,16 @@
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
-<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js}"></script></head>
+<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js(v=always-open-1)}"></script><link rel="stylesheet" th:href="@{/css/admin-console.css}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header('support')}"></header>
-<main class="support-page" th:attr="data-support-base=${supportBase}">
+<div th:class="${staffView?'admin-shell':null}"><th:block th:if="${staffView}"><aside th:replace="~{fragments/workspace-sidebar :: sidebar('support')}"></aside></th:block><main class="support-page" th:attr="data-support-base=${supportBase}">
     <p class="eyebrow" th:text="${zh ? '每一个问题，都值得用心回应' : 'A little help along the way'}"></p>
     <h1 th:text="${staffView ? (zh ? '客服工作台' : 'Support workspace') : (zh ? '我们在这里，听你说。' : 'Here to help.')}"></h1>
     <p class="support-intro" th:text="${staffView ? (zh ? '优先处理待回复对话。未读仅代表你尚未查看，查看不会取消待回复标记。' : 'Prioritise conversations awaiting a reply. Reading a message does not clear its reply-needed status.') : (zh ? '商品、订单或配送方面有疑问？给我们留言，回复会保存在此页面。' : 'Questions about products, orders or delivery? Leave a message; our reply will appear here.')}"></p>
     <p class="auth-alert" role="alert" th:if="${supportError != null}" th:text="${storeText.text(supportError,zh)}"></p>
     <p class="support-connection" role="status" data-connection th:text="${zh ? '对话每8秒自动更新；也可以手动刷新。' : 'Conversations update every 8 seconds; you can also refresh manually.'}"></p>
-<th:block th:if="${staffView}"><section th:replace="~{fragments/stock-tools :: panel}"></section></th:block>
+
     <div th:fragment="workspace" class="support-workspace" th:classappend="${staffView ? 'support-staff' : 'support-customer'}">
         <aside th:if="${staffView}" class="support-inbox" id="support-inbox">
             <div class="support-metrics">
@@ -102,6 +102,6 @@
             </form>
         </section>
     </div>
-</main>
+</main></div>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body></html>

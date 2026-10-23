@@ -10,3 +10,5 @@
 .site-header .home-language-switch a { transition: background-color .2s ease, color .2s ease; }
 .site-header .home-language-switch a:hover { background-color: #dfe8d5; }
 @media (prefers-reduced-motion: reduce) { .nav-highlight, .site-header nav > a, .site-header .home-language-switch a { transition: none; } }
+
+.site-header nav .nav-username{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -1,8 +1,8 @@
 <!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
-<details th:fragment="panel" class="stock-tools" data-stock-tools th:attr="data-url=@{/staff/inventory}">
-<summary th:text="${zh?'商品库存 · 查询与调整':'Product stock · Find & adjust'}"></summary>
-<div data-stock-content><p th:text="${zh?'展开后加载商品库存。':'Open to load inventory.'}"></p></div>
-</details>
+<section th:fragment="panel" class="stock-tools" data-stock-tools th:attr="data-url=@{/staff/inventory}">
+
+<div data-stock-content><p th:text="${zh?'正在加载商品库存…':'Loading inventory...'}"></p></div>
+</section>
 <section th:fragment="content">
 <p th:unless="${available}" th:text="${zh?'请启用数据库模式后管理库存。':'Enable database mode to manage stock.'}"></p>
 <th:block th:if="${available}">
