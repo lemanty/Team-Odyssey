@@ -48,7 +48,7 @@
             <p class="eyebrow"><span th:text="${storeText.text(product.category, zh)}"><span th:text="${storeText.text('Clothing', zh)}">Clothing</span></span><span th:if="${product.audience != null}" th:text="' / ' + ${storeText.text(product.audience, zh)}"> / Women</span></p>
             <h1 id="product-title" th:text="${storeText.productName(product, zh)}">Product name</h1>
             <p class="detail-price" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
-
+            <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
                 <span class="stock-dot" aria-hidden="true"></span>
                 <span th:text="${product.stockQuantity > 0 ? (zh ? '现货 · 剩余 ' + product.stockQuantity + ' 件' : 'In stock · ' + product.stockQuantity + ' available') : (zh ? '暂时缺货' : 'Out of stock')}">In stock</span>
@@ -88,11 +88,8 @@
                 </fieldset>
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>
             </form>
-            <details class="soft-disclosure"><summary th:text="${zh ? '商品说明与信息' : 'Description & details'}"></summary><div class="soft-disclosure-content">
-            <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <dl class="product-facts"><div><dt><span th:text="${storeText.text('Collection', zh)}">Collection</span></dt><dd><span th:text="${storeText.text('The Everyday Collection', zh)}">The Everyday Collection</span></dd></div><div><dt><span th:text="${storeText.text('Product reference', zh)}">Product reference</span></dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt><span th:text="${storeText.text('Availability', zh)}">Availability</span></dt><dd><span th:text="${storeText.text('Catalogue preview', zh)}">Catalogue preview</span></dd></div></dl>
             <p class="detail-note"><span th:text="${product.category == 'Household' ? (zh ? '家居示例商品，图片由 AI 生成，价格和库存为演示数据。库存将在提交订单时扣减。' : 'Sample household collection with AI-generated photographs. Prices and stock are demonstration data. Stock is reserved at checkout.') : storeText.text('Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.', zh)}">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.</span></p>
-            </div></details>
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </section>
     </div>
