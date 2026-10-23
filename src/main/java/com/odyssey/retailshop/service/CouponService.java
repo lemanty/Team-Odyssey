@@ -54,8 +54,8 @@ public class CouponService {
     private long manager(String email){
         if(jdbc==null)throw new IllegalArgumentException("Database mode required. / 需要数据库模式。");
         var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if(auth==null||!auth.getName().equals(email)||auth.getAuthorities().stream().noneMatch(a->Set.of("ROLE_ADMIN","ROLE_STAFF").contains(a.getAuthority())))throw new AccessDeniedException("Staff required");
-        return jdbc.queryForList("SELECT id FROM users WHERE email=? AND role IN ('ADMIN','STAFF')",Long.class,email).stream().findFirst().orElseThrow(()->new AccessDeniedException("Staff required"));
+        if(auth==null||!auth.getName().equals(email)||auth.getAuthorities().stream().noneMatch(a->a.getAuthority().equals("ROLE_ADMIN")))throw new AccessDeniedException("Administrator required");
+        return jdbc.queryForList("SELECT id FROM users WHERE email=? AND role='ADMIN'",Long.class,email).stream().findFirst().orElseThrow(()->new AccessDeniedException("Administrator required"));
     }
     public void create(String email,String code,String title,String kind,BigDecimal value,BigDecimal minimum,LocalDateTime starts,LocalDateTime ends,boolean stack){
         long actor=manager(email);

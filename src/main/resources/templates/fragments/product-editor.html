@@ -1,6 +1,6 @@
 <!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body><th:block th:fragment="editor(saveAction)"><form th:if="${available}" method="post" enctype="multipart/form-data" th:action="@{${saveAction}(_csrf=${_csrf.token})}" th:object="${form}" class="inventory-editor">
 <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{revision}">
-<section class="inventory-panel"><h2 th:text="${zh?'01 / 商品信息':'01 / Product details'}"></h2><div class="inventory-grid">
+<div class="editor-with-preview"><div class="editor-fields"><section class="inventory-panel"><h2 th:text="${zh?'01 / 商品信息':'01 / Product details'}"></h2><div class="inventory-grid">
 <label><span th:text="${zh?'英文名称':'English name'}"></span><input th:field="*{name}" maxlength="150" required></label>
 <label><span th:text="${zh?'中文名称':'Chinese name'}"></span><input th:field="*{nameZh}" maxlength="150" required></label>
 <label><span th:text="${zh?'英文描述':'English description'}"></span><textarea rows="5" th:field="*{description}" maxlength="10000" required></textarea></label>
@@ -20,4 +20,4 @@
 <template id="option-template"><div class="option-row"><input name="options[INDEX].size" maxlength="30" required aria-label="Size / 尺码"><input name="options[INDEX].color" maxlength="60" required aria-label="Colour / 颜色"><input type="number" name="options[INDEX].stock" value="0" min="0" max="1000000" required aria-label="Stock / 库存"><button type="button" data-remove-option th:text="${zh?'移除':'Remove'}"></button></div></template>
 </section>
 <section class="inventory-panel inventory-publish"><div><h2 th:text="${zh?'04 / 上架状态':'04 / Availability'}"></h2><label class="publish-check"><input type="checkbox" th:field="*{published}"><span th:text="${zh?'上架，允许顾客浏览和购买':'Publish for customers to browse and buy'}"></span></label><p th:text="${zh?'取消勾选并保存即可下架，历史订单不受影响。':'Uncheck and save to unpublish. Existing orders remain available.'}"></p></div><button class="primary-button" type="submit" th:text="${zh?'保存商品':'Save product'}"></button></section>
-</form></th:block></body></html>
+</div><aside class="editor-preview"><h2 th:text="${zh?'商品预览':'Product preview'}"></h2><img data-product-preview-image th:src="${form.image}" th:hidden="${#strings.isEmpty(form.image)}" alt=""><p data-product-preview-empty th:hidden="${!#strings.isEmpty(form.image)}" th:text="${zh?'上传主图后显示预览':'Upload an image to preview'}"></p><h3 data-product-preview-title th:text="${zh?form.nameZh:form.name}"></h3><p data-product-preview-description th:text="${zh?form.descriptionZh:form.description}"></p><strong data-product-preview-price th:text="${'€'+(form.price!=null?form.price:0)}"></strong><p data-product-preview-state></p></aside></div></form></th:block></body></html>

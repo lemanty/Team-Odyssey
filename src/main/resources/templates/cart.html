@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Your bag | Odyssey', zh)}">Your bag | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
-</head>
-<body>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=1)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body class="chosen-design chosen-cart">
 <header th:replace="~{fragments/layout :: header('cart')}"></header>
 <main class="cart-page">
     <p class="eyebrow"><span th:text="${storeText.text('A FEW GOOD FINDS', zh)}">A FEW GOOD FINDS</span></p>
@@ -37,12 +37,14 @@
                         <input type="hidden" name="productId" th:value="${line.id}">
                         <label th:for="'quantity-' + ${line.id}"><span th:text="${storeText.text('Quantity', zh)}">Quantity</span></label>
                         <input type="number" name="quantity" min="1" max="999" step="1" required th:id="'quantity-' + ${line.id}" th:value="${line.quantity}">
-                        <button type="submit" class="text-button"><span th:text="${storeText.text('Update', zh)}">Update</span></button>
+                        <button type="button" class="quantity-step" data-quantity-step="-1" hidden th:aria-label="${zh?'减少数量':'Decrease quantity'}">−</button>
+<button type="button" class="quantity-step" data-quantity-step="1" hidden th:aria-label="${zh?'增加数量':'Increase quantity'}">+</button>
+<button type="submit" class="quantity-save text-button"><span th:text="${storeText.text('Update', zh)}">Update</span></button>
                     </form>
-                    <form method="post" th:action="@{/cart/remove}">
+                    <form class="cart-remove" method="post" th:action="@{/cart/remove}">
                         <input type="hidden" name="csrf" th:value="${cartToken}">
                         <input type="hidden" name="productId" th:value="${line.id}">
-                        <button class="text-button" type="submit" th:attr="aria-label=${(zh ? '移除' : 'Remove ') + (line.product != null ? storeText.productName(line.product, zh) : (zh ? '已下架商品' : 'unavailable product'))}"><span th:text="${storeText.text('Remove', zh)}">Remove</span></button>
+                        <button class="text-button" type="submit" th:attr="aria-label=${(zh ? '移除' : 'Remove ') + (line.product != null ? storeText.productName(line.product, zh) : (zh ? '已下架商品' : 'unavailable product'))}"><span aria-hidden="true">×</span></button>
                     </form>
                 </div>
                 <strong class="line-total" th:text="'€' + ${#numbers.formatDecimal(line.subtotal, 1, 2)}">€0.00</strong>
@@ -52,7 +54,7 @@
             <p class="eyebrow"><span th:text="${storeText.text('YOUR EVERYDAY EDIT', zh)}">YOUR EVERYDAY EDIT</span></p>
             <h2><span th:text="${storeText.text('Bag summary', zh)}">Bag summary</span></h2>
             <div class="cart-total"><span><span th:text="${storeText.text('Subtotal', zh)}">Subtotal</span></span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
-            <p><span th:text="${storeText.text('Sign in to add items. Your bag is saved to your account. Adding to your bag does not reserve stock.', zh)}">Sign in to add items. Your bag is saved to your account. Adding to your bag does not reserve stock.</span></p>
+            <p class="cart-summary-note"><span th:text="${zh?'购物车保存在你的账号中，加入购物车不会预留库存。':'Your bag is saved to your account. Adding items does not reserve stock.'}">Sign in to add items. Your bag is saved to your account. Adding to your bag does not reserve stock.</span></p>
             <a class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </aside>

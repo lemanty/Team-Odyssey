@@ -7,7 +7,18 @@ import org.springframework.web.bind.annotation.*;
 @ControllerAdvice
 public class PreferenceAdvice {
     private final com.odyssey.retailshop.service.StoreText translations;
-    public PreferenceAdvice(com.odyssey.retailshop.service.StoreText translations) { this.translations = translations; }
+    private final com.odyssey.retailshop.repository.UserRepository users;
+    public PreferenceAdvice(com.odyssey.retailshop.service.StoreText translations,
+            com.odyssey.retailshop.repository.UserRepository users) {
+        this.translations = translations; this.users = users;
+    }
+    @ModelAttribute("navUsername")
+    public String navUsername(Principal principal) {
+        if(principal == null) return "";
+        return users.findByEmail(principal.getName())
+            .map(com.odyssey.retailshop.repository.UserRepository.Account::displayName)
+            .filter(name -> !name.isBlank()).orElse(principal.getName());
+    }
     @ModelAttribute("storeText")
     public com.odyssey.retailshop.service.StoreText translations() { return translations; }
 

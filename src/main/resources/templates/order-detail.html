@@ -7,8 +7,8 @@
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 <link rel="stylesheet" th:href="@{/css/checkout-payment.css}">
-<link rel="stylesheet" th:href="@{/css/admin-console.css}"></head>
-<body>
+<link rel="stylesheet" th:href="@{/css/admin-console.css}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=1)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body th:class="${!staffView ? 'chosen-design chosen-order-detail' : ''}">
 <header th:replace="~{fragments/layout :: header('orders')}">
 </header>
 <div th:class="${(isAdmin or supportStaff) and staffView?'admin-shell':null}"><th:block th:if="${staffView}"><aside th:replace="~{fragments/workspace-sidebar :: sidebar('orders')} "></aside></th:block><main class="order-page">
@@ -25,11 +25,11 @@
 </p>
 <span class="order-badge" th:text="${zh ? (order.status == 'PENDING' ? '待备货' : (order.status == 'PREPARING' ? '备货中' : (order.status == 'SHIPPED' ? '已发货' : (order.status == 'READY' ? '待取货' : (order.status == 'COMPLETED' ? '已完成' : '已取消'))))) : order.status}">
 </span>
-<p th:if="${!staffView and order.status=='COMPLETED'}"><a class="order-view-link" th:href="@{/orders/{id}/return(id=${order.id})}" th:text="${zh?'申请退货 / 售后':'Request return / aftersales'}"></a></p><div class="order-grid">
+<ol class="order-progress" th:unless="${staffView or order.status=='CANCELLED'}" th:with="current=${order.status=='PENDING'?0:(order.status=='PREPARING'?1:(order.status=='COMPLETED'?3:2))}"><li th:each="step,loop:${ {'PENDING','PREPARING','DISPATCH','COMPLETED'} }" th:classappend="${loop.index<=current?'reached':''}" th:attr="aria-current=${loop.index==current?'step':null}"><span aria-hidden="true" th:text="${loop.index<=current?'✓':loop.count}"></span><strong th:text="${loop.index==0?(zh?'已下单':'Placed'):(loop.index==1?(zh?'备货中':'Preparing'):(loop.index==2?(order.fulfillment=='DELIVERY'?(zh?'已发货':'Shipped'):(zh?'待自提':'Ready')):(zh?'已完成':'Completed')))}"></strong></li></ol><p th:if="${!staffView and order.status=='COMPLETED'}"><a class="order-view-link" th:href="@{/orders/{id}/return(id=${order.id})}" th:text="${zh?'申请退货 / 售后':'Request return / aftersales'}"></a></p><div class="order-grid">
 <section class="order-card">
 <h2 th:text="${zh ? '商品明细' : 'Order details'}">
 </h2>
-<div class="order-item" th:each="item : ${items}">
+<div class="order-item" th:each="item : ${items}" th:with="photo=${!staffView ? detailPreviews.^[productId == #vars.item.productId] : null}"><img class="detail-order-photo" th:if="${photo!=null and photo.image!=null}" th:src="@{${photo.image}}" alt="" width="84" height="104">
 <a th:href="@{/products/{id}(id=${item.productId})}" th:text="${storeText.text(item.productName, zh)}">
 </a>
 <p>
@@ -41,7 +41,7 @@
 </strong>
 </p>
 </div>
-<div th:replace="~{fragments/membership :: pricing}"></div>
+<div th:if="${staffView}" th:insert="~{fragments/membership :: pricing}"></div>
 <div class="order-payment-summary">
 <p th:if="${returnRefunded>0}" th:text="${(zh?'售后累计退款 €':'Aftersales refunds €')+#numbers.formatDecimal(returnRefunded,1,2)}"></p>
 <h2 th:text="${zh?'支付信息':'Payment information'}"></h2>
@@ -60,7 +60,7 @@
 </p>
 <p th:text="${#temporals.format(order.createdAt,'yyyy-MM-dd HH:mm')}">
 </p>
-<div th:if="${!staffView and order.status == 'PENDING'}">
+<div class="selected-order-pricing" th:unless="${staffView}"><h2 th:text="${zh?'价格明细':'Price breakdown'}"></h2><div th:replace="~{fragments/membership :: pricing}"></div></div><details class="chosen-disclosure" th:if="${!staffView and order.status == 'PENDING'}"><summary th:text="${zh?'修改收货方式 / 取消订单':'Change delivery / cancel order'}"></summary><div>
 <h2 th:text="${zh ? '修改收货方式' : 'Change fulfilment'}">
 </h2>
 <form class="order-form" method="post" th:action="@{/orders/{id}/edit(id=${order.id})}">
@@ -83,7 +83,7 @@
 <button class="order-button order-cancel" th:text="${zh ? '取消订单' : 'Cancel order'}">
 </button>
 </form>
-</div>
+</div></details>
 <p th:if="${!staffView and order.status != 'PENDING'}" th:text="${zh ? '当前状态不可修改或取消。' : 'This order can no longer be edited or cancelled.'}">
 </p>
 <form th:if="${!staffView and order.status == 'SHIPPED' and order.fulfillment == 'DELIVERY'}" method="post" th:action="@{/orders/{id}/confirm-receipt(id=${order.id})}">

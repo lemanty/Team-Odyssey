@@ -29,7 +29,7 @@ class CouponTests {
   for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")){
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");for(String st:sql.split(";"))if(!st.isBlank())jdbc.execute(st);
   }
-  jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Employee','staff@test.com','unused','STAFF')");
+  jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Employee','staff@test.com','unused','STAFF'),(4,'Admin','admin@test.com','unused','ADMIN')");
   jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (1,'Vase','Household','Ceramic',100)");jdbc.update("INSERT INTO product_details VALUES (1,'Home',10,'/vase.png','')");
   jdbc.update("INSERT INTO wallet_entries(user_id,actor_id,request_token,amount,balance_after,note) VALUES (1,1,?,1000,1000,'Test funds')",UUID.randomUUID().toString());
  }
@@ -54,23 +54,28 @@ class CouponTests {
  }
  @Test void failedPaymentRetainsCouponAndCart(){coupon("PAY","FIXED","10","0",false);jdbc.update("DELETE FROM wallet_entries");jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");assertThrows(IllegalArgumentException.class,()->orders.placeFromCart("a@test.com",UUID.randomUUID().toString(),"COLLECTION","","WALLET","PAY"));assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM coupon_uses",Integer.class));assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM cart_items",Integer.class));}
  @Test void concurrentOrdersCannotUseSameCouponTwice()throws Exception {coupon("RACE","FIXED","10","0",false);var pool=Executors.newFixedThreadPool(2);try{var gate=new CountDownLatch(1);Callable<Boolean> action=()->{gate.await();try{buy("RACE");return true;}catch(IllegalArgumentException e){return false;}};var a=pool.submit(action);var b=pool.submit(action);gate.countDown();assertNotEquals(a.get(10,TimeUnit.SECONDS),b.get(10,TimeUnit.SECONDS));assertEquals(new BigDecimal("910.00"),wallet.balance(1));assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM coupon_uses",Integer.class));}finally{pool.shutdownNow();}}
+ @Test void staffCannotManageCouponsEvenWithCsrf() throws Exception {
+  mvc.perform(get("/staff/coupons").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isForbidden());
+  mvc.perform(post("/staff/coupons").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());
+  mvc.perform(post("/staff/coupons/1/status").with(user("staff@test.com").roles("STAFF")).with(csrf()).param("enabled","false")).andExpect(status().isForbidden());
+ }
  @Test void aftersalesRefundOnlyOriginalDiscountedTotalAndDoesNotRestoreCoupon(){coupon("RETURN","FIXED","25","0",false);String o=buy("RETURN");orders.advance(o,"PREPARING");orders.advance(o,"READY");orders.advance(o,"COMPLETED");String r=returns.create(o,"a@test.com",1,1,"Broken",UUID.randomUUID().toString(),null);returns.process(r,"staff@test.com","APPROVED","OK",false,false,false);returns.process(r,"staff@test.com","RECEIVED","Checked",false,false,false);returns.process(r,"staff@test.com","COMPLETED","Refund",true,true,false);assertEquals(new BigDecimal("75.00"),returns.refunded(o));assertEquals(new BigDecimal("1000.00"),wallet.balance(1));assertThrows(IllegalArgumentException.class,()->buy("RETURN"));}
  @Test void managementAuthorizationValidationAndRendering()throws Exception {
   mvc.perform(get("/staff/coupons").with(user("a@test.com"))).andExpect(status().isForbidden());
-  mvc.perform(post("/staff/coupons").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isForbidden());
-  var request=post("/staff/coupons").with(user("staff@test.com").roles("STAFF")).with(csrf()).param("code","HELLO").param("title","欢迎优惠").param("kind","PERCENT").param("value","10").param("minimum","100").param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString()).param("stack","true");
+  mvc.perform(post("/staff/coupons").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+  var request=post("/staff/coupons").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("code","HELLO").param("title","欢迎优惠").param("kind","PERCENT").param("value","10").param("minimum","100").param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString()).param("stack","true");
   mvc.perform(request).andExpect(redirectedUrl("/staff/coupons")).andExpect(flash().attribute("couponMessage",containsString("已创建")));
   mvc.perform(request).andExpect(flash().attribute("couponError",containsString("已存在")));
-  mvc.perform(get("/staff/coupons?lang=zh").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk()).andExpect(content().string(containsString("欢迎优惠")));
+  mvc.perform(get("/staff/coupons?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("欢迎优惠")));
   mvc.perform(get("/account/coupons?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("可叠加会员优惠")));
   if(System.getProperty("odyssey.preview")!=null){
    Path dir=Path.of(System.getProperty("odyssey.preview"));Files.createDirectories(dir);
-   for(String[] view:new String[][]{{"manage","/staff/coupons"},{"coupons","/account/coupons"}}){String html=mvc.perform(get(view[1]+"?lang=zh").with(user("staff@test.com").roles("STAFF"))).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);Files.writeString(dir.resolve(view[0]+".html"),html);}
+   for(String[] view:new String[][]{{"manage","/staff/coupons"},{"coupons","/account/coupons"}}){String html=mvc.perform(get(view[1]+"?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);Files.writeString(dir.resolve(view[0]+".html"),html);}
   }
-  long id=coupons.all().get(0).id();mvc.perform(post("/staff/coupons/"+id+"/status").with(user("staff@test.com").roles("STAFF")).with(csrf()).param("enabled","false")).andExpect(status().is3xxRedirection());assertFalse(coupons.all().get(0).enabled());
+  long id=coupons.all().get(0).id();mvc.perform(post("/staff/coupons/"+id+"/status").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("enabled","false")).andExpect(status().is3xxRedirection());assertFalse(coupons.all().get(0).enabled());
  }
  @Test void invalidRulesAreRejectedAndOtherCustomersCanUseSameOffer()throws Exception {
-  mvc.perform(post("/staff/coupons").with(user("staff@test.com").roles("STAFF")).with(csrf()).param("code","INVALID").param("title","Bad").param("kind","PERCENT").param("value","101").param("minimum","0").param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString())).andExpect(flash().attribute("couponError",containsString("百分比")));assertTrue(coupons.all().isEmpty());
+  mvc.perform(post("/staff/coupons").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("code","INVALID").param("title","Bad").param("kind","PERCENT").param("value","101").param("minimum","0").param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString())).andExpect(flash().attribute("couponError",containsString("百分比")));assertTrue(coupons.all().isEmpty());
   coupon("SHARED","FIXED","10","0",false);buy("SHARED");String bob=orders.place("b@test.com",UUID.randomUUID().toString(),Map.of(1L,1),"COLLECTION","","OFFLINE","SHARED");assertEquals(new BigDecimal("90.00"),orders.get(bob,"b@test.com",false).total());
  }
  @Test void previewKeepsAddressAndCheckoutChargesCoupon()throws Exception {

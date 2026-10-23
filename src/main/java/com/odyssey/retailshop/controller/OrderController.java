@@ -80,6 +80,7 @@ public class OrderController {
     @GetMapping("/staff/orders")
     public String staff(Principal user, Model model,@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="ALL") String status,@RequestParam(defaultValue="") String from,@RequestParam(defaultValue="") String to,@RequestParam(defaultValue="0") int page) {
         page=Math.max(0,Math.min(page,100000));
+        model.addAttribute("staffPreviews",orders.previews(user.getName(),true));
         try{model.addAttribute("result",workspace.search(q,status,from,to,page));}
         catch(IllegalArgumentException e){model.addAttribute("orderError",e.getMessage());model.addAttribute("result",workspace.search("","ALL","","",0));}
         model.addAttribute("q",q);model.addAttribute("status",status);model.addAttribute("from",from);model.addAttribute("to",to);model.addAttribute("page",page);return "staff-orders";
@@ -95,6 +96,7 @@ public class OrderController {
     private String detail(String id, Principal user, Model model, boolean staff) {
         var order=orders.get(id,user.getName(),staff);
         model.addAttribute("order",order);
+        if(!staff) model.addAttribute("detailPreviews",orders.previews(user.getName(),false).getOrDefault(id,java.util.List.of()));
         model.addAttribute("payment",payments.snapshot(id));
         model.addAttribute("couponPricing",coupons.snapshot(id));
         model.addAttribute("returnRefunded",returns.refunded(id));

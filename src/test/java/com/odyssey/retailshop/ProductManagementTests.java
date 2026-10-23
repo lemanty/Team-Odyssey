@@ -78,7 +78,7 @@ class ProductManagementTests {
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","20")).andExpect(status().isForbidden());
  }
  @Test void adminEmbeddedCreationAndWorkspaceRender() throws Exception {
-  mvc.perform(get("/admin?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("admin-sidebar"))).andExpect(content().string(containsString("data-stock-tools")));
+  mvc.perform(get("/admin?section=inventory&lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("admin-sidebar"))).andExpect(content().string(containsString("data-stock-tools")));
   mvc.perform(get("/admin?section=new").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("/admin/products/create")));
   mvc.perform(get("/staff").with(user("admin@test.com").roles("ADMIN"))).andExpect(redirectedUrl("/admin"));
   mvc.perform(get("/staff").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk());

@@ -2,7 +2,7 @@
  const zh=document.documentElement.lang.startsWith('zh');
  document.querySelectorAll('[data-stock-tools]').forEach(panel=>{
   const content=panel.querySelector('[data-stock-content]');
-  let loaded=false, busy=false;
+  let busy=false;
   async function load(url,options={}) {
    if(busy)return;
    busy=true;content.setAttribute('aria-busy','true');
@@ -12,16 +12,16 @@
     if(!response.ok || response.redirected)throw new Error();
     const scroll=content.querySelector('.stock-catalogue')?.scrollTop || 0;
     const html=await response.text();
-    content.innerHTML=html;loaded=true;
+    content.innerHTML=html;
     const list=content.querySelector('.stock-catalogue');if(list)list.scrollTop=scroll;
     content.querySelector('[data-stock-heading]')?.focus({preventScroll:true});
    } catch {
     let notice=content.querySelector('[data-load-error]');
     if(!notice){notice=document.createElement('p');notice.dataset.loadError='';notice.setAttribute('role','alert');content.prepend(notice);}
-    notice.textContent=zh?'无法加载或保存，请重新展开或重试。':'Unable to load or save. Reopen or retry.';
+    notice.textContent=zh?'无法加载或保存，请刷新页面或重试。':'Unable to load or save. Refresh the page or retry.';
    } finally {busy=false;content.removeAttribute('aria-busy');buttons.forEach(b=>b.disabled=false);}
   }
-  panel.addEventListener('toggle',()=>{if(panel.open&&!loaded)load(panel.dataset.url);});
+  load(panel.dataset.url);
   content.addEventListener('submit',event=>{
    const form=event.target;if(!(form instanceof HTMLFormElement))return;
    event.preventDefault();const data=new URLSearchParams(new FormData(form));
