@@ -78,6 +78,13 @@ class CouponTests {
   mvc.perform(post("/staff/coupons").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("code","INVALID").param("title","Bad").param("kind","PERCENT").param("value","101").param("minimum","0").param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString())).andExpect(flash().attribute("couponError",containsString("百分比")));assertTrue(coupons.all().isEmpty());
   coupon("SHARED","FIXED","10","0",false);buy("SHARED");String bob=orders.place("b@test.com",UUID.randomUUID().toString(),Map.of(1L,1),"COLLECTION","","OFFLINE","SHARED");assertEquals(new BigDecimal("90.00"),orders.get(bob,"b@test.com",false).total());
  }
+ @Test void fixedDiscountCannotExceedThresholdButEqualAndPercentageRemainValid()throws Exception {
+  for(String[] rule:new String[][]{{"OVER","FIXED","80","20","reject"},{"ZERO","FIXED","1","0","reject"},{"EQUAL","FIXED","20","20","ok"},{"LESS","FIXED","20","100","ok"},{"PERCENT","PERCENT","80","20","ok"}}){
+   var result=mvc.perform(post("/staff/coupons").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("code",rule[0]).param("title","Threshold test").param("kind",rule[1]).param("value",rule[2]).param("minimum",rule[3]).param("starts",LocalDateTime.now().minusDays(1).toString()).param("ends",LocalDateTime.now().plusDays(1).toString())).andExpect(status().is3xxRedirection());
+   if(rule[4].equals("reject")){result.andExpect(flash().attribute("couponError",containsString("固定优惠金额不能大于")));assertTrue(coupons.all().stream().noneMatch(c->c.code().equals(rule[0])));}
+   else {result.andExpect(flash().attributeExists("couponMessage"));assertTrue(coupons.all().stream().anyMatch(c->c.code().equals(rule[0])));}
+  }
+ }
  @Test void previewKeepsAddressAndCheckoutChargesCoupon()throws Exception {
   coupon("WEB","FIXED","10","0",false);jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");var session=new MockHttpSession();String token=UUID.randomUUID().toString();session.setAttribute("checkoutToken",token);
   var preview=mvc.perform(post("/checkout/coupon").session(session).with(user("a@test.com")).with(csrf()).param("couponCode","WEB").param("address","My road").param("fulfillment","DELIVERY").param("paymentMethod","WALLET")).andExpect(redirectedUrl("/checkout")).andExpect(flash().attribute("checkoutAddress","My road")).andReturn();

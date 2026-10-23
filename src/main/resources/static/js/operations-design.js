@@ -19,6 +19,17 @@
   rows.forEach(row=>{const b=row.querySelector('[data-account-select]');b.hidden=false;b.addEventListener('click',()=>select(row));});
   if(rows.length){document.querySelector('.account-master').classList.add('enhanced');select(rows[0]);}
  }
+ document.querySelectorAll('.coupon-create').forEach(form=>{
+  const kind=form.elements.namedItem('kind'), value=form.elements.namedItem('value'), minimum=form.elements.namedItem('minimum');
+  const hint=el('p');hint.id='coupon-amount-rule';hint.className='coupon-amount-rule';hint.setAttribute('aria-live','polite');value.closest('label').append(hint);value.setAttribute('aria-describedby',hint.id);
+  const validate=()=>{
+   const fixed=kind.value==='FIXED';
+   const invalid=fixed&&value.value!==''&&minimum.value!==''&&Number(value.value)>Number(minimum.value);
+   value.setCustomValidity(invalid?(zh?'固定优惠金额不能大于使用门槛金额。':'Fixed discount cannot exceed the minimum spend.'):'');
+   hint.textContent=fixed?(zh?'固定优惠金额须小于或等于使用门槛。例如：满 €100 减 €20。':'Fixed discount must not exceed minimum spend. Example: €20 off €100.'):(zh?'填写减免百分比：20 表示减免 20%，即打 8 折。':'Enter percentage off: 20 means 20% off.');
+   hint.classList.toggle('is-invalid',invalid);value.setAttribute('aria-invalid',String(invalid));
+  };[kind,value,minimum].forEach(input=>input.addEventListener('input',validate));kind.addEventListener('change',validate);validate();
+ });
  const offerPanel=document.querySelector('[data-offer-inspector]');
  if(offerPanel){
   const shell=offerPanel.parentElement,create=shell.querySelector('.offer-create');let previous;
@@ -27,7 +38,7 @@
    offerPanel.replaceChildren(card.querySelector('.coupon-ticket').cloneNode(true));
    const action=card.querySelector('.fulfillment-heading');if(action)offerPanel.append(action);
    offerPanel.append(el('p',zh?'历史优惠规则保留不改。调整优惠条件请创建新券；可在此启用或停用。':'Existing terms remain unchanged. Create a new offer to change terms; enable or disable this offer here.'));
-   const add=el('button',zh?'+ 创建新活动':'+ New offer');add.type='button';add.addEventListener('click',()=>{offerPanel.hidden=true;create.hidden=false;create.open=true;create.querySelector('input')?.focus();});offerPanel.append(add);
+   const add=el('button',zh?'+ 创建新活动':'+ New offer','offer-action');add.type='button';add.addEventListener('click',()=>{offerPanel.hidden=true;create.hidden=false;create.open=true;create.querySelector('input')?.focus();});offerPanel.append(add);
    shell.querySelectorAll('.offer-management-card').forEach(c=>c.classList.toggle('is-selected',c===card));create.hidden=true;offerPanel.hidden=false;previous=card;
   };
   const cards=[...shell.querySelectorAll('.offer-management-card')];cards.forEach(c=>{const b=c.querySelector('[data-offer-select]');b.hidden=false;b.addEventListener('click',()=>select(c));});

@@ -7,7 +7,7 @@
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
-<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js(v=always-open-1)}"></script><link rel="stylesheet" th:href="@{/css/admin-console.css}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=2)}"><link rel="stylesheet" th:href="@{/css/operations-design.css(v=1)}"><script defer th:src="@{/js/operations-design.js(v=1)}"></script></head>
+<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js(v=always-open-1)}"></script><link rel="stylesheet" th:href="@{/css/admin-console.css}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=2)}"><link rel="stylesheet" th:href="@{/css/operations-design.css(v=2)}"><script defer th:src="@{/js/operations-design.js(v=2)}"></script></head>
 <body class="chosen-design ops-design ops-support">
 <header th:replace="~{fragments/layout :: header('support')}"></header>
 <div th:class="${staffView?'admin-shell':null}"><th:block th:if="${staffView}"><aside th:replace="~{fragments/workspace-sidebar :: sidebar('support')}"></aside></th:block><main class="support-page" th:attr="data-support-base=${supportBase}">
