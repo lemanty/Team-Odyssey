@@ -71,9 +71,8 @@
                 <span class="card-detail-link"><span th:text="${storeText.text('Discover this piece', zh)}">Discover this piece</span> <span aria-hidden="true">↗</span></span>
             </div>
             </a>
-            <div class="product-purchase-actions">
+            <div class="product-purchase-actions" th:if="${!signedIn or product.category != 'Clothing'}">
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
-            <a th:if="${signedIn and product.category == 'Clothing'}" class="cart-button" th:href="@{/products/{id}(id=${product.id})}" th:text="${zh ? '选择规格 / 加入购物车' : 'Choose options / Add to bag'}"></a>
             <form th:if="${signedIn and product.category != 'Clothing'}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
