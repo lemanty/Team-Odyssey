@@ -13,6 +13,41 @@ import org.springframework.http.*;
 public class ProductManagementController {
     private final ProductManagementService products;
     public ProductManagementController(ProductManagementService products){this.products=products;}
+    @GetMapping("/staff/inventory")
+    public String inventory(@RequestParam(defaultValue="") String q, @RequestParam(required=false) Long productId, Model model) {
+        model.addAttribute("available",products.available());
+        model.addAttribute("q",q);
+        model.addAttribute("items",products.available()?products.list(q,"all"):java.util.List.of());
+        if(products.available() && productId!=null) model.addAttribute("stockForm",products.edit(productId));
+        return "fragments/stock-tools :: content";
+    }
+    @PostMapping("/staff/inventory")
+    public String stock(@RequestParam long productId,@RequestParam String revision,
+            @RequestParam(required=false) Integer quantity,@RequestParam java.util.Map<String,String> params,Model model) {
+        try {
+            var values=new java.util.HashMap<Long,Integer>();
+            for(var entry:params.entrySet()) if(entry.getKey().startsWith("stock_"))
+                values.put(Long.valueOf(entry.getKey().substring(6)),Integer.valueOf(entry.getValue()));
+            products.updateStock(productId,revision,quantity,values);
+            model.addAttribute("stockSuccess",true);
+        } catch(IllegalArgumentException ex) {
+            model.addAttribute("stockError",ex instanceof NumberFormatException ? "Invalid quantity. / 数量格式无效。" : ex.getMessage());
+        }
+        return inventory("",productId,model);
+    }
+    @PostMapping("/admin/products/create")
+    public String adminCreate(@ModelAttribute("form") ProductEditForm form,BindingResult result,
+            @RequestParam(required=false) MultipartFile mainPhoto,@RequestParam(required=false) MultipartFile extraPhoto,Model model,RedirectAttributes flash) {
+        model.addAttribute("administrator",true);model.addAttribute("available",products.available());model.addAttribute("newProductOpen",true);
+        if(result.hasErrors()) { model.addAttribute("error","Check numeric fields. / 请检查数字字段。"); return "workspace"; }
+        try {
+            if(form.getId()!=null) throw new IllegalArgumentException("New products only. / 此处仅用于新增商品。");
+            products.save(form,mainPhoto,extraPhoto);
+            flash.addFlashAttribute("success","Product created. / 商品已新增。");flash.addFlashAttribute("newProductOpen",true);
+            return "redirect:/admin";
+        } catch(IllegalArgumentException ex) { model.addAttribute("error",ex.getMessage()); }
+        return "workspace";
+    }
     @GetMapping("/staff/products")
     public String list(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="all") String status,Model model){
         model.addAttribute("available",products.available());model.addAttribute("q",q);model.addAttribute("status",status);

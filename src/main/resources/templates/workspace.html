@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"></head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js}"></script><link rel="stylesheet" th:href="@{/css/product-management.css}"><script defer th:src="@{/js/product-management.js}"></script></head>
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
-<main class="account-page">
+<main class="account-page workspace-page">
     <a class="detail-back" th:href="@{/staff/orders}" th:text="${zh ? '订单管理 →' : 'Manage orders →'}"></a><a class="detail-back" th:href="@{/staff/returns}" th:text="${zh?'售后工作台 →':'Aftersales workspace →'}"></a><p class="eyebrow"><span th:text="${storeText.text('ODYSSEY TEAM', zh)}">ODYSSEY TEAM</span></p>
     <h1 th:if="${administrator}" th:text="${zh ? '管理员工作台' : 'Administrator workspace'}"></h1>
     <h1 th:unless="${administrator}" th:text="${zh ? '员工工作台' : 'Staff workspace'}"></h1>
@@ -11,10 +11,11 @@
     <a class="detail-back" th:unless="${isAdmin}" th:href="@{/staff/support}" th:text="${zh ? '客服对话与待回复列表 →' : 'Customer conversations and reply queue →'}"></a>
     <a class="detail-back" th:if="${administrator}" th:href="@{/admin/wallet}" th:text="${zh ? '用户储值管理 →' : 'Manage user wallets →'}"></a>
     <a class="detail-back" th:if="${isAdmin}" th:href="@{/admin/users}" th:text="${zh?'注册账号与权限管理 →':'Registered accounts and roles →'}"></a>
-    <a class="detail-back" th:href="@{/staff/products}" th:text="${zh ? '商品与库存管理 →' : 'Products and inventory →'}"></a>
+<th:block><section th:replace="~{fragments/stock-tools :: panel}"></section></th:block>
+    <a class="detail-back" th:if="${isAdmin}" th:href="@{/staff/products}" th:text="${zh ? '商品与库存管理 →' : 'Products and inventory →'}"></a>
     <a class="detail-back" th:href="@{/staff/coupons}" th:text="${zh?'优惠券与活动管理 →':'Manage coupons &amp; offers →'}"></a><h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
     <ul th:unless="${administrator}">
-        <li th:text="${zh ? '维护商品信息与上下架' : 'Maintain products and catalogue availability'}"></li>
+        <li th:text="${zh ? '查询商品并调整已有规格的库存' : 'Find products and adjust stock for existing options'}"></li>
         <li th:text="${zh ? '处理订单、备货、发货及自取交付' : 'Prepare orders, dispatch deliveries and complete collections'}"></li>
         <li th:text="${zh ? '登记门店销售、留货、退货及库存流水' : 'Record store sales, holds, returns and inventory movements'}"></li>
         <li th:text="${zh ? '查看并回复顾客咨询' : 'Read and reply to customer enquiries'}"></li>
@@ -26,4 +27,7 @@
     </ul>
     <a class="detail-back" th:if="${administrator}" th:href="@{/staff}" th:text="${zh ? '进入员工工作台 →' : 'Open staff workspace →'}"></a>
     <a class="detail-back" th:href="@{/account}" th:text="${zh ? '返回我的账号 →' : 'Back to my account →'}"></a>
-</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+<details th:if="${administrator}" class="stock-tools" th:open="${newProductOpen == true}"><summary th:text="${zh?'+ 新增商品':'+ Add a product'}"></summary>
+<p th:if="${success}" role="status" th:text="${storeText.text(success,zh)}"></p><p th:if="${error}" role="alert" th:text="${storeText.text(error,zh)}"></p>
+<p th:unless="${available}" th:text="${zh?'请启用数据库模式。':'Enable database mode.'}"></p>
+<th:block th:replace="~{fragments/product-editor :: editor('/admin/products/create')}"></th:block></details></main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

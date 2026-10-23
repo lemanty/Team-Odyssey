@@ -135,6 +135,25 @@ public class ProductManagementService {
             return id;
         });
     }
+    /** Update only inventory, preserving all catalogue fields and checking the displayed revision. */
+    public void updateStock(long id, String revision, Integer quantity, Map<Long,Integer> options) {
+        ready();
+        tx.executeWithoutResult(status -> {
+            jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE",id);
+            var current=edit(id);
+            if(!current.getRevision().equals(revision)) throw new IllegalArgumentException("Stock changed. Reload before saving. / 库存已变化，请重新加载后保存。");
+            if(current.getOptions().isEmpty()) {
+                if(!options.isEmpty()) throw new IllegalArgumentException("Invalid options. / 规格无效。");
+                stock(quantity); current.setStock(quantity);
+            } else {
+                var ids=new HashSet<Long>();
+                for(var option:current.getOptions()) ids.add(option.getId());
+                if(!ids.equals(options.keySet())) throw new IllegalArgumentException("Reload all options. / 请重新加载完整规格。");
+                for(var option:current.getOptions()) { stock(options.get(option.getId())); option.setStock(options.get(option.getId())); }
+            }
+            save(current,null,null);
+        });
+    }
     public record Image(byte[] bytes,String type) {}
     public Optional<Image> image(String id) { return jdbc==null?Optional.empty():jdbc.query("SELECT image_data,content_type FROM catalogue_images WHERE id=?",(r,n)->new Image(r.getBytes(1),r.getString(2)),id).stream().findFirst(); }
 }
