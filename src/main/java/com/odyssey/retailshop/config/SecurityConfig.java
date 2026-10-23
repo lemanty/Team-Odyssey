@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/support", "/support/**").hasAnyRole("CUSTOMER", "STAFF")
                 .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**").authenticated()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                .requestMatchers("/staff/products", "/staff/products/**").hasRole("ADMIN")
                 .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())
             .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(

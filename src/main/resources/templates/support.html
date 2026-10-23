@@ -7,7 +7,7 @@
 <title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 <script th:src="@{/js/support.js(v=2)}" defer></script>
-</head>
+<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js}"></script></head>
 <body>
 <header th:replace="~{fragments/layout :: header('support')}"></header>
 <main class="support-page" th:attr="data-support-base=${supportBase}">
@@ -16,6 +16,7 @@
     <p class="support-intro" th:text="${staffView ? (zh ? '优先处理待回复对话。未读仅代表你尚未查看，查看不会取消待回复标记。' : 'Prioritise conversations awaiting a reply. Reading a message does not clear its reply-needed status.') : (zh ? '商品、订单或配送方面有疑问？给我们留言，回复会保存在此页面。' : 'Questions about products, orders or delivery? Leave a message; our reply will appear here.')}"></p>
     <p class="auth-alert" role="alert" th:if="${supportError != null}" th:text="${storeText.text(supportError,zh)}"></p>
     <p class="support-connection" role="status" data-connection th:text="${zh ? '对话每8秒自动更新；也可以手动刷新。' : 'Conversations update every 8 seconds; you can also refresh manually.'}"></p>
+<th:block th:if="${staffView}"><section th:replace="~{fragments/stock-tools :: panel}"></section></th:block>
     <div th:fragment="workspace" class="support-workspace" th:classappend="${staffView ? 'support-staff' : 'support-customer'}">
         <aside th:if="${staffView}" class="support-inbox" id="support-inbox">
             <div class="support-metrics">
