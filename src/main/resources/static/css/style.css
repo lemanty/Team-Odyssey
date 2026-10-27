@@ -153,6 +153,14 @@ h1 {
     width: 94%;
     pointer-events: none;
     z-index: 0;
+    /* Keep the original feathering stationary while the image moves inside it. */
+    overflow: hidden;
+    -webkit-mask-image: url('/images/voyage-reveal.svg?v=soft-2');
+    mask-image: url('/images/voyage-reveal.svg?v=soft-2');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
 }
 
 .hero-voyage {
@@ -161,12 +169,6 @@ h1 {
     height: 100%;
     object-fit: cover;
     object-position: center 54%;
-    -webkit-mask-image: url('/images/voyage-reveal.svg?v=soft-2');
-    mask-image: url('/images/voyage-reveal.svg?v=soft-2');
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
 }
 
 .home-page {
