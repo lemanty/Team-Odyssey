@@ -2,11 +2,22 @@
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const mouse = matchMedia('(hover: hover) and (pointer: fine)');
     const controls = 'button,a.button,a.cart-button,a.order-button,a.member-link,a.offer-action,[role="button"]';
-    const glow = document.createElement('div');
-    glow.className = 'cursor-glow';
-    glow.setAttribute('aria-hidden', 'true');
-    document.body.append(glow);
-    let frame = 0, visible = false, x = 0, y = 0, targetX = 0, targetY = 0, card = null;
+    const trail = document.createElement('canvas');
+    trail.className = 'cursor-trail';
+    trail.setAttribute('aria-hidden', 'true');
+    document.body.append(trail);
+    const context = trail.getContext('2d');
+    const lifetime = 240, maxLength = 130;
+    let frame = 0, card = null, points = [];
+    function resize() {
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        trail.width = Math.round(innerWidth * ratio);
+        trail.height = Math.round(innerHeight * ratio);
+        context?.setTransform(ratio, 0, 0, ratio, 0, 0);
+        points = [];
+    }
+    resize();
+    window.addEventListener('resize', resize, {passive:true});
     const ripples = new Set();
     const enabled = () => mouse.matches && !motion.matches && !document.hidden;
 
@@ -20,28 +31,63 @@
     function stop() {
         cancelAnimationFrame(frame);
         frame = 0;
-        visible = false;
-        glow.classList.remove('is-visible');
+        points = [];
+        context?.clearRect(0, 0, innerWidth, innerHeight);
         resetCard();
         ripples.forEach(node => node.remove());
         ripples.clear();
     }
-    function draw() {
-        x += (targetX - x) * .18;
-        y += (targetY - y) * .18;
-        glow.style.transform = `translate3d(${x - 48}px,${y - 48}px,0)`;
-        frame = Math.abs(targetX - x) + Math.abs(targetY - y) > .15
-            ? requestAnimationFrame(draw) : 0;
+    function paint(now) {
+        if (!context) return;
+        points = points.filter(point => now - point.time < lifetime);
+        context.clearRect(0, 0, innerWidth, innerHeight);
+        context.lineCap = 'round';
+        let distance = 0;
+        // Draw from the exact cursor position back through its recent path.
+        for (let i = points.length - 1; i > 0; i--) {
+            const head = points[i], tail = points[i - 1];
+            const length = Math.hypot(head.x - tail.x, head.y - tail.y);
+            distance += length;
+            if (distance > maxLength) { points = points.slice(i); break; }
+            const age = Math.max(0, 1 - (now - tail.time) / lifetime);
+            const taper = age * Math.pow(1 - distance / maxLength, .7);
+            context.beginPath();
+            context.moveTo(tail.x, tail.y);
+            context.lineTo(head.x, head.y);
+            context.lineWidth = Math.max(.15, 5 * taper);
+            context.strokeStyle = `rgba(93,151,122,${.48 * taper})`;
+            context.shadowColor = 'rgba(135,198,160,.3)';
+            context.shadowBlur = 5 * taper;
+            context.stroke();
+            context.shadowBlur = 0;
+            context.lineWidth = Math.max(.1, 1.4 * taper);
+            context.strokeStyle = `rgba(205,235,211,${.85 * taper})`;
+            context.stroke();
+        }
+    }
+    function draw(now) {
+        paint(now);
+        frame = points.length ? requestAnimationFrame(draw) : 0;
     }
     document.addEventListener('pointermove', event => {
         if (!enabled() || event.pointerType !== 'mouse') { stop(); return; }
-        targetX = event.clientX;
-        targetY = event.clientY;
-        if (!visible) {
-            x = targetX; y = targetY; visible = true;
-            glow.classList.add('is-visible');
+        const now = performance.now();
+        const previous = points[points.length - 1];
+        const distance = previous ? Math.hypot(event.clientX - previous.x, event.clientY - previous.y) : 0;
+        // Small samples keep the taper smooth even during fast mouse movements.
+        const steps = Math.max(1, Math.min(64, Math.ceil(distance / 3)));
+        if (previous && distance > 400) points = [];
+        for (let step = 1; step <= steps; step++) {
+            const part = step / steps;
+            points.push({
+                x: previous && distance <= 400 ? previous.x + (event.clientX - previous.x) * part : event.clientX,
+                y: previous && distance <= 400 ? previous.y + (event.clientY - previous.y) * part : event.clientY,
+                time: previous && distance <= 400 ? previous.time + (now - previous.time) * part : now
+            });
         }
-        if (!frame) frame = requestAnimationFrame(draw);
+        points = points.slice(-160);
+        paint(now);
+        if (!frame && context) frame = requestAnimationFrame(draw);
         const next = event.target.closest('.product-card');
         if (card !== next) { resetCard(); card = next; }
         if (card) {
