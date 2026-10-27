@@ -26,7 +26,7 @@
         '.auth-art','.auth-panel','.cart-line','.cart-summary',
         '.order-card:not(.address-editor)','.address-card','.support-page > h1',
         '.account-page > h1','.order-page > h1'
-    ].join(','))].filter(element => !element.parentElement.closest(
+    ].join(','))].filter(element => !element.closest('[data-hero-motion]') && !element.parentElement.closest(
         '.order-card,.auth-panel,.category-card,.account-tile,.membership-calculator,.support-messages'));
     const observer = new IntersectionObserver(entries => {
         const visible = entries.filter(e => e.isIntersecting).sort((a,b) =>
