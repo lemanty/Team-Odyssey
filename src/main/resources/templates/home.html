@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${zh ? '奥德赛 | 身边好物，美好日常' : 'Odyssey | Local goods, everyday living'}">Odyssey | Local goods, everyday living</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v=hero-motion-1)}">
+    <link rel="stylesheet" th:href="@{/css/hero-motion.css(v=1)}">
+    <script defer th:src="@{/js/hero-motion.js(v=1)}"></script>
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('home')}"></header>
 <main class="home-page">
-    <section class="hero">
+    <section class="hero" data-hero-motion>
         <div class="hero-copy">
             <p class="eyebrow"><span th:text="${zh ? '身边的小店，线上的相遇' : 'YOUR NEIGHBOURHOOD, ONLINE'}">YOUR NEIGHBOURHOOD, ONLINE</span></p>
             <h1><span th:if="${!zh}">Good things.<br>Everyday living.</span><span th:if="${zh}">日常好物，<br>美好生活。</span></h1>
@@ -19,10 +21,19 @@
             <p class="small-note"><span th:text="${zh ? '精选日常好物 · 支持配送或门店自取。' : 'Everyday essentials · Delivery or collection.'}">Everyday essentials · Delivery or collection.</span></p>
         </div>
         <div class="hero-art">
-            <img class="hero-voyage" th:src="@{/images/odyssey-voyage.png}"
+            <img id="hero-voyage" class="hero-voyage" th:src="@{/images/odyssey-voyage.png}"
                  th:alt="${zh ? '米白色拱门外是爱琴海与远处的帆船，陶器和亚麻织物点缀着海边露台。' : 'An ivory arch opening onto the Aegean Sea, with a distant sailboat, terracotta pottery and linen.'}"
                  width="1254" height="1254" fetchpriority="high">
         </div>
+        <button class="hero-motion-toggle" type="button" hidden aria-controls="hero-voyage"
+                data-label-pause="Pause background" data-label-play="Play background"
+                th:attr="data-label-pause=${zh ? '暂停背景动画' : 'Pause background'},data-label-play=${zh ? '播放背景动画' : 'Play background'}">
+            <svg class="hero-motion-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                <g class="hero-motion-pause"><path d="M5 3v10M11 3v10" fill="none" stroke="currentColor" stroke-width="2" /></g>
+                <path class="hero-motion-play" d="M5 2.5 13 8 5 13.5Z" fill="currentColor" />
+            </svg>
+            <span data-hero-motion-label th:text="${zh ? '暂停背景动画' : 'Pause background'}">Pause background</span>
+        </button>
     </section>
     <section class="category-section" aria-labelledby="categories-title">
         <svg class="section-journey section-journey-in" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true" focusable="false">

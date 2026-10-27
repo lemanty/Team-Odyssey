@@ -1,0 +1,83 @@
+/* Progressive enhancement: no script, no motion. The original PNG and mask
+   stay intact; only uniform scale/translation and a faint light layer animate. */
+.hero-motion-toggle {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 6px 12px;
+    border: 1px solid #dcded5;
+    border-radius: 24px;
+    background: #f8f7f2ed;
+    color: #4d5c51;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+.hero-motion-toggle[hidden] { display: none; }
+.hero-motion-toggle:hover { border-color: #8c998c; }
+.hero-motion-toggle:focus-visible {
+    outline: 3px solid #ad622e;
+    outline-offset: 4px;
+}
+.hero-motion-icon { flex: 0 0 auto; }
+.hero-motion-play { display: none; }
+.hero-motion-toggle[data-paused="true"] .hero-motion-pause { display: none; }
+.hero-motion-toggle[data-paused="true"] .hero-motion-play { display: block; }
+
+@media (prefers-reduced-motion: no-preference) {
+    [data-hero-motion][data-motion-ready="true"] .hero-voyage {
+        transform-origin: 62% 55%;
+        animation: voyage-drift 46s ease-in-out infinite;
+        animation-play-state: paused;
+    }
+    [data-hero-motion][data-motion-ready="true"] .hero-art::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse at 67% 34%, #ffe1af, transparent 70%);
+        opacity: .02;
+        animation: voyage-light 46s ease-in-out infinite;
+        animation-play-state: paused;
+    }
+    [data-hero-motion][data-motion-state="running"] .hero-voyage,
+    [data-hero-motion][data-motion-state="running"] .hero-art::after {
+        animation-play-state: running;
+    }
+    @keyframes voyage-drift {
+        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+        50% { transform: translate3d(-.18%, -.10%, 0) scale(1.008); }
+    }
+    @keyframes voyage-light {
+        0%, 100% { opacity: .02; }
+        50% { opacity: .045; }
+    }
+    @media (max-width: 600px) {
+        [data-hero-motion][data-motion-ready="true"] .hero-voyage {
+            animation-name: voyage-drift-mobile;
+            animation-duration: 56s;
+        }
+        [data-hero-motion][data-motion-ready="true"] .hero-art::after {
+            animation-duration: 56s;
+            background: radial-gradient(ellipse at 67% 34%, #ffe1af80, transparent 70%);
+        }
+        @keyframes voyage-drift-mobile {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(-.06%, -.04%, 0) scale(1.004); }
+        }
+    }
+}
+
+/* CSS also enforces the preference if JS is delayed or an event is missed. */
+@media (prefers-reduced-motion: reduce), print {
+    [data-hero-motion] .hero-voyage { animation: none !important; transform: none !important; }
+    [data-hero-motion] .hero-art::after { display: none; }
+    .hero-motion-toggle { display: none; }
+}
