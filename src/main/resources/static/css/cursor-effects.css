@@ -1,0 +1,18 @@
+/* Decoration never replaces the native cursor or intercepts clicks. */
+.cursor-glow,.cursor-ripple-clip{position:fixed;pointer-events:none!important;z-index:10000}
+.cursor-glow{left:0;top:0;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#779a7140 0%,#92ad8718 38%,transparent 70%);opacity:0;transition:opacity 180ms ease}
+.cursor-glow.is-visible{opacity:1}
+.cursor-ripple-clip{overflow:hidden}
+.cursor-ripple-clip span{position:absolute;border-radius:50%;background:radial-gradient(circle,#b6ceb94d, #9dbca33d 60%,transparent 72%);animation:cursor-ripple 550ms ease-out both}
+@keyframes cursor-ripple{from{transform:scale(0);opacity:.8}to{transform:scale(1);opacity:0}}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+    .product-card{transition:translate 280ms cubic-bezier(.22,.7,.25,1),box-shadow 280ms ease}
+    .product-card.cursor-card-active{translate:0 -3px;box-shadow:0 10px 26px #243f3d12}
+    .product-card .product-art img{translate:var(--cursor-x,0px) var(--cursor-y,0px);transition:translate 320ms cubic-bezier(.22,.7,.25,1),transform 420ms ease}
+    :is(button,a.button,a.cart-button,a.order-button,a.member-link,a.offer-action,[role="button"]){transition:background-color 180ms ease,color 180ms ease,border-color 180ms ease,filter 180ms ease}
+    :is(button,a.button,a.cart-button,a.order-button,a.member-link,a.offer-action,[role="button"]):hover:not(:disabled):not([aria-disabled="true"]){filter:brightness(.96)}
+}
+@media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+    .cursor-glow,.cursor-ripple-clip{display:none}
+}
+@media print{.cursor-glow,.cursor-ripple-clip{display:none}}
