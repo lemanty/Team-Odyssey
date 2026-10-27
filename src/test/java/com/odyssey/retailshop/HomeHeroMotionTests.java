@@ -28,24 +28,21 @@ class HomeHeroMotionTests {
             .andExpect(content().string(containsString("src=\"/images/odyssey-voyage.png\"")))
             .andExpect(content().string(containsString("width=\"1254\" height=\"1254\"")))
             .andExpect(content().string(containsString("An ivory arch opening onto the Aegean Sea")))
-            .andExpect(content().string(containsString("/css/hero-motion.css?v=1")))
-            .andExpect(content().string(containsString("/js/hero-motion.js?v=1")))
-            .andExpect(content().string(containsString("aria-controls=\"hero-voyage\"")))
-            .andExpect(content().string(containsString("data-label-pause=\"Pause background\"")))
-            .andExpect(content().string(containsString("data-label-play=\"Play background\"")))
+            .andExpect(content().string(containsString("/css/hero-motion.css?v=sea-loop-2")))
+            .andExpect(content().string(containsString("/js/hero-motion.js?v=sea-loop-2")))
+            .andExpect(content().string(containsString("class=\"hero-scene\"")))
+            .andExpect(content().string(containsString("data-sea-src=\"/images/odyssey-voyage-sea.png\"")))
+            .andExpect(content().string(not(containsString("cursor-effects"))))
             .andExpect(content().string(containsString("href=\"/products\"")))
             .andReturn().getResponse().getContentAsString();
-        assertTrue(html.matches("(?s).*<button(?=[^>]*class=\"hero-motion-toggle\")(?=[^>]*type=\"button\")(?=[^>]*\\bhidden(?:[\\s=>]))[^>]*>.*"),
-            "Pause control is a semantic button and remains hidden until enhancement succeeds");
+        assertTrue(!html.contains("hero-motion-toggle"), "Homepage autoplays without a playback control");
     }
 
     @Test
-    void chineseHomepageHasLocalizedAnimationControlsAndOriginalDescription() throws Exception {
+    void chineseHomepageKeepsOriginalDescriptionWithoutPlaybackControls() throws Exception {
         mockMvc.perform(get("/").param("lang", "zh"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("lang=\"zh-CN\"")))
-            .andExpect(content().string(containsString("data-label-pause=\"暂停背景动画\"")))
-            .andExpect(content().string(containsString("data-label-play=\"播放背景动画\"")))
             .andExpect(content().string(containsString("米白色拱门外是爱琴海与远处的帆船")))
             .andExpect(content().string(containsString("日常好物，")));
     }
@@ -57,7 +54,7 @@ class HomeHeroMotionTests {
             .andExpect(content().string(containsString("prefers-reduced-motion: reduce")));
         mockMvc.perform(get("/css/hero-motion.css"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("animation-play-state: paused")));
+            .andExpect(content().string(containsString("prefers-reduced-motion:reduce")));
     }
 
     @Test
