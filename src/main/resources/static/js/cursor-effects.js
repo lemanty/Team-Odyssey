@@ -7,7 +7,7 @@
     trail.setAttribute('aria-hidden', 'true');
     document.body.append(trail);
     const context = trail.getContext('2d');
-    const lifetime = 240, maxLength = 130;
+    const lifetime = 300, maxLength = 145;
     let frame = 0, card = null, points = [];
     function resize() {
         const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -41,28 +41,56 @@
         if (!context) return;
         points = points.filter(point => now - point.time < lifetime);
         context.clearRect(0, 0, innerWidth, innerHeight);
-        context.lineCap = 'round';
+        if (points.length < 2) return;
+        // Smooth the recorded path, without delaying the newest cursor position.
+        const spine = [points[0]];
+        for (let i = 1; i < points.length - 1; i++) {
+            const start = spine[spine.length - 1], control = points[i], next = points[i + 1];
+            const end = {x:(control.x+next.x)/2, y:(control.y+next.y)/2,
+                time:(control.time+next.time)/2};
+            for (let step = 1; step <= 3; step++) {
+                const t = step/3, u = 1-t;
+                spine.push({x:u*u*start.x+2*u*t*control.x+t*t*end.x,
+                    y:u*u*start.y+2*u*t*control.y+t*t*end.y,
+                    time:start.time+(end.time-start.time)*t});
+            }
+        }
+        spine.push(points[points.length-1]);
+        const ribbon = [];
         let distance = 0;
-        // Draw from the exact cursor position back through its recent path.
-        for (let i = points.length - 1; i > 0; i--) {
-            const head = points[i], tail = points[i - 1];
-            const length = Math.hypot(head.x - tail.x, head.y - tail.y);
-            distance += length;
-            if (distance > maxLength) { points = points.slice(i); break; }
-            const age = Math.max(0, 1 - (now - tail.time) / lifetime);
-            const taper = age * Math.pow(1 - distance / maxLength, .7);
+        for (let i = spine.length-1; i >= 0; i--) {
+            const point = spine[i], newer = spine[Math.min(i+1,spine.length-1)];
+            distance += Math.hypot(point.x-newer.x,point.y-newer.y);
+            if (distance >= maxLength) break;
+            const older = spine[Math.max(0,i-1)];
+            const dx = newer.x-older.x, dy = newer.y-older.y;
+            const length = Math.hypot(dx,dy) || 1;
+            const age = Math.max(0,1-(now-point.time)/lifetime);
+            const freshness = age*age*(3-2*age);
+            ribbon.push({x:point.x,y:point.y,nx:-dy/length,ny:dx/length,
+                width:2.6*freshness*Math.pow(1-distance/maxLength,.8)});
+        }
+        if (ribbon.length < 2) return;
+        const head = ribbon[0], tail = ribbon[ribbon.length-1];
+        const fade = Math.max(0,1-(now-points[points.length-1].time)/lifetime);
+        // Three continuous ribbons replace dozens of expensive blurred strokes.
+        for (const [scale, color, alpha] of [[2.1,'135,198,160',.08],[1,'93,151,122',.42],[.3,'216,241,220',.75]]) {
+            const gradient = context.createLinearGradient(head.x,head.y,tail.x,tail.y);
+            gradient.addColorStop(0, `rgba(${color},${alpha*fade})`);
+            gradient.addColorStop(1, `rgba(${color},0)`);
+            context.fillStyle = gradient;
             context.beginPath();
-            context.moveTo(tail.x, tail.y);
-            context.lineTo(head.x, head.y);
-            context.lineWidth = Math.max(.15, 5 * taper);
-            context.strokeStyle = `rgba(93,151,122,${.48 * taper})`;
-            context.shadowColor = 'rgba(135,198,160,.3)';
-            context.shadowBlur = 5 * taper;
-            context.stroke();
-            context.shadowBlur = 0;
-            context.lineWidth = Math.max(.1, 1.4 * taper);
-            context.strokeStyle = `rgba(205,235,211,${.85 * taper})`;
-            context.stroke();
+            ribbon.forEach((point,i) => {
+                const x = point.x+point.nx*point.width*scale;
+                const y = point.y+point.ny*point.width*scale;
+                if (i === 0) context.moveTo(x,y); else context.lineTo(x,y);
+            });
+            for (let i = ribbon.length-1; i >= 0; i--) {
+                const point = ribbon[i];
+                context.lineTo(point.x-point.nx*point.width*scale,point.y-point.ny*point.width*scale);
+            }
+            context.closePath();
+            context.fill();
         }
     }
     function draw(now) {
@@ -72,21 +100,17 @@
     document.addEventListener('pointermove', event => {
         if (!enabled() || event.pointerType !== 'mouse') { stop(); return; }
         const now = performance.now();
-        const previous = points[points.length - 1];
-        const distance = previous ? Math.hypot(event.clientX - previous.x, event.clientY - previous.y) : 0;
-        // Small samples keep the taper smooth even during fast mouse movements.
-        const steps = Math.max(1, Math.min(64, Math.ceil(distance / 3)));
-        if (previous && distance > 400) points = [];
-        for (let step = 1; step <= steps; step++) {
-            const part = step / steps;
-            points.push({
-                x: previous && distance <= 400 ? previous.x + (event.clientX - previous.x) * part : event.clientX,
-                y: previous && distance <= 400 ? previous.y + (event.clientY - previous.y) * part : event.clientY,
-                time: previous && distance <= 400 ? previous.time + (now - previous.time) * part : now
-            });
+        const samples = event.getCoalescedEvents?.() || [];
+        for (const sample of samples.length ? samples : [event]) {
+            const previous = points[points.length-1];
+            const distance = previous ? Math.hypot(sample.clientX-previous.x,sample.clientY-previous.y) : 0;
+            if (previous && distance < .7) continue;
+            if (distance > 400) points = [];
+            points.push({x:sample.clientX,y:sample.clientY,
+                time:Math.min(now, Math.max(now-lifetime, sample.timeStamp))});
         }
-        points = points.slice(-160);
-        paint(now);
+        points = points.slice(-96);
+        // Exactly one paint per display refresh, including on 120/144 Hz screens.
         if (!frame && context) frame = requestAnimationFrame(draw);
         const next = event.target.closest('.product-card');
         if (card !== next) { resetCard(); card = next; }
