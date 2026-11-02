@@ -1060,3 +1060,31 @@ html[lang="zh-CN"] :is(.auth-art h1, .auth-panel h2, .account-page h1) {
 .language-switch a:hover { background: #e9ecdf; }
 .language-switch a:focus-visible { outline: 2px solid #61775e; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .auth-switch a.auth-switch-button { transition: none; } }
+
+/* Staff & administrator workspace */
+.staff-page { max-width: 1000px; }
+.staff-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 20px 0 12px; flex-wrap: wrap; }
+.staff-heading .section-heading { margin: 0; }
+.staff-add { width: auto; padding: 13px 22px; text-decoration: none; display: inline-block; }
+.staff-table-wrap { overflow-x: auto; border: 1px solid #d9ddd1; border-radius: 8px; margin: 20px 0 32px; }
+.staff-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 620px; }
+.staff-table th, .staff-table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid #e4e5dc; vertical-align: middle; }
+.staff-table thead th { background: #eef0e6; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #657168; }
+.staff-table tbody tr:last-child td { border-bottom: 0; }
+.staff-name { font-weight: 600; }
+.staff-actions { white-space: nowrap; }
+.staff-actions a { color: #203e35; margin-right: 12px; font-weight: 600; }
+.staff-actions form { display: inline; margin-right: 10px; }
+.staff-danger { color: #8a422e !important; }
+.status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.status-live { background: #dfe6d6; color: #41603f; }
+.status-hidden { background: #f3e6dd; color: #7a3d2b; }
+.workspace-modules { list-style: none; padding: 0; margin: 8px 0 8px; }
+.workspace-modules li { padding: 14px 0; border-top: 1px solid #d9ddd1; display: grid; gap: 4px; }
+.workspace-modules a { text-decoration: none; }
+.workspace-modules a strong { color: #203e35; font-size: 16px; }
+.workspace-modules span { color: #657168; font-size: 14px; }
+.staff-form textarea { min-width: 0; width: 100%; padding: 14px 16px; background: #fffdf8; border: 1px solid #c9cfc3; border-radius: 5px; font: inherit; color: #203e35; resize: vertical; }
+.staff-form textarea:focus { outline: 2px solid #698763; outline-offset: 2px; }
+.staff-check { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.staff-check input { width: auto; }

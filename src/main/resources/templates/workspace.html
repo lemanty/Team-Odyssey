@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=auth-2)}"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=staff-1)}"></head>
 <body><header th:replace="~{fragments/layout :: header('account')}"></header>
-<main class="account-page">
+<main class="account-page staff-page">
     <div th:replace="~{fragments/auth :: language(${administrator ? '/admin' : '/staff'})}"></div>
     <p class="eyebrow">ODYSSEY TEAM</p>
     <h1 th:if="${administrator}" th:text="${zh ? '管理员工作台' : 'Administrator workspace'}"></h1>
     <h1 th:unless="${administrator}" th:text="${zh ? '员工工作台' : 'Staff workspace'}"></h1>
-    <p class="auth-notice" th:text="${zh ? '权限验证通过。此页是工作台入口，下列业务模块尚未实现。' : 'Access verified. This is a workspace entry page; the operational modules below are not implemented yet.'}"></p>
-    <h2 th:text="${zh ? '计划职责' : 'Planned responsibilities'}"></h2>
+    <p class="auth-notice" th:text="${zh ? '权限验证通过。以下是当前可用的业务模块。' : 'Access verified. These operational modules are available.'}"></p>
+
+    <div class="section-heading"><h2 th:text="${zh ? '可用模块' : 'Available modules'}"></h2></div>
+    <ul class="workspace-modules">
+        <li>
+            <a th:href="@{/staff/products}"><strong th:text="${zh ? '商品管理' : 'Catalogue'}"></strong></a>
+            <span th:text="${zh ? '维护商品信息、库存与上下架状态。' : 'Maintain products, stock and catalogue availability.'}"></span>
+        </li>
+    </ul>
+
+    <div class="section-heading"><h2 th:text="${zh ? '后续计划' : 'Coming later'}"></h2></div>
     <ul th:unless="${administrator}">
-        <li th:text="${zh ? '维护商品信息与上下架' : 'Maintain products and catalogue availability'}"></li>
         <li th:text="${zh ? '处理订单、备货、发货及自取交付' : 'Prepare orders, dispatch deliveries and complete collections'}"></li>
         <li th:text="${zh ? '登记门店销售、留货、退货及库存流水' : 'Record store sales, holds, returns and inventory movements'}"></li>
         <li th:text="${zh ? '查看并回复顾客咨询' : 'Read and reply to customer enquiries'}"></li>
