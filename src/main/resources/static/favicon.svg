@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Odyssey</title>
+  <g fill="none" stroke-width="12" stroke-linecap="butt">
+    <path stroke="#326960" d="M8.1 29.9 A24 24 0 0 1 29.9 8.1"/>
+    <path stroke="#7d60b6" d="M34.1 8.1 A24 24 0 0 1 55.9 29.9"/>
+    <path stroke="#cf775c" d="M55.9 34.1 A24 24 0 0 1 34.1 55.9"/>
+    <path stroke="#bd9332" d="M29.9 55.9 A24 24 0 0 1 8.1 34.1"/>
+  </g>
+</svg>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}">
+<title th:text="${zh ? '客服对话 | Odyssey' : 'Customer support | Odyssey'}"></title>
+<link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
+<script th:src="@{/js/support.js(v=2)}" defer></script>
+<link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js(v=always-open-1)}"></script><link rel="stylesheet" th:href="@{/css/admin-console.css}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><link rel="stylesheet" th:href="@{/css/operations-design.css(v=full-product-3)}"><script defer th:src="@{/js/operations-design.js(v=1)}"></script></head>
+<body class="chosen-design ops-design ops-support">
+<header th:replace="~{fragments/layout :: header('support')}"></header>
+<div th:class="${staffView?'admin-shell':null}"><th:block th:if="${staffView}"><aside th:replace="~{fragments/workspace-sidebar :: sidebar('support')}"></aside></th:block><main class="support-page" th:attr="data-support-base=${supportBase}">
+    <p class="eyebrow" th:text="${zh ? '每一个问题，都值得用心回应' : 'A little help along the way'}"></p>
+    <h1 th:text="${staffView ? (zh ? '客服工作台' : 'Support workspace') : (zh ? '我们在这里，听你说。' : 'Here to help.')}"></h1>
+    <p class="support-intro" th:text="${staffView ? (zh ? '优先处理待回复对话。未读仅代表你尚未查看，查看不会取消待回复标记。' : 'Prioritise conversations awaiting a reply. Reading a message does not clear its reply-needed status.') : (zh ? '商品、订单或配送方面有疑问？给我们留言，回复会保存在此页面。' : 'Questions about products, orders or delivery? Leave a message; our reply will appear here.')}"></p>
+    <p class="auth-alert" role="alert" th:if="${supportError != null}" th:text="${storeText.text(supportError,zh)}"></p>
+    <p class="support-connection" role="status" data-connection th:text="${zh ? '对话每8秒自动更新；也可以手动刷新。' : 'Conversations update every 8 seconds; you can also refresh manually.'}"></p>
+
+    <div th:fragment="workspace" class="support-workspace" th:classappend="${staffView ? 'support-staff' : 'support-customer'}">
+        <aside th:if="${staffView}" class="support-inbox" id="support-inbox">
+            <div class="support-metrics">
+                <div><strong th:text="${counts.waiting}"></strong><span th:text="${zh ? '待回复' : 'Need reply'}"></span></div>
+                <div><strong th:text="${counts.unread}"></strong><span th:text="${zh ? '我未读' : 'Unread'}"></span></div>
+                <div><strong th:text="${counts.resolved}"></strong><span th:text="${zh ? '已解决' : 'Resolved'}"></span></div>
+            </div>
+            <nav class="support-filters" th:aria-label="${zh ? '对话筛选' : 'Filter conversations'}">
+                <a th:each="f : ${ {'all','waiting','unread','resolved'} }" th:href="@{/staff/support(filter=${f})}" th:attr="aria-current=${filter == f ? 'page' : null}" th:text="${f == 'all' ? (zh ? '全部' : 'All') : (f == 'waiting' ? (zh ? '待回复' : 'Need reply') : (f == 'unread' ? (zh ? '未读' : 'Unread') : (zh ? '已解决' : 'Resolved')))}"></a>
+            </nav>
+            <p class="support-empty" th:if="${#lists.isEmpty(threads)}" th:text="${zh ? '此分类暂无对话。' : 'No conversations in this view.'}"></p>
+            <a class="support-thread" th:each="thread : ${threads}" th:classappend="${(thread.waiting ? 'needs-reply ' : '') + (selected != null and thread.id == selected.id ? 'is-selected' : '')}"
+               th:href="@{/staff/support(id=${thread.id},filter=${filter},page=${page})}" th:attr="aria-current=${selected != null and thread.id == selected.id ? 'page' : null}">
+                <div class="support-thread-heading"><strong th:text="${thread.customerName}"></strong><span class="support-unread" th:if="${thread.unread}" th:text="${zh ? '未读' : 'Unread'}"></span></div>
+                <span class="support-state pending" th:if="${thread.waiting}" th:text="${zh ? '待回复' : 'Reply needed'}"></span>
+                <span class="support-state" th:if="${!thread.waiting}" th:text="${thread.resolved ? (zh ? '已解决' : 'Resolved') : (zh ? '已回复' : 'Replied')}"></span>
+                <p class="support-preview" th:text="${#strings.isEmpty(thread.preview) ? (zh ? '图片 / 订单消息' : 'Image / order message') : thread.preview}"></p>
+                <time th:text="${#temporals.format(thread.updatedAt,'MM-dd HH:mm')}"></time>
+            </a>
+            <nav class="support-pagination" th:aria-label="${zh ? '对话列表分页' : 'Inbox pages'}">
+                <a th:if="${page > 0}" th:href="@{/staff/support(filter=${filter},page=${page - 1})}" th:text="${zh ? '← 上一页' : '← Previous'}"></a>
+                <span th:text="${zh ? '第 ' + (page + 1) + ' 页' : 'Page ' + (page + 1)}"></span>
+                <a th:if="${hasNext}" th:href="@{/staff/support(filter=${filter},page=${page + 1})}" th:text="${zh ? '下一页 →' : 'Next →'}"></a>
+            </nav>
+        </aside>
+        <section class="support-conversation">
+            <div id="support-chat" th:attr="data-thread=${selected != null ? selected.id : ''},data-through=${history.latestVisible},data-older=${older}">
+                <div class="support-chat-heading">
+                    <h2 th:text="${staffView ? (selected != null ? selected.customerName : (zh ? '选择一个对话' : 'Select a conversation')) : (zh ? 'Odyssey 客服' : 'Odyssey support')}"></h2>
+                    <span class="support-state pending" th:if="${selected != null and selected.waiting}" th:text="${staffView ? (zh ? '等待你的回复' : 'Awaiting your reply') : (zh ? '等待客服回复' : 'Awaiting a reply')}"></span>
+                    <span class="support-state" th:if="${selected != null and !selected.waiting}" th:text="${selected.resolved ? (zh ? '已解决' : 'Resolved') : (zh ? '客服已回复' : 'Support replied')}"></span>
+                </div>
+                <div class="support-history-links" th:if="${selected != null}">
+                    <a th:if="${history.before > 0}" th:href="@{${supportBase}(id=${selected.id},before=${history.before})}" th:text="${zh ? '查看更早消息' : 'Older messages'}"></a>
+                    <a th:if="${older}" th:href="@{${supportBase}(id=${selected.id})}" th:text="${zh ? '返回最新消息' : 'Latest messages'}"></a>
+                </div>
+                <div class="support-messages" tabindex="0" th:aria-label="${zh ? '对话消息' : 'Conversation messages'}">
+                    <p class="support-empty" th:if="${#lists.isEmpty(history.messages)}" th:text="${staffView ? (zh ? '从左侧选择顾客对话，查看记录并回复。' : 'Choose a customer from the inbox to read and reply.') : (zh ? '发送第一条消息，开始咨询。请勿发送密码或银行卡信息。' : 'Send your first message to start. Please do not share passwords or card details.')}"></p>
+                    <article class="support-message" th:each="message : ${history.messages}" th:classappend="${message.senderId == viewer.id ? 'is-mine' : ''}" th:attr="data-message-id=${message.id}">
+                        <div class="support-message-meta"><strong th:text="${message.staff ? (zh ? '客服 · ' : 'Support · ') + message.senderName : message.senderName}"></strong><time th:text="${#temporals.format(message.createdAt,'MM-dd HH:mm')}"></time></div>
+                        <p th:if="${!#strings.isEmpty(message.body)}" th:text="${message.body}"></p>
+                        <a class="support-image-link" th:if="${message.image}" th:href="@{/support/images/{id}(id=${message.id})}" target="_blank" rel="noopener" th:aria-label="${zh ? '查看完整图片（新窗口）' : 'Open full image (opens another tab)'}"><img th:src="@{/support/images/{id}(id=${message.id})}" th:alt="${zh ? '对话图片' : 'Conversation image'}" width="280" height="210" loading="lazy"></a>
+                        <a class="support-order-link" th:if="${message.returnId != null}" th:href="@{${(staffView?'/staff/returns/':'/orders/returns/')+message.returnId}}" th:text="${(zh?'关联售后 #':'Linked return #')+#strings.substring(message.returnId,0,8)}"></a>
+                        <a class="support-order-link" th:if="${message.orderId != null}" th:href="@{${(staffView ? '/staff/orders/' : '/orders/') + message.orderId}}"><span th:text="${zh ? '关联订单' : 'Linked order'}"></span><strong th:text="${'#' + #strings.substring(message.orderId,0,8)}"></strong>
+                            <span class="support-order-products" th:if="${linkedOrderPreviews[message.orderId] != null}">
+                                <span class="support-order-product" th:each="item : ${linkedOrderPreviews[message.orderId]}">
+                                    <img th:if="${item.image != null and !#strings.isEmpty(item.image)}" th:src="@{${item.image}}" th:alt="${storeText.text(item.name,zh)}" width="64" height="80" loading="lazy">
+                                    <span class="support-product-placeholder" th:unless="${item.image != null and !#strings.isEmpty(item.image)}" th:text="${zh ? '暂无图片' : 'No image'}"></span>
+                                    <span><span th:text="${storeText.text(item.name,zh)}"></span><small th:text="${'× ' + item.quantity}"></small></span>
+                                </span>
+                            </span>
+<span th:text="${zh ? '查看订单详情 →' : 'View order details →'}"></span></a>
+                    </article>
+                </div>
+                <form class="support-resolve" th:if="${staffView and selected != null and !selected.resolved and !selected.waiting}" method="post" th:action="@{/staff/support/resolve}">
+                    <input type="hidden" name="id" th:value="${selected.id}"><input type="hidden" name="version" th:value="${selected.latestId}">
+                    <button class="text-button" th:text="${zh ? '标记为已解决' : 'Mark resolved'}"></button>
+                </form>
+            </div>
+            <form class="support-composer" enctype="multipart/form-data" th:if="${!staffView or selected != null}" method="post" th:action="@{${supportBase + '/messages'}}">
+                <input th:if="${selected != null}" type="hidden" name="id" th:value="${selected.id}"><input type="hidden" name="token" th:value="${sendToken}">
+                <label for="support-body" th:text="${staffView ? (zh ? '回复顾客' : 'Reply to customer') : (zh ? '你的消息' : 'Your message')}"></label>
+                <textarea id="support-body" name="body" maxlength="2000" rows="4" th:text="${draft}" th:placeholder="${zh ? '请输入消息…' : 'Write a message…'}"></textarea>
+                <div class="support-attachments">
+                    <div class="support-upload">
+                        <label for="support-image" th:text="${zh ? '添加图片' : 'Attach an image'}"></label>
+                        <div class="support-file-control">
+                            <input id="support-image" type="file" name="image" accept="image/jpeg,image/png" aria-describedby="image-help">
+                            <span aria-hidden="true" th:text="${zh ? '选择图片' : 'Choose image'}"></span>
+                        </div>
+                        <small id="image-help" th:text="${zh ? '每条消息1张，JPG / PNG，最多5MB。' : 'One JPG / PNG image per message, up to 5 MB.'}"></small>
+                        <div data-image-preview hidden><img alt="" width="120" height="90"><button type="button" class="text-button" data-remove-image th:text="${zh ? '移除图片' : 'Remove image'}"></button></div>
+                        <span data-upload-error role="alert"></span>
+                    </div>
+                    <div class="support-order-picker">
+
+                        <label for="support-return" th:text="${zh?'关联售后申请':'Link return request'}"></label><select id="support-return" name="returnId"><option value="" th:text="${zh?'不关联售后':'No linked return'}"></option><option th:each="r:${returnChoices}" th:value="${r.id}" th:text="${'#'+#strings.substring(r.id,0,8)}"></option></select>
+                        <label for="support-order" th:text="${zh?'关联订单':'Linked order'}"></label><select id="support-order" name="orderId"><option value="" th:text="${zh ? '不关联订单' : 'No linked order'}"></option><option th:each="choice : ${orderChoices}" th:value="${choice.id}" th:selected="${selectedOrder == choice.id}" th:text="${'#' + #strings.substring(choice.id,0,8) + ' · €' + choice.total + ' · ' + choice.products}"></option></select>
+                        <small th:if="${#lists.isEmpty(orderChoices)}" th:text="${zh ? '暂无已提交的订单，仍可发送文字或图片。' : 'No orders yet. You can still send text or an image.'}"></small>
+                    </div>
+                </div>
+                <div><span th:text="${zh ? '最多2000字 · 换行请按 Enter' : 'Up to 2,000 characters · Enter inserts a new line'}"></span><button class="order-button" type="submit" th:text="${zh ? '发送消息 →' : 'Send message →'}"></button></div>
+            </form>
+        </section>
+    </div>
+</main></div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body></html>

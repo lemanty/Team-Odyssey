@@ -1,0 +1,21 @@
+{
+  "tool": "built-in image_gen",
+  "prompts": [
+    {
+      "slug": "sandstone-ceramic-mug",
+      "prompt": "Use case: product-mockup. Premium photorealistic ecommerce product photograph: a single sand-beige ceramic coffee mug with rounded handle, subtly speckled matte glaze, empty. Portrait 3:4, full object centered with generous margins, seamless warm ivory studio background, soft upper-left daylight and delicate natural shadow, minimalist natural materials. No text, logos, watermark, people or extra props. Single image, not collage."
+    },
+    {
+      "slug": "oatmeal-cotton-throw",
+      "prompt": "Use case: product-mockup. Premium photorealistic ecommerce product photograph: a single oatmeal cotton woven throw blanket neatly folded with short fringe visible. Portrait 3:4, full object centered with generous margins, seamless warm ivory studio background, soft upper-left daylight and delicate natural shadow, minimalist natural materials. No text, logos, watermark, people or extra props. Single image, not collage."
+    },
+    {
+      "slug": "linen-bedside-lamp",
+      "prompt": "Use case: product-mockup. Premium photorealistic ecommerce product photograph: a single small bedside table lamp with rounded ivory ceramic base and natural linen drum shade, unlit. Portrait 3:4, full object centered with generous margins, seamless warm ivory studio background, soft upper-left daylight and delicate natural shadow, minimalist natural materials. No text, logos, watermark, people or extra props. Single image, not collage."
+    },
+    {
+      "slug": "oak-wall-clock",
+      "prompt": "Use case: product-mockup. Premium photorealistic ecommerce product photograph: a single circular light oak wood frame wall clock with cream dial, simple dark tick marks and two hands, front view, no numerals. Portrait 3:4, full object centered with generous margins, seamless warm ivory studio background, soft upper-left daylight and delicate natural shadow, minimalist natural materials. No text, logos, watermark, people or extra props. Single image, not collage."
+    }
+  ]
+}

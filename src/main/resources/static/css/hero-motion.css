@@ -1,0 +1,6 @@
+/* The photograph remains the accessible, static fallback. Only the canvas moves. */
+.hero-art { position:absolute; }
+.hero-scene { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+.hero-scene[hidden] { display:none; }
+@media(max-width:600px) { .hero-art { position:relative; } }
+@media(prefers-reduced-motion:reduce),print { .hero-scene { display:none!important; } }

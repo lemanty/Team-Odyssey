@@ -1,6 +1,40 @@
 /* Progressive enhancement: without JavaScript the garment image stays visible. */
 document.querySelectorAll('[data-gallery]').forEach(function setupGallery(gallery) {
+    const zh = document.documentElement.lang === 'zh-CN';
+    const label = (en, cn) => zh ? cn : en;
     const slides = Array.from(gallery.querySelectorAll('[data-slide]'));
+    const colourButtons = [...gallery.querySelectorAll('[data-gallery-colour]')];
+    const picker = gallery.closest('.detail-layout').querySelector('[data-variant-picker]');
+    function previewColour(colour) {
+        const button = colourButtons.find(item => item.dataset.galleryColour === colour);
+        if (!button) return;
+        [['[data-garment-photo]', button.dataset.garment], ['[data-model-photo]', button.dataset.model]].forEach(([selector, source]) => {
+            const image = gallery.querySelector(selector);
+            if (!image || !source) return;
+            image.hidden = false;
+            image.parentElement.querySelectorAll('.gallery-image-error').forEach(note => note.remove());
+            image.src = source;
+        });
+        colourButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    }
+    colourButtons.forEach(button => button.addEventListener('click', () => {
+        previewColour(button.dataset.galleryColour);
+        const radio = picker && [...picker.querySelectorAll('[data-variant-colour]')]
+            .find(input => input.dataset.colour === button.dataset.galleryColour && !input.disabled);
+        if (radio && !radio.checked) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }));
+    if (picker) {
+        picker.addEventListener('change', event => {
+            if (event.target.matches('[data-variant-colour]')) previewColour(event.target.dataset.colour);
+        });
+        window.addEventListener('pageshow', () => {
+            const selected = picker.querySelector('[data-variant-colour]:checked');
+            if (selected) previewColour(selected.dataset.colour);
+        });
+    }
     if (slides.length < 2) return;
     const stage = gallery.querySelector('.gallery-stage');
     const tabs = Array.from(gallery.querySelectorAll('[data-photo]'));
@@ -32,13 +66,13 @@ document.querySelectorAll('[data-gallery]').forEach(function setupGallery(galler
         tabs.forEach(function updateTab(tab, position) {
             tab.setAttribute('aria-pressed', String(position === index));
         });
-        if (manual) status.textContent = index === 0 ? 'Garment photograph' : 'Styled on model';
+        if (manual) status.textContent = index === 0 ? label('Garment photograph', '服装实物图') : label('Styled on model', '模特穿搭图');
         schedule();
     }
 
     function updatePlay() {
-        play.textContent = paused ? 'Play' : 'Pause';
-        play.setAttribute('aria-label', paused ? 'Start automatic slideshow' : 'Pause automatic slideshow');
+        play.textContent = paused ? label('Play', '播放') : label('Pause', '暂停');
+        play.setAttribute('aria-label', paused ? label('Start automatic slideshow', '开始自动轮播') : label('Pause automatic slideshow', '暂停自动轮播'));
         schedule();
     }
 
@@ -79,9 +113,10 @@ document.querySelectorAll('[data-gallery]').forEach(function setupGallery(galler
             image.hidden = true;
             const note = document.createElement('p');
             note.className = 'gallery-image-error';
-            note.textContent = 'Photograph temporarily unavailable';
+            note.textContent = label('Photograph temporarily unavailable', '照片暂时无法加载');
+            image.parentElement.querySelectorAll('.gallery-image-error').forEach(old => old.remove());
             image.parentElement.appendChild(note);
-        }, { once: true });
+        });
     });
     updatePlay();
 });

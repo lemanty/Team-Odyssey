@@ -33,7 +33,10 @@ class ProductDetailTests {
             .andExpect(content().string(containsString("12 available")))
             .andExpect(content().string(containsString("sand-linen-shirt-product.webp")))
             .andExpect(content().string(containsString("sand-linen-shirt-model-v2.webp")))
-            .andExpect(content().string(containsString("data-next")));
+            .andExpect(content().string(containsString("data-next")))
+            .andExpect(content().string(containsString("data-gallery-colour=\"Charcoal\"")))
+            .andExpect(content().string(containsString("data-model=\"/images/products/variants/models/sand-linen-shirt-model-charcoal.png\"")))
+            .andExpect(content().string(containsString("data-garment=\"/images/products/variants/sand-linen-shirt-charcoal.png\"")));
     }
 
     @Test
@@ -44,6 +47,20 @@ class ProductDetailTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Out of stock")))
             .andExpect(content().string(containsString("Photography coming soon")));
+    }
+
+    @Test
+    void householdUsesProductPhotoAndChineseCopyWithoutModelSlide() throws Exception {
+        when(productService.getProduct(50L)).thenReturn(Optional.of(new Product(50L,
+            "Ivory Ceramic Vase", "Household", "Sample", new BigDecimal("32.00"), "Home", 18,
+            "/images/products/ivory-ceramic-vase.png", "/images/products/ivory-ceramic-vase.png")));
+        mockMvc.perform(get("/products/50?lang=zh"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("米白陶瓷花瓶")))
+            .andExpect(content().string(containsString("€32.00")))
+            .andExpect(content().string(containsString("剩余 18 件")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("data-photo=\"1\""))))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("模特穿搭图"))));
     }
 
     @Test

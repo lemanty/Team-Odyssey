@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class AuthController {
     private final UserRepository users;
+    private final com.odyssey.retailshop.service.MembershipService membership;
     private final PasswordEncoder passwords;
-    public AuthController(UserRepository users, PasswordEncoder passwords) { this.users = users; this.passwords = passwords; }
+    public AuthController(UserRepository users, PasswordEncoder passwords, com.odyssey.retailshop.service.MembershipService membership) { this.users = users; this.passwords = passwords; this.membership=membership; }
     public record Registration(@NotBlank @Size(max=80) String name,
         @NotBlank @Email @Size(max=254) String email,
         @NotBlank @Size(min=8,max=64) String password, @NotBlank String confirmPassword) {}
@@ -56,6 +57,7 @@ public class AuthController {
         model.addAttribute("displayName", account.displayName());
         model.addAttribute("accountEmail", account.email());
         model.addAttribute("accountRole", account.role());
+        model.addAttribute("memberLevel",membership.forAccount(principal.getName()));
         return "account";
     }
 }

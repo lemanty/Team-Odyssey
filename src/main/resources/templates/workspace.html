@@ -1,33 +1,7 @@
-<!DOCTYPE html>
-<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '工作台 | Odyssey' : 'Workspace | Odyssey'}">Workspace</title><link rel="stylesheet" th:href="@{/css/style.css(v=staff-1)}"></head>
-<body><header th:replace="~{fragments/layout :: header('account')}"></header>
-<main class="account-page staff-page">
-    <div th:replace="~{fragments/auth :: language(${administrator ? '/admin' : '/staff'})}"></div>
-    <p class="eyebrow">ODYSSEY TEAM</p>
-    <h1 th:if="${administrator}" th:text="${zh ? '管理员工作台' : 'Administrator workspace'}"></h1>
-    <h1 th:unless="${administrator}" th:text="${zh ? '员工工作台' : 'Staff workspace'}"></h1>
-    <p class="auth-notice" th:text="${zh ? '权限验证通过。以下是当前可用的业务模块。' : 'Access verified. These operational modules are available.'}"></p>
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org" th:lang="${zh?'zh-CN':'en'}"><head><th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title th:text="${zh?'员工工作台 | Odyssey':'Staff | Odyssey'}"></title><link rel="stylesheet" th:href="@{/css/style.css}"><link rel="stylesheet" th:href="@{/css/stock-tools.css}"><script defer th:src="@{/js/stock-tools.js(v=always-open-1)}"></script><link rel="stylesheet" th:href="@{/css/admin-console.css}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><link rel="stylesheet" th:href="@{/css/operations-design.css(v=full-product-3)}"><script defer th:src="@{/js/operations-design.js(v=1)}"></script></head><body class="chosen-design ops-design ops-workspace"><header th:replace="~{fragments/layout :: header('account')}"></header><div class="admin-shell"><aside th:replace="~{fragments/workspace-sidebar :: sidebar('inventory')} "></aside><main>
+<p class="eyebrow" th:text="${zh?'员工工作台':'Staff workspace'}"></p>
+<h1 th:text="${zh?'库存调整':'Inventory'}"></h1>
+<p th:text="${zh?'搜索商品，查看可售数量并调整规格库存。':'Find products, review availability and adjust stock.'}"></p>
+<th:block><section th:replace="~{fragments/stock-tools :: panel}"></section></th:block>
 
-    <div class="section-heading"><h2 th:text="${zh ? '可用模块' : 'Available modules'}"></h2></div>
-    <ul class="workspace-modules">
-        <li>
-            <a th:href="@{/staff/products}"><strong th:text="${zh ? '商品管理' : 'Catalogue'}"></strong></a>
-            <span th:text="${zh ? '维护商品信息、库存与上下架状态。' : 'Maintain products, stock and catalogue availability.'}"></span>
-        </li>
-    </ul>
-
-    <div class="section-heading"><h2 th:text="${zh ? '后续计划' : 'Coming later'}"></h2></div>
-    <ul th:unless="${administrator}">
-        <li th:text="${zh ? '处理订单、备货、发货及自取交付' : 'Prepare orders, dispatch deliveries and complete collections'}"></li>
-        <li th:text="${zh ? '登记门店销售、留货、退货及库存流水' : 'Record store sales, holds, returns and inventory movements'}"></li>
-        <li th:text="${zh ? '查看并回复顾客咨询' : 'Read and reply to customer enquiries'}"></li>
-    </ul>
-    <ul th:if="${administrator}">
-        <li th:text="${zh ? '拥有全部员工操作权限' : 'Access all staff operations'}"></li>
-        <li th:text="${zh ? '管理账号状态、员工身份和角色授权' : 'Manage account status, staff access and role assignments'}"></li>
-        <li th:text="${zh ? '维护系统设置并查看操作记录' : 'Maintain system settings and review audit records'}"></li>
-    </ul>
-    <a class="detail-back" th:if="${administrator}" th:href="@{/staff}" th:text="${zh ? '进入员工工作台 →' : 'Open staff workspace →'}"></a>
-    <a class="detail-back" th:href="@{/account}" th:text="${zh ? '返回我的账号 →' : 'Back to my account →'}"></a>
-</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+</main></div><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

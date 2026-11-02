@@ -1,0 +1,26 @@
+{
+  "tool": "Built-in image_gen",
+  "prompt": "Change only garment fabric color to neutral charcoal gray. Preserve original design, silhouette, seams, buttons, pockets, fabric texture, folds, front view, full framing, warm ivory background, soft lighting and shadows. For the striped tee retain cream stripes and recolor navy stripes charcoal. Photorealistic product photo; no people, text or collage.",
+  "files": [
+    "beige-trench-charcoal.png",
+    "blue-denim-jacket-charcoal.png",
+    "blue-linen-dress-charcoal.png",
+    "blue-oxford-charcoal.png",
+    "chocolate-knit-polo-charcoal.png",
+    "cream-linen-trousers-charcoal.png",
+    "indigo-jeans-charcoal.png",
+    "ivory-cotton-tee-charcoal.png",
+    "navy-jumper-charcoal.png",
+    "navy-stripe-tee-charcoal.png",
+    "oat-cardigan-charcoal.png",
+    "olive-overshirt-charcoal.png",
+    "rose-wrap-blouse-charcoal.png",
+    "rust-jacket-charcoal.png",
+    "sage-midi-skirt-charcoal.png",
+    "sage-sweatshirt-charcoal.png",
+    "sand-linen-shirt-charcoal.png",
+    "stone-chinos-charcoal.png",
+    "white-poplin-shirt-charcoal.png",
+    "white-ribbed-tee-charcoal.png"
+  ]
+}

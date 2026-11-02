@@ -1,62 +1,99 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${product.name} + ' | Odyssey'">Product | Odyssey</title>
-    <link rel="stylesheet" th:href="@{/css/style.css(v=cart-1)}">
-    <script th:src="@{/js/product-gallery.js}" defer></script>
-</head>
-<body>
+    <title th:text="${storeText.productName(product, zh)} + ' | Odyssey'">Product | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
+    <script th:src="@{/js/product-gallery.js(v=colours-2)}" defer></script>
+<link rel="stylesheet" th:href="@{/css/product-reviews.css}">
+<link rel="stylesheet" th:href="@{/css/variant-picker.css(v=2)}">
+<script th:src="@{/js/variant-picker.js(v=1)}" defer></script>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body class="chosen-design chosen-product-detail">
 <header th:replace="~{fragments/layout :: header('products')}"></header>
 <main class="product-detail">
-    <nav class="product-breadcrumb" aria-label="Breadcrumb"><a th:href="@{/products}"><span aria-hidden="true">&#8592;</span> All products</a></nav>
+    <nav class="product-breadcrumb" th:aria-label="${storeText.text('Breadcrumb', zh)}"><a th:href="@{/products}"><span aria-hidden="true">&#8592;</span> <span th:text="${storeText.text('All products', zh)}">All products</span></a></nav>
     <div class="detail-layout">
-        <section class="product-gallery" aria-label="Product photographs" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
-            <div class="gallery-stage" tabindex="0" aria-label="Product photos. Use left and right arrow keys to change photo.">
-                <figure class="gallery-slide is-active" data-slide role="group" aria-roledescription="slide" aria-label="1 of 2: garment photograph">
-                    <img th:src="@{${product.garmentImage}}" th:alt="${product.name} + ' — garment photograph'" width="900" height="1200" fetchpriority="high">
+        <section class="product-gallery" th:aria-label="${storeText.text('Product photographs', zh)}" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
+            <div class="gallery-stage" tabindex="0" th:aria-label="${storeText.text('Product photos. Use left and right arrow keys to change photo.', zh)}">
+                <figure class="gallery-slide is-active" data-slide role="group" aria-roledescription="slide" th:aria-label="${product.category == 'Household' ? (zh ? '商品图片' : 'Product photograph') : storeText.text('1 of 2: garment photograph', zh)}">
+                    <img data-garment-photo th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)} + ${product.category == 'Household' ? (zh ? ' — 商品图' : ' — product photograph') : (zh ? ' — 服装实物图' : ' — garment photograph')}" width="900" height="1200" fetchpriority="high">
                 </figure>
-                <figure class="gallery-slide" data-slide role="group" aria-roledescription="slide" aria-label="2 of 2: styled on model" aria-hidden="true" th:if="${product.modelImage != null}">
-                    <img th:src="@{${product.modelImage}}" th:alt="${product.name} + ' — styled on an adult ' + (${product.audience == 'Men'} ? 'male' : 'female') + ' model'" width="900" height="1200" decoding="async">
+                <figure class="gallery-slide" data-slide role="group" aria-roledescription="slide" th:aria-label="${storeText.text('2 of 2: styled on model', zh)}" aria-hidden="true" th:if="${product.modelImage != null and product.category != 'Household'}">
+                    <img data-model-photo th:src="@{${product.modelImage}}" th:alt="${storeText.productName(product, zh)} + ${zh ? ' — 模特穿搭图' : ' — styled on an adult model'}" width="900" height="1200" decoding="async">
                 </figure>
                 <div class="gallery-arrows" hidden data-gallery-controls>
-                    <button type="button" data-prev aria-label="Previous photo">←</button>
-                    <button type="button" data-next aria-label="Next photo">→</button>
+                    <button type="button" data-prev th:aria-label="${storeText.text('Previous photo', zh)}">←</button>
+                    <button type="button" data-next th:aria-label="${storeText.text('Next photo', zh)}">→</button>
                 </div>
             </div>
             <div class="gallery-toolbar" hidden data-gallery-controls>
-                <div class="gallery-tabs" aria-label="Choose photograph">
-                    <button type="button" data-photo="0" aria-pressed="true">01 / Garment</button>
-                    <button type="button" data-photo="1" aria-pressed="false" th:if="${product.modelImage != null}">02 / On model</button>
+                <div class="gallery-tabs" th:aria-label="${storeText.text('Choose photograph', zh)}">
+                    <button type="button" data-photo="0" aria-pressed="true"><img data-thumbnail-garment th:src="@{${product.garmentImage}}" alt="" width="90" height="110"><span th:text="${product.category == 'Household' ? (zh ? '01 / 商品' : '01 / Product') : storeText.text('01 / Garment', zh)}">01 / Garment</span></button>
+                    <button type="button" data-photo="1" aria-pressed="false" th:if="${product.modelImage != null and product.category != 'Household'}"><img data-thumbnail-model th:src="@{${product.modelImage}}" alt="" width="90" height="110"><span th:text="${storeText.text('02 / On model', zh)}">02 / On model</span></button>
                 </div>
-                <button type="button" class="gallery-play" data-play aria-label="Pause automatic slideshow">Pause</button>
+                <button type="button" class="gallery-play" data-play th:aria-label="${storeText.text('Pause automatic slideshow', zh)}"><span th:text="${storeText.text('Pause', zh)}">Pause</span></button>
             </div>
-            <p class="gallery-caption">A closer look, from every perspective.</p>
+            <div class="gallery-colours" th:with="charcoalGarment=${@variantImages.image(product.garmentImage, 'Charcoal')},charcoalModel=${@variantImages.image(product.modelImage, 'Charcoal')}" th:if="${product.category != 'Household' and @variantImages.image(product.garmentImage, 'Charcoal') != null}" role="group" th:aria-label="${zh ? '查看不同颜色' : 'Preview colours'}">
+                <button type="button" data-gallery-colour="Original colour" aria-pressed="true" th:attr="data-garment=${product.garmentImage},data-model=${product.modelImage}" th:text="${zh ? '原色' : 'Original colour'}"></button>
+                <button type="button" data-gallery-colour="Charcoal" aria-pressed="false" th:attr="data-garment=${charcoalGarment},data-model=${charcoalModel}" th:text="${zh ? '炭灰色' : 'Charcoal'}"></button>
+            </div>
+            <p class="gallery-caption"><span th:text="${storeText.text('A closer look, from every perspective.', zh)}">A closer look, from every perspective.</span></p>
             <span class="sr-only" aria-live="polite" data-gallery-status></span>
         </section>
-        <div class="detail-no-image" th:if="${product.garmentImage == null}"><span>ODYSSEY</span><p>Photography coming soon</p></div>
+        <div class="detail-no-image" th:if="${product.garmentImage == null}"><span>ODYSSEY</span><p><span th:text="${storeText.text('Photography coming soon', zh)}">Photography coming soon</span></p></div>
         <section class="detail-copy" aria-labelledby="product-title">
-            <p class="eyebrow"><span th:text="${product.category}">Clothing</span><span th:if="${product.audience != null}" th:text="' / ' + ${product.audience}"> / Women</span></p>
-            <h1 id="product-title" th:text="${product.name}">Product name</h1>
+            <p class="eyebrow"><span th:text="${storeText.text(product.category, zh)}"><span th:text="${storeText.text('Clothing', zh)}">Clothing</span></span><span th:if="${product.audience != null}" th:text="' / ' + ${storeText.text(product.audience, zh)}"> / Women</span></p>
+            <h1 id="product-title" th:text="${storeText.productName(product, zh)}">Product name</h1>
             <p class="detail-price" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
-            <p class="detail-description" th:text="${product.description}">Description</p>
+            <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
                 <span class="stock-dot" aria-hidden="true"></span>
-                <span th:text="${product.stockQuantity > 0} ? 'In stock · ' + ${product.stockQuantity} + ' available' : 'Out of stock'">In stock</span>
+                <span th:text="${product.stockQuantity > 0 ? (zh ? '现货 · 剩余 ' + product.stockQuantity + ' 件' : 'In stock · ' + product.stockQuantity + ' available') : (zh ? '暂时缺货' : 'Out of stock')}">In stock</span>
             </div>
-            <p class="detail-stock" th:if="${product.stockQuantity == null}">Stock information coming soon</p>
+            <p class="detail-stock" th:if="${product.stockQuantity == null}"><span th:text="${storeText.text('Stock information coming soon', zh)}">Stock information coming soon</span></p>
 
-            <form class="add-to-cart" method="post" th:action="@{/cart/add}">
+            <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
+            <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
-                <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${product.stockQuantity == null} ? 'Stock unavailable' : (${product.stockQuantity <= 0} ? 'Out of stock' : 'Add to bag')">Add to bag</button>
+                <fieldset class="variant-image-picker" data-variant-picker th:unless="${#lists.isEmpty(variants)}" th:with="colours=${@variantImages.groups(variants)}">
+                    <legend th:text="${zh ? '1. 选择颜色' : '1. Choose a colour'}"></legend>
+                    <p class="variant-scroll-hint" th:text="${zh ? '同色合并展示 · 点击图片后选择尺码' : 'Choose a colour image, then select your size'}"></p>
+                    <div class="variant-image-grid" tabindex="0" th:aria-label="${zh?'商品颜色，可上下滚动':'Product colours, scroll vertically'}">
+                        <label class="variant-image-option" th:each="group,stat:${colours}" th:with="photo=${@variantImages.image(product.garmentImage,group.color)}">
+                            <input type="radio" name="variantColour" th:value="${stat.index}" th:disabled="${group.stock<=0}" required data-variant-colour th:attr="aria-controls=${'variant-sizes-'+stat.index},data-colour=${group.color}">
+                            <span class="variant-image-card">
+                                <img th:if="${photo!=null}" th:src="@{${photo}}" alt="" width="180" height="180" loading="lazy">
+                                <span class="variant-image-missing" th:unless="${photo!=null}" th:text="${zh?'图片待补充':'Image coming soon'}"></span>
+                                <strong th:text="${storeText.text(group.color,zh)}"></strong>
+                                <small th:text="${group.stock>0?(zh?'点击选择尺码':'Choose a size'):(zh?'暂时缺货':'Out of stock')}"></small>
+                                <span class="variant-check" aria-hidden="true">✓</span>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="variant-size-prompt" data-size-prompt th:text="${zh?'请先选择颜色，再选择尺码。':'Choose a colour to see available sizes.'}"></p>
+                    <fieldset class="variant-size-panel" th:each="group,stat:${colours}" th:id="${'variant-sizes-'+stat.index}" data-size-panel th:attr="data-colour-index=${stat.index}">
+                        <legend th:text="${(zh?'2. 选择尺码 · ':'2. Choose a size · ')+storeText.text(group.color,zh)}"></legend>
+                        <div class="variant-size-grid">
+                            <label class="variant-size-option" th:each="v:${group.variants}">
+                                <input type="radio" name="variantId" th:value="${v.id}" th:disabled="${v.stock<=0}" th:attr="data-out-of-stock=${v.stock<=0}" required>
+                                <span><strong th:text="${v.size}"></strong><small th:text="${v.stock>0?(zh?'剩余 '+v.stock+' 件':'Stock: '+v.stock):(zh?'缺货':'Sold out')}"></small></span>
+                            </label>
+                        </div>
+                    </fieldset>
+                    <p class="variant-scroll-hint" th:text="${zh?'颜色图片为 AI 生成的示例展示。':'Colour images are AI-generated illustrations.'}"></p>
+                </fieldset>
+                <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>
             </form>
-            <dl class="product-facts"><div><dt>Collection</dt><dd>The Everyday Collection</dd></div><div><dt>Product reference</dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt>Availability</dt><dd>Catalogue preview</dd></div></dl>
-            <p class="detail-note">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Your bag does not reserve stock. Size selection and checkout are not available yet.</p>
-            <a class="detail-back" th:href="@{/products}">Continue exploring <span aria-hidden="true">↗</span></a>
+<details class="chosen-disclosure"><summary th:text="${zh?'商品详情与购买说明':'Product details & buying information'}"></summary><div class="chosen-disclosure-content">            <dl class="product-facts"><div><dt><span th:text="${storeText.text('Collection', zh)}">Collection</span></dt><dd><span th:text="${storeText.text('The Everyday Collection', zh)}">The Everyday Collection</span></dd></div><div><dt><span th:text="${storeText.text('Product reference', zh)}">Product reference</span></dt><dd th:text="'ODY-' + ${product.id}">ODY-1</dd></div><div><dt><span th:text="${storeText.text('Availability', zh)}">Availability</span></dt><dd><span th:text="${storeText.text('Catalogue preview', zh)}">Catalogue preview</span></dd></div></dl>
+            <p class="detail-note"><span th:text="${product.category == 'Household' ? (zh ? '家居示例商品，图片由 AI 生成，价格和库存为演示数据。库存将在提交订单时扣减。' : 'Sample household collection with AI-generated photographs. Prices and stock are demonstration data. Stock is reserved at checkout.') : storeText.text('Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.', zh)}">Sample collection with AI-generated styling photographs. Prices and stock are demonstration data. Stock is reserved at checkout, not in your bag. Choose an available size and colour before adding to your bag.</span></p>
+</div></details>            <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </section>
     </div>
+<details class="chosen-disclosure reviews-disclosure" open><summary th:text="${zh?'顾客评价':'Customer reviews'}"></summary><div class="chosen-disclosure-content"><section th:replace="~{fragments/reviews :: reviews}"></section></div></details>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>

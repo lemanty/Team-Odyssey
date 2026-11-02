@@ -1,0 +1,24 @@
+/* Shared motion rhythm. No delayed navigation or hidden content dependency. */
+:root { --motion-fast:160ms; --motion-normal:240ms; --motion-ease:cubic-bezier(.22,.7,.25,1); }
+@media(prefers-reduced-motion:no-preference) {
+    html { scroll-behavior:smooth; }
+    :is(.button,.cart-button,.order-button,.address-action,.text-button,.support-send,.member-link,.filter-actions button,.auth-switch-button,.password-toggle) {
+        transition:background-color var(--motion-fast) ease,color var(--motion-fast) ease,border-color var(--motion-fast) ease,box-shadow var(--motion-normal) ease,translate var(--motion-fast) var(--motion-ease);
+    }
+    :is(input,select,textarea) { transition:border-color var(--motion-fast) ease,box-shadow var(--motion-fast) ease,background-color var(--motion-fast) ease; }
+    :is(.button,.cart-button,.order-button,.address-action,.member-link,.filter-actions button):active:not(:disabled) { translate:0 1px; }
+    :is(.account-tile,.category-card,.member-tier,.address-card,.order-summary-card) { transition:box-shadow var(--motion-normal) ease,border-color var(--motion-normal) ease,transform var(--motion-normal) var(--motion-ease); }
+    .gallery-slide { transition:opacity 420ms ease,transform 650ms var(--motion-ease); }
+    .product-art img { transition:transform 420ms var(--motion-ease); }
+    .member-rules summary { transition:color var(--motion-fast) ease; }
+    @media(hover:hover) and (pointer:fine) {
+        :is(.button,.cart-button,.order-button,.member-link,.filter-actions button):hover:not(:disabled) { box-shadow:0 5px 14px #203e3515; }
+        .member-tier:hover { border-color:#9dad8f; box-shadow:0 8px 22px #203e3510; }
+    }
+}
+/* Always readable and operable with reduced motion, including legacy effects. */
+@media(prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto !important; }
+    *,*::before,*::after { animation:none !important; transition:none !important; }
+}
+@media print { *,*::before,*::after { animation:none !important; transition:none !important; } }

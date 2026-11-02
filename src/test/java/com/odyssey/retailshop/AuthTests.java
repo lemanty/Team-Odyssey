@@ -73,4 +73,31 @@ class AuthTests {
             .andExpect(content().string(containsString("lang=\"zh-CN\"")));
         mvc.perform(get("/login?lang=invalid")).andExpect(cookie().doesNotExist("odyssey_language"));
     }
+
+    @Test void accountCenterKeepsRoleSpecificServicesTogether() throws Exception {
+        for (String role : new String[]{"CUSTOMER", "STAFF", "ADMIN"}) {
+            when(users.findByEmail("center@test.com")).thenReturn(Optional.of(
+                new UserRepository.Account(100,"Center","center@test.com","unused",role)));
+            var result = mvc.perform(get("/account?lang=zh")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("center@test.com").roles(role)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("账号与偏好")))
+                .andExpect(content().string(containsString("href=\"/orders\"")))
+                .andExpect(content().string(containsString("href=\"/membership\"")))
+                .andExpect(content().string(containsString("data-new-account-window")))
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            if(role.equals("ADMIN")) {
+                assertFalse(result.contains("href=\"/staff/support\""));
+                assertFalse(result.contains("href=\"/support\""));
+                assertFalse(result.contains("href=\"/admin/users\""));
+                assertFalse(result.contains("href=\"/staff\""));
+            } else assertTrue(result.contains("href=\""+(role.equals("CUSTOMER") ? "/support" : "/staff")+"\""));
+            assertEquals(role.equals("ADMIN"),result.contains("href=\"/admin\""));
+            String header=result.substring(result.indexOf("<header"),result.indexOf("</header>"));
+            assertTrue(header.contains(">Center</a>"));
+            assertFalse(header.contains("href=\"/orders\""));
+            assertFalse(header.contains("href=\"/membership\""));
+            assertFalse(header.contains("data-new-account-window"));
+        }
+    }
 }
