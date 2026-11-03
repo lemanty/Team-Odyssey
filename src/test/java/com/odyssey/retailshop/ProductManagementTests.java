@@ -133,4 +133,51 @@ class ProductManagementTests {
   mvc.perform(get("/staff/products?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("需要补货")));
   assertThrows(IllegalArgumentException.class,()->manager.save(form(),new MockMultipartFile("mainPhoto","bad.png","image/png","not an image".getBytes()),null));
  }
+ @Test void editFormBindingErrorsReturnEditorWithoutSaving() throws Exception {
+  mvc.perform(post("/staff/products/save").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("name","Broken vase").param("nameZh","坏花瓶").param("description","a").param("descriptionZh","b")
+   .param("price","abc").param("stock","5").param("published","false"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Check numeric fields")));
+  assertTrue(manager.list("","all").isEmpty());
+ }
+ @Test void adminCreateBindingErrorsAndExistingIdAreRejected() throws Exception {
+  mvc.perform(post("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("name","A").param("price","abc"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Check numeric fields")));
+  assertTrue(manager.list("A","all").isEmpty());
+  long existing=manager.save(form(),null,null);
+  mvc.perform(post("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("id",""+existing).param("name","Duplicate"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("New products only")));
+ }
+ @Test void editMissingProductAndUnknownImageReturn404() throws Exception {
+  mvc.perform(get("/staff/products/999999/edit").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isNotFound());
+  mvc.perform(get("/catalogue-images/00000000-0000-0000-0000-000000000000")).andExpect(status().isNotFound());
+ }
+ @Test void httpStockStaleRevisionShowsErrorAndLeavesStock() throws Exception {
+  long id=manager.save(form(),null,null);
+  var original=manager.edit(id);
+  manager.updateStock(id,original.getRevision(),7,Map.of());
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",original.getRevision()).param("quantity","9"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock changed")));
+  assertEquals(7,manager.edit(id).getStock());
+ }
+ @Test void httpVariantStockUpdateAggregatesTotals() throws Exception {
+  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  long id=manager.save(f,null,null);var o=manager.edit(id);
+  long a=o.getOptions().get(0).getId(),b=o.getOptions().get(1).getId();
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",o.getRevision()).param("stock_"+a,"5").param("stock_"+b,"3"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock saved")));
+  var saved=manager.edit(id);assertEquals(8,saved.getStock());
+  assertEquals(5,saved.getOptions().get(0).getStock());assertEquals(3,saved.getOptions().get(1).getStock());
+ }
+ @Test void httpStockWithoutQuantityShowsError() throws Exception {
+  long id=manager.save(form(),null,null);var o=manager.edit(id);
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",o.getRevision()))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock must be")));
+  assertEquals(4,manager.edit(id).getStock());
+ }
 }
