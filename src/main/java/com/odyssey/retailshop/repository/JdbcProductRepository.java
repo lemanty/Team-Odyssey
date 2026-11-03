@@ -12,13 +12,13 @@ import org.springframework.stereotype.Repository;
 @Profile("mysql")
 public class JdbcProductRepository implements ProductRepository {
     private static final String SELECT_PRODUCTS = """
-        SELECT p.id, p.name, p.category, p.description, p.price,
+        SELECT p.id, p.name, p.category, p.subcategory, p.description, p.price,
                d.audience, d.stock_quantity, d.garment_image, d.model_image, m.name_zh, m.description_zh
         FROM products p LEFT JOIN product_details d ON d.product_id = p.id
         LEFT JOIN product_management m ON m.product_id = p.id
         """;
     private static final RowMapper<Product> PRODUCT_ROW = (row, number) -> new Product(
-        row.getLong("id"), row.getString("name"), row.getString("category"),
+        row.getLong("id"), row.getString("name"), row.getString("category"), row.getString("subcategory"),
         row.getString("description"), row.getBigDecimal("price"), row.getString("audience"),
         row.getObject("stock_quantity", Integer.class), row.getString("garment_image"),
         row.getString("model_image")).translated(row.getString("name_zh"), row.getString("description_zh"));

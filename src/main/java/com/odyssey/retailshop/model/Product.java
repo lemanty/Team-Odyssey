@@ -7,6 +7,7 @@ public class Product {
     private final Long id;
     private final String name;
     private final String category;
+    private final String subcategory;
     private final String description;
     private final BigDecimal price;
 
@@ -16,14 +17,24 @@ public class Product {
     private final String modelImage;
 
     public Product(Long id, String name, String category, String description, BigDecimal price) {
-        this(id, name, category, description, price, null, null, null, null);
+        this(id, name, category, "", description, price, null, null, null, null);
+    }
+
+    public Product(Long id, String name, String category, String subcategory, String description, BigDecimal price) {
+        this(id, name, category, subcategory, description, price, null, null, null, null);
     }
 
     public Product(Long id, String name, String category, String description, BigDecimal price,
                    String audience, Integer stockQuantity, String garmentImage, String modelImage) {
+        this(id, name, category, "", description, price, audience, stockQuantity, garmentImage, modelImage);
+    }
+
+    public Product(Long id, String name, String category, String subcategory, String description, BigDecimal price,
+                   String audience, Integer stockQuantity, String garmentImage, String modelImage) {
         this.id = id;
         this.name = name;
         this.category = category;
+        this.subcategory = subcategory;
         this.description = description;
         this.price = price;
         this.audience = audience;
@@ -55,6 +66,10 @@ public class Product {
 
     public String getCategory() {
         return category;
+    }
+
+    public String getSubcategory() {
+        return subcategory;
     }
 
     public String getDescription() {

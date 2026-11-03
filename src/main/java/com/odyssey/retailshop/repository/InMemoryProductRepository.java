@@ -10,13 +10,13 @@ import java.util.List;
 @Profile("!mysql")
 public class InMemoryProductRepository implements ProductRepository {
     private final List<Product> products = List.of(
-        new Product(1L, "Everyday Cotton Tee", "Clothing",
+        new Product(1L, "Everyday Cotton Tee", "Men", "tops",
             "A comfortable everyday essential. Sizes and stock coming soon.", new BigDecimal("24.00")),
-        new Product(2L, "Canvas Overshirt", "Clothing",
+        new Product(2L, "Canvas Overshirt", "Men", "outerwear",
             "An easy layer for cooler days. Sample product for development.", new BigDecimal("58.00")),
-        new Product(3L, "Stoneware Mug", "Household",
+        new Product(3L, "Stoneware Mug", "Household", "kitchen-dining",
             "A simple companion for your morning coffee.", new BigDecimal("16.50")),
-        new Product(4L, "Woven Cotton Throw", "Household",
+        new Product(4L, "Woven Cotton Throw", "Household", "living-room",
             "A soft finishing touch for your living space.", new BigDecimal("42.00"))
     );
 

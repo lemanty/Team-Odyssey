@@ -2,6 +2,7 @@
   {
     "name": "Everyday Cotton Tee",
     "slug": "ivory-cotton-tee",
+    "subcategory": "tops",
     "gender": "Men",
     "price": 24,
     "stock": 36,
@@ -11,6 +12,7 @@
   {
     "name": "Linen Blend Shirt",
     "slug": "sand-linen-shirt",
+    "subcategory": "shirts",
     "gender": "Men",
     "price": 39,
     "stock": 24,
@@ -20,6 +22,7 @@
   {
     "name": "Classic Crewneck Sweatshirt",
     "slug": "sage-sweatshirt",
+    "subcategory": "knitwear",
     "gender": "Men",
     "price": 45,
     "stock": 28,
@@ -29,6 +32,7 @@
   {
     "name": "Straight Leg Jeans",
     "slug": "indigo-jeans",
+    "subcategory": "trousers",
     "gender": "Men",
     "price": 59,
     "stock": 32,
@@ -38,6 +42,7 @@
   {
     "name": "Canvas Overshirt",
     "slug": "olive-overshirt",
+    "subcategory": "outerwear",
     "gender": "Men",
     "price": 58,
     "stock": 18,
@@ -47,6 +52,7 @@
   {
     "name": "Soft Knit Cardigan",
     "slug": "oat-cardigan",
+    "subcategory": "knitwear",
     "gender": "Women",
     "price": 49,
     "stock": 22,
@@ -56,6 +62,7 @@
   {
     "name": "Harbour Stripe Tee",
     "slug": "navy-stripe-tee",
+    "subcategory": "tops",
     "gender": "Men",
     "price": 29,
     "stock": 40,
@@ -65,6 +72,7 @@
   {
     "name": "Relaxed Chino Trousers",
     "slug": "stone-chinos",
+    "subcategory": "trousers",
     "gender": "Men",
     "price": 54,
     "stock": 26,
@@ -74,6 +82,7 @@
   {
     "name": "Merino Crewneck Jumper",
     "slug": "navy-jumper",
+    "subcategory": "knitwear",
     "gender": "Men",
     "price": 69,
     "stock": 16,
@@ -83,6 +92,7 @@
   {
     "name": "Weekend Zip Jacket",
     "slug": "rust-jacket",
+    "subcategory": "outerwear",
     "gender": "Men",
     "price": 79,
     "stock": 14,
@@ -92,6 +102,7 @@
   {
     "name": "Oxford Button-Down Shirt",
     "slug": "blue-oxford",
+    "subcategory": "shirts",
     "gender": "Men",
     "price": 46,
     "stock": 30,
@@ -101,6 +112,7 @@
   {
     "name": "Everyday Ribbed Tee",
     "slug": "white-ribbed-tee",
+    "subcategory": "tops",
     "gender": "Women",
     "price": 26,
     "stock": 38,
@@ -110,6 +122,7 @@
   {
     "name": "Coastal Linen Dress",
     "slug": "blue-linen-dress",
+    "subcategory": "skirts-dresses",
     "gender": "Women",
     "price": 74,
     "stock": 19,
@@ -119,6 +132,7 @@
   {
     "name": "Pleated Midi Skirt",
     "slug": "sage-midi-skirt",
+    "subcategory": "skirts-dresses",
     "gender": "Women",
     "price": 55,
     "stock": 21,
@@ -128,6 +142,7 @@
   {
     "name": "Wide-Leg Linen Trousers",
     "slug": "cream-linen-trousers",
+    "subcategory": "trousers",
     "gender": "Women",
     "price": 59,
     "stock": 25,
@@ -137,6 +152,7 @@
   {
     "name": "Soft Wrap Blouse",
     "slug": "rose-wrap-blouse",
+    "subcategory": "shirts-blouses",
     "gender": "Women",
     "price": 44,
     "stock": 27,
@@ -146,6 +162,7 @@
   {
     "name": "Everyday Denim Jacket",
     "slug": "blue-denim-jacket",
+    "subcategory": "outerwear",
     "gender": "Women",
     "price": 68,
     "stock": 17,
@@ -155,6 +172,7 @@
   {
     "name": "Fine Knit Polo",
     "slug": "chocolate-knit-polo",
+    "subcategory": "knitwear",
     "gender": "Women",
     "price": 48,
     "stock": 23,
@@ -164,6 +182,7 @@
   {
     "name": "Belted Trench Coat",
     "slug": "beige-trench",
+    "subcategory": "outerwear",
     "gender": "Women",
     "price": 109,
     "stock": 12,
@@ -173,6 +192,7 @@
   {
     "name": "Relaxed Poplin Shirt",
     "slug": "white-poplin-shirt",
+    "subcategory": "shirts-blouses",
     "gender": "Women",
     "price": 42,
     "stock": 31,

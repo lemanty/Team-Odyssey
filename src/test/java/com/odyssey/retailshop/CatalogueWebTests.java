@@ -71,7 +71,7 @@ class CatalogueWebTests {
 
     @Test
     void searchCombinesBilingualPartialTermsCategoryAndInclusivePrice() throws Exception {
-        mockMvc.perform(get("/products").param("q", "COT ton").param("category", "Clothing")
+        mockMvc.perform(get("/products").param("q", "COT ton").param("category", "Men")
                 .param("minPrice", "24").param("maxPrice", "24.00"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Everyday Cotton Tee")))

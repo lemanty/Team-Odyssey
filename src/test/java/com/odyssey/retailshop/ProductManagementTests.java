@@ -31,7 +31,7 @@ class ProductManagementTests {
   }
   jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Customer','customer@test.com','unused','CUSTOMER'),(2,'Staff','staff@test.com','unused','STAFF'),(3,'Admin','admin@test.com','unused','ADMIN')");
  }
- ProductEditForm form(){var f=new ProductEditForm();f.setName("New vase");f.setNameZh("花瓶");f.setDescription("Handmade vase");f.setDescriptionZh("手工花瓶");f.setPrice(new BigDecimal("24.50"));f.setStock(4);f.setImage("/images/products/vase.png");f.setPublished(true);return f;}
+ ProductEditForm form(){var f=new ProductEditForm();f.setName("New vase");f.setNameZh("花瓶");f.setDescription("Handmade vase");f.setDescriptionZh("手工花瓶");f.setPrice(new BigDecimal("24.50"));f.setStock(4);f.setImage("/images/products/vase.png");f.setPublished(true);f.setSubcategory("living-room");return f;}
  ProductEditForm.Option option(String size,int stock){var o=new ProductEditForm.Option();o.setSize(size);o.setColor("Green");o.setStock(stock);return o;}
  @Test void onlyAdminCanManageCatalogue() throws Exception {
   mvc.perform(get("/staff/products")).andExpect(status().is3xxRedirection());
@@ -60,7 +60,7 @@ class ProductManagementTests {
    .andExpect(content().string(containsString("data-stock-tools")));
  }
  @Test void embeddedStockChecksRolesRevisionAndVariantTotals() throws Exception {
-  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);var original=manager.edit(id);
   mvc.perform(get("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER"))).andExpect(status().isForbidden());
   mvc.perform(post("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER")).with(csrf()).param("productId",""+id).param("revision",original.getRevision())).andExpect(status().isForbidden());
@@ -85,7 +85,7 @@ class ProductManagementTests {
   mvc.perform(post("/admin/products/create").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
    .param("name","Admin vase").param("nameZh","管理员花瓶").param("description","Vase").param("descriptionZh","花瓶")
-   .param("price","10.00").param("stock","5").param("category","Household").param("audience","Home"))
+   .param("price","10.00").param("stock","5").param("category","Household").param("subcategory","living-room").param("audience","Home"))
    .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin?section=new"));
   assertEquals(1,manager.list("Admin vase","draft").size());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("name","Retained title"))
@@ -103,7 +103,7 @@ class ProductManagementTests {
   assertEquals(1,manager.list("花瓶","draft").size());
  }
  @Test void optionsAggregateStockAndRejectStaleStockOrForeignIds() {
-  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);assertEquals(10,manager.edit(id).getStock());assertEquals(1,manager.list("","low").size());
   var stale=manager.edit(id);long variant=stale.getOptions().get(0).getId();
   String order=orders.place("customer@test.com",UUID.randomUUID().toString(),Map.of(-variant,1),"DELIVERY","Road");
@@ -124,7 +124,7 @@ class ProductManagementTests {
   var file=new MockMultipartFile("mainPhoto","photo.png","image/png",bytes.toByteArray());
   mvc.perform(multipart("/staff/products/save").file(file).with(user("admin@test.com").roles("ADMIN")).with(csrf())
     .param("name","Test shirt").param("nameZh","测试衬衫").param("description","Cotton").param("descriptionZh","棉")
-    .param("price","19.50").param("category","Clothing").param("audience","Men").param("published","true")
+    .param("price","19.50").param("category","Men").param("subcategory","tops").param("audience","Men").param("published","true")
     .param("options[0].size","S").param("options[0].color","White").param("options[0].stock","5"))
     .andExpect(status().is3xxRedirection());
   long id=manager.list("","all").get(0).id();var f=manager.edit(id);assertEquals(5,f.getStock());
@@ -164,7 +164,7 @@ class ProductManagementTests {
   assertEquals(7,manager.edit(id).getStock());
  }
  @Test void httpVariantStockUpdateAggregatesTotals() throws Exception {
-  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);var o=manager.edit(id);
   long a=o.getOptions().get(0).getId(),b=o.getOptions().get(1).getId();
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
@@ -179,5 +179,16 @@ class ProductManagementTests {
    .param("productId",""+id).param("revision",o.getRevision()))
    .andExpect(status().isOk()).andExpect(content().string(containsString("Stock must be")));
   assertEquals(4,manager.edit(id).getStock());
+ }
+ @Test void subcategoryMustBelongToCategory() {
+  var f=form();f.setCategory("Household");f.setSubcategory("tops");
+  assertThrows(IllegalArgumentException.class,()->manager.save(f,null,null));
+  var g=form();g.setCategory("Men");g.setSubcategory("skirts-dresses");g.setAudience("Men");g.getOptions().add(option("M",2));
+  assertThrows(IllegalArgumentException.class,()->manager.save(g,null,null));
+ }
+ @Test void subcategoryRoundTripsThroughEdit() {
+  var f=form();f.setCategory("Household");f.setSubcategory("bedroom");
+  long id=manager.save(f,null,null);
+  assertEquals("bedroom",manager.edit(id).getSubcategory());
  }
 }

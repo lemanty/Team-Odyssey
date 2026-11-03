@@ -28,12 +28,14 @@
             <span class="editorial-caption">TEXTURE / FORM / EVERYDAY</span>
         </div>
     </section>
-<div class="catalogue-toolbar">            <div class="catalogue-tabs"><a th:attr="aria-current=${#strings.isEmpty(category)?'page':null}" th:href="@{/products(q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '全部' : 'All'}"></a><a th:attr="aria-current=${category=='Clothing'?'page':null}" th:href="@{/products(category='Clothing',q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '服装' : 'Clothing'}"></a><a th:attr="aria-current=${category=='Household'?'page':null}" th:href="@{/products(category='Household',q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '家居' : 'Home'}"></a></div>
+<div class="catalogue-toolbar">            <div class="catalogue-tabs"><a th:attr="aria-current=${#strings.isEmpty(category)?'page':null}" th:href="@{/products(q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? '全部' : 'All'}"></a><a th:each="c : ${categories}" th:attr="aria-current=${category==c.key?'page':null}" th:href="@{/products(category=${c.key},q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? c.labelZh : c.labelEn}"></a></div>
+    <div class="catalogue-subtabs" th:if="${!#lists.isEmpty(subcategories)}"><a th:each="s : ${subcategories}" th:attr="aria-current=${subcategory==s.key?'page':null}" th:href="@{/products(category=${category},subcategory=${s.key},q=${q},priceRange=${priceRange},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}" th:text="${zh ? s.labelZh : s.labelEn}"></a></div>
     <form class="catalogue-filters" method="get" th:action="@{/products}" role="search">
         <label class="catalogue-search"><span th:text="${zh ? '搜索商品' : 'Search products'}"></span>
             <input type="search" name="q" th:value="${q}" th:placeholder="${zh ? '输入部分名称或描述，如：陶瓷、cotton' : 'Name or description, e.g. cotton'}">
         <button class="search-submit" type="submit" th:aria-label="${zh?'搜索':'Search'}">↗</button></label>
         <input type="hidden" name="category" th:value="${category}">
+        <input type="hidden" name="subcategory" th:value="${subcategory}">
         <details class="filter-popover" data-smooth-details th:open="${filterError}"><summary><span th:text="${zh?'筛选与排序':'Filter & sort'}"></span><span aria-hidden="true">☷</span><span class="filter-dot" th:if="${priceRange!='all' or sort!='default'}" th:text="${zh?'已选':'Active'}"></span></summary><div class="filter-panel">
         <input type="hidden" name="priceRange" value="custom">
         <div class="price-slider" th:attr="data-price-max=${priceSliderMax}" hidden>
@@ -65,9 +67,9 @@
         <article class="product-card" th:each="product, status : ${products}"
                  th:id="${product.id == products.^[category == #vars.product.category].id} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
             <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
-            <div class="product-art" th:classappend="${product.category == 'Clothing' ? 'clothing-art' : 'home-art'}">
+            <div class="product-art" th:classappend="${product.category != 'Household' ? 'clothing-art' : 'home-art'}">
                 <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)}" loading="lazy" width="600" height="800">
-                <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category == 'Clothing' ? '穿着' : '居家') : (product.category == 'Clothing' ? 'WEAR' : 'LIVE')}">GOODS</span>
+                <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category != 'Household' ? '穿着' : '居家') : (product.category != 'Household' ? 'WEAR' : 'LIVE')}">GOODS</span>
             </div>
             <div class="product-copy">
                 <span class="eyebrow" th:text="${storeText.text(product.category, zh)}">Category</span>
@@ -77,9 +79,9 @@
             </div>
             </a>
             <details class="product-disclosure" data-smooth-details><summary><span th:text="${zh?'商品信息':'Product information'}"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div class="disclosure-body"><p th:text="${storeText.productDescription(product,zh)}"></p><a th:href="@{/products/{id}(id=${product.id})}" th:text="${zh?'查看详情与规格 →':'Details & options →'}"></a></div></details>
-            <div class="product-purchase-actions" th:if="${!signedIn or product.category != 'Clothing'}">
+            <div class="product-purchase-actions" th:if="${!signedIn or product.category == 'Household'}">
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
-            <form th:if="${signedIn and product.category != 'Clothing'}" class="add-to-cart" method="post" th:action="@{/cart/add}">
+            <form th:if="${signedIn and product.category == 'Household'}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">
                 <input type="hidden" name="productId" th:value="${product.id}">
                 <button type="submit" class="cart-button" th:disabled="${product.stockQuantity == null or product.stockQuantity <= 0}" th:text="${storeText.text(product.stockQuantity == null ? 'Stock unavailable' : (product.stockQuantity <= 0 ? 'Out of stock' : 'Add to bag'), zh)}"><span th:text="${storeText.text('Add to bag', zh)}">Add to bag</span></button>

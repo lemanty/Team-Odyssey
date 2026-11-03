@@ -1,6 +1,7 @@
 package com.odyssey.retailshop.controller;
 
 import com.odyssey.retailshop.service.ProductService;
+import com.odyssey.retailshop.service.CatalogCategories;
 import org.springframework.stereotype.Controller;
 import com.odyssey.retailshop.service.StoreText;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,6 +56,7 @@ public class ProductController {
     public String products(Model model, HttpServletResponse response,
             @RequestParam(defaultValue = "") String q,
             @RequestParam(defaultValue = "") String category,
+            @RequestParam(defaultValue = "") String subcategory,
             @RequestParam(defaultValue = "") String minPrice,
             @RequestParam(defaultValue = "") String maxPrice,
             @RequestParam(defaultValue = "default") String sort,
@@ -64,10 +66,11 @@ public class ProductController {
             .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
         model.addAttribute("priceSliderMax", highestPrice.divide(BigDecimal.valueOf(100), 0,
             java.math.RoundingMode.CEILING).max(BigDecimal.ONE).multiply(BigDecimal.valueOf(100)));
-        var categories = all.stream().map(Product::getCategory).distinct().sorted().toList();
-        model.addAttribute("categories", categories);
+        model.addAttribute("categories", CatalogCategories.categories());
+        model.addAttribute("subcategories", CatalogCategories.subcategories(category));
         model.addAttribute("q", q);
         model.addAttribute("category", category);
+        model.addAttribute("subcategory", subcategory);
         if (priceRange.isBlank()) priceRange = minPrice.isBlank() && maxPrice.isBlank() ? "all" : "custom";
         switch (priceRange) {
             case "under25" -> { minPrice = ""; maxPrice = "24.99"; }
@@ -95,6 +98,7 @@ public class ProductController {
         var terms = normalize(q).split("\\s+");
         var filtered = all.stream()
             .filter(p -> category.isBlank() || category.equals(p.getCategory()))
+            .filter(p -> subcategory.isBlank() || subcategory.equals(p.getSubcategory()))
             .filter(p -> java.util.Arrays.stream(terms).allMatch(searchable(p)::contains));
         if (!invalid) filtered = filtered.filter(p -> (min == null || p.getPrice().compareTo(min) >= 0)
                 && (max == null || p.getPrice().compareTo(max) <= 0));
@@ -117,7 +121,7 @@ public class ProductController {
     }
 
     private String searchable(Product p) {
-        return normalize(p.getName() + " " + p.getDescription() + " " + p.getCategory() + " "
+        return normalize(p.getName() + " " + p.getDescription() + " " + p.getCategory() + " " + p.getSubcategory() + " "
             + storeText.productName(p, true) + " " + storeText.productDescription(p, true)
             + " " + storeText.text(p.getCategory(), true));
     }
