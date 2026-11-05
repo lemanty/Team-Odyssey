@@ -24,6 +24,15 @@ public class ReturnService {
     private Request row(java.sql.ResultSet r,int n)throws java.sql.SQLException{return new Request(r.getString("id"),r.getString("order_id"),r.getLong("user_id"),r.getLong("product_id"),r.getLong("variant_id"),r.getInt("quantity"),r.getString("reason"),r.getString("status"),r.getBigDecimal("refund_amount"),r.getString("refund_method"),r.getBoolean("restocked"),r.getBoolean("has_image"),r.getString("display_name"),r.getString("product_name"),r.getString("size_label"),r.getString("color_label"),r.getTimestamp("created_at").toLocalDateTime());}
     public List<Request> list(String email,boolean staff){if(jdbc==null)return List.of();return jdbc.query(select()+(staff?"":" WHERE u.email=?")+" ORDER BY CASE r.status WHEN 'REQUESTED' THEN 0 WHEN 'RECEIVED' THEN 1 WHEN 'APPROVED' THEN 2 ELSE 3 END,r.created_at DESC",this::row,staff?new Object[]{}:new Object[]{email});}
     public Request get(String id,String email,boolean staff){if(jdbc==null)throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);return jdbc.query(select()+" WHERE r.id=?"+(staff?"":" AND u.email=?"),this::row,staff?new Object[]{id}:new Object[]{id,email}).stream().findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));}
+    public Map<Long,Integer> availableQuantities(String orderId,String email) {
+        orders.get(orderId,email,false);
+        Map<Long,Integer> result=new HashMap<>();
+        for(var item:orders.items(orderId)) {
+            int reserved=jdbc.queryForObject("SELECT COALESCE(SUM(quantity),0) FROM return_requests WHERE order_id=? AND product_id=? AND variant_id=? AND status<>'REJECTED'",Integer.class,orderId,item.productId(),item.variantId());
+            result.put(item.variantId()>0?-item.variantId():item.productId(),Math.max(0,item.quantity()-reserved));
+        }
+        return result;
+    }
     public BigDecimal refunded(String orderId){return jdbc==null?BigDecimal.ZERO:jdbc.queryForObject("SELECT COALESCE(SUM(refund_amount),0) FROM return_requests WHERE order_id=? AND status='COMPLETED'",BigDecimal.class,orderId);}
     public List<Event> events(String id){return jdbc.query("SELECT e.*,u.display_name FROM return_events e JOIN users u ON u.id=e.actor_id WHERE return_id=? ORDER BY e.id",(r,n)->new Event(r.getString("status"),r.getString("note"),r.getString("display_name"),r.getTimestamp("created_at").toLocalDateTime()),id);}
     public SupportImage image(String id,String email,boolean staff){get(id,email,staff);return jdbc.query("SELECT image_data,image_type FROM return_requests WHERE id=? AND image_data IS NOT NULL",(r,n)->new SupportImage(r.getBytes(1),r.getString(2)),id).stream().findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));}
