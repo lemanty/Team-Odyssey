@@ -17,7 +17,7 @@ def main():
         description = literal(p['description'])
         category = literal(p['gender'])
         subcategory = literal(p['subcategory'])
-        statements.append(f"INSERT INTO products(name,category,subcategory,description,price) SELECT {name},{category},{subcategory},{description},{p['price']} WHERE NOT EXISTS (SELECT 1 FROM products WHERE name={name} AND category={category});")
+        statements.append(f"INSERT INTO products(name,category,subcategory,description,price) SELECT {name},{category},{subcategory},{description},{p['price']} WHERE NOT EXISTS (SELECT 1 FROM products WHERE name={name} AND category IN ('Clothing','Men','Women'));")
         garment = literal('/images/products/' + p['slug'] + '-product.webp')
         model = literal('/images/products/' + p['slug'] + '-model-v2.webp')
         # Preserve existing stock on rerun; refresh only image paths and audience.

@@ -19,7 +19,13 @@ class CatalogueWebTests {
     void homeRendersNavigationToCatalogue() throws Exception {
         mockMvc.perform(get("/"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("href=\"/products\"")));
+            .andExpect(content().string(containsString("href=\"/products\"")))
+            .andExpect(content().string(containsString("href=\"/products?category=Clothing\"")))
+            .andExpect(content().string(containsString("href=\"/products?category=Household\"")));
+        mockMvc.perform(get("/products").param("category", "Clothing"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Everyday Cotton Tee")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Stoneware Mug"))));
     }
 
     @Test
