@@ -28,7 +28,10 @@ public final class CatalogCategories {
         new Subcategory("Household", "living-room", "Living room", "客厅"),
         new Subcategory("Household", "bedroom", "Bedroom", "卧室"),
         new Subcategory("Household", "kitchen-dining", "Kitchen & dining", "厨房 / 餐厅"),
-        new Subcategory("Household", "storage", "Storage", "收纳")
+        new Subcategory("Household", "storage", "Storage", "收纳"),
+        new Subcategory("Men", "other", "Other", "其他"),
+        new Subcategory("Women", "other", "Other", "其他"),
+        new Subcategory("Household", "other", "Other", "其他")
     );
 
     private CatalogCategories() {}
@@ -37,6 +40,13 @@ public final class CatalogCategories {
 
     public static List<Subcategory> subcategories(String category) {
         return SUBCATEGORIES.stream().filter(s -> s.category().equals(category)).toList();
+    }
+
+    public static boolean matchesCategory(String filter, String category) {
+        if ("Clothing".equals(filter)) {
+            return "Men".equals(category) || "Women".equals(category) || "Clothing".equals(category);
+        }
+        return filter.isBlank() || filter.equals(category);
     }
 
     public static boolean valid(String category, String subcategory) {

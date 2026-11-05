@@ -97,7 +97,7 @@ public class ProductController {
         final BigDecimal min = lower, max = upper;
         var terms = normalize(q).split("\\s+");
         var filtered = all.stream()
-            .filter(p -> category.isBlank() || category.equals(p.getCategory()))
+            .filter(p -> CatalogCategories.matchesCategory(category, p.getCategory()))
             .filter(p -> subcategory.isBlank() || subcategory.equals(p.getSubcategory()))
             .filter(p -> java.util.Arrays.stream(terms).allMatch(searchable(p)::contains));
         if (!invalid) filtered = filtered.filter(p -> (min == null || p.getPrice().compareTo(min) >= 0)
