@@ -32,6 +32,13 @@ class ReturnsTests {
  String buy(String method){String id=orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,3),"COLLECTION","",method);orders.advance(id,"PREPARING");orders.advance(id,"READY");orders.advance(id,"COMPLETED");return id;}
  String request(String order,int q){return returns.create(order,"a@test.com",1,q,"Damaged",UUID.randomUUID().toString(),null);}
  void receive(String id){returns.process(id,"staff@test.com","APPROVED","Return approved",false,false,false);returns.process(id,"staff@test.com","RECEIVED","Inspected",false,false,false);}
+ @Test void availableQuantityTracksRequestsAndRejections() {
+  String o=buy("WALLET");assertEquals(3,returns.availableQuantities(o,"a@test.com").get(1L));
+  String id=request(o,2);assertEquals(1,returns.availableQuantities(o,"a@test.com").get(1L));
+  returns.process(id,"staff@test.com","REJECTED","Rejected",false,false,false);
+  assertEquals(3,returns.availableQuantities(o,"a@test.com").get(1L));
+  assertThrows(org.springframework.web.server.ResponseStatusException.class,()->returns.availableQuantities(o,"b@test.com"));
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
