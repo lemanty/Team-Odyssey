@@ -31,7 +31,7 @@ class ProductManagementTests {
   }
   jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Customer','customer@test.com','unused','CUSTOMER'),(2,'Staff','staff@test.com','unused','STAFF'),(3,'Admin','admin@test.com','unused','ADMIN')");
  }
- ProductEditForm form(){var f=new ProductEditForm();f.setName("New vase");f.setNameZh("花瓶");f.setDescription("Handmade vase");f.setDescriptionZh("手工花瓶");f.setPrice(new BigDecimal("24.50"));f.setStock(4);f.setImage("/images/products/vase.png");f.setPublished(true);return f;}
+ ProductEditForm form(){var f=new ProductEditForm();f.setName("New vase");f.setNameZh("花瓶");f.setDescription("Handmade vase");f.setDescriptionZh("手工花瓶");f.setPrice(new BigDecimal("24.50"));f.setStock(4);f.setImage("/images/products/vase.png");f.setPublished(true);f.setSubcategory("living-room");return f;}
  ProductEditForm.Option option(String size,int stock){var o=new ProductEditForm.Option();o.setSize(size);o.setColor("Green");o.setStock(stock);return o;}
  @Test void onlyAdminCanManageCatalogue() throws Exception {
   mvc.perform(get("/staff/products")).andExpect(status().is3xxRedirection());
@@ -60,7 +60,7 @@ class ProductManagementTests {
    .andExpect(content().string(containsString("data-stock-tools")));
  }
  @Test void embeddedStockChecksRolesRevisionAndVariantTotals() throws Exception {
-  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);var original=manager.edit(id);
   mvc.perform(get("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER"))).andExpect(status().isForbidden());
   mvc.perform(post("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER")).with(csrf()).param("productId",""+id).param("revision",original.getRevision())).andExpect(status().isForbidden());
@@ -85,7 +85,7 @@ class ProductManagementTests {
   mvc.perform(post("/admin/products/create").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
    .param("name","Admin vase").param("nameZh","管理员花瓶").param("description","Vase").param("descriptionZh","花瓶")
-   .param("price","10.00").param("stock","5").param("category","Household").param("audience","Home"))
+   .param("price","10.00").param("stock","5").param("category","Household").param("subcategory","living-room").param("audience","Home"))
    .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin?section=new"));
   assertEquals(1,manager.list("Admin vase","draft").size());
   mvc.perform(multipart("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("name","Retained title"))
@@ -103,7 +103,7 @@ class ProductManagementTests {
   assertEquals(1,manager.list("花瓶","draft").size());
  }
  @Test void optionsAggregateStockAndRejectStaleStockOrForeignIds() {
-  var f=form();f.setCategory("Clothing");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);assertEquals(10,manager.edit(id).getStock());assertEquals(1,manager.list("","low").size());
   var stale=manager.edit(id);long variant=stale.getOptions().get(0).getId();
   String order=orders.place("customer@test.com",UUID.randomUUID().toString(),Map.of(-variant,1),"DELIVERY","Road");
@@ -124,7 +124,7 @@ class ProductManagementTests {
   var file=new MockMultipartFile("mainPhoto","photo.png","image/png",bytes.toByteArray());
   mvc.perform(multipart("/staff/products/save").file(file).with(user("admin@test.com").roles("ADMIN")).with(csrf())
     .param("name","Test shirt").param("nameZh","测试衬衫").param("description","Cotton").param("descriptionZh","棉")
-    .param("price","19.50").param("category","Clothing").param("audience","Men").param("published","true")
+    .param("price","19.50").param("category","Men").param("subcategory","tops").param("audience","Men").param("published","true")
     .param("options[0].size","S").param("options[0].color","White").param("options[0].stock","5"))
     .andExpect(status().is3xxRedirection());
   long id=manager.list("","all").get(0).id();var f=manager.edit(id);assertEquals(5,f.getStock());
@@ -132,5 +132,63 @@ class ProductManagementTests {
   mvc.perform(get("/staff/products/"+id+"/edit?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("options[0].stock"))).andExpect(content().string(containsString("测试衬衫")));
   mvc.perform(get("/staff/products?lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("需要补货")));
   assertThrows(IllegalArgumentException.class,()->manager.save(form(),new MockMultipartFile("mainPhoto","bad.png","image/png","not an image".getBytes()),null));
+ }
+ @Test void editFormBindingErrorsReturnEditorWithoutSaving() throws Exception {
+  mvc.perform(post("/staff/products/save").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("name","Broken vase").param("nameZh","坏花瓶").param("description","a").param("descriptionZh","b")
+   .param("price","abc").param("stock","5").param("published","false"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Check numeric fields")));
+  assertTrue(manager.list("","all").isEmpty());
+ }
+ @Test void adminCreateBindingErrorsAndExistingIdAreRejected() throws Exception {
+  mvc.perform(post("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("name","A").param("price","abc"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Check numeric fields")));
+  assertTrue(manager.list("A","all").isEmpty());
+  long existing=manager.save(form(),null,null);
+  mvc.perform(post("/admin/products/create").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+   .param("id",""+existing).param("name","Duplicate"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("New products only")));
+ }
+ @Test void editMissingProductAndUnknownImageReturn404() throws Exception {
+  mvc.perform(get("/staff/products/999999/edit").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isNotFound());
+  mvc.perform(get("/catalogue-images/00000000-0000-0000-0000-000000000000")).andExpect(status().isNotFound());
+ }
+ @Test void httpStockStaleRevisionShowsErrorAndLeavesStock() throws Exception {
+  long id=manager.save(form(),null,null);
+  var original=manager.edit(id);
+  manager.updateStock(id,original.getRevision(),7,Map.of());
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",original.getRevision()).param("quantity","9"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock changed")));
+  assertEquals(7,manager.edit(id).getStock());
+ }
+ @Test void httpVariantStockUpdateAggregatesTotals() throws Exception {
+  var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
+  long id=manager.save(f,null,null);var o=manager.edit(id);
+  long a=o.getOptions().get(0).getId(),b=o.getOptions().get(1).getId();
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",o.getRevision()).param("stock_"+a,"5").param("stock_"+b,"3"))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock saved")));
+  var saved=manager.edit(id);assertEquals(8,saved.getStock());
+  assertEquals(5,saved.getOptions().get(0).getStock());assertEquals(3,saved.getOptions().get(1).getStock());
+ }
+ @Test void httpStockWithoutQuantityShowsError() throws Exception {
+  long id=manager.save(form(),null,null);var o=manager.edit(id);
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
+   .param("productId",""+id).param("revision",o.getRevision()))
+   .andExpect(status().isOk()).andExpect(content().string(containsString("Stock must be")));
+  assertEquals(4,manager.edit(id).getStock());
+ }
+ @Test void subcategoryMustBelongToCategory() {
+  var f=form();f.setCategory("Household");f.setSubcategory("tops");
+  assertThrows(IllegalArgumentException.class,()->manager.save(f,null,null));
+  var g=form();g.setCategory("Men");g.setSubcategory("skirts-dresses");g.setAudience("Men");g.getOptions().add(option("M",2));
+  assertThrows(IllegalArgumentException.class,()->manager.save(g,null,null));
+ }
+ @Test void subcategoryRoundTripsThroughEdit() {
+  var f=form();f.setCategory("Household");f.setSubcategory("bedroom");
+  long id=manager.save(f,null,null);
+  assertEquals("bedroom",manager.edit(id).getSubcategory());
  }
 }

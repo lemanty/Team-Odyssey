@@ -22,6 +22,9 @@ public class ProductEditForm {
  private String category = "Household";
  public String getCategory() { return category; }
  public void setCategory(String value) { category=value; }
+ private String subcategory = "";
+ public String getSubcategory() { return subcategory; }
+ public void setSubcategory(String value) { subcategory=value; }
  private String audience = "Home";
  public String getAudience() { return audience; }
  public void setAudience(String value) { audience=value; }

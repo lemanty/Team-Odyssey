@@ -22,7 +22,7 @@ def main():
         stock = int(product['stock'])
         if price < 0 or stock < 0:
             raise ValueError('Price and stock must be nonnegative')
-        statements.append(f"INSERT INTO products(name,category,description,price) SELECT {name},'Household',{literal(product['description'])},{price} WHERE NOT EXISTS (SELECT 1 FROM products WHERE name={name} AND category='Household');")
+        statements.append(f"INSERT INTO products(name,category,subcategory,description,price) SELECT {name},'Household',{literal(product['subcategory'])},{literal(product['description'])},{price} WHERE NOT EXISTS (SELECT 1 FROM products WHERE name={name} AND category='Household');")
         image = literal(path)
         statements.append(f"INSERT INTO product_details(product_id,audience,stock_quantity,garment_image,model_image) SELECT id,'Home',{stock},{image},{image} FROM products WHERE name={name} AND category='Household' ON DUPLICATE KEY UPDATE garment_image={image},model_image={image};")
     statements.append('COMMIT;')

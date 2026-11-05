@@ -29,7 +29,7 @@
                 <div class="cart-line-copy">
                     <h2 th:text="${line.product != null} ? ${storeText.productName(line.product, zh)} : ${storeText.text('Product no longer available', zh)}">Product</h2>
                     <p th:if="${line.size != ''}" th:text="${line.size + ' / ' + storeText.text(line.color,zh)}"></p>
-                    <a th:if="${line.product!=null and line.size=='' and line.product.category=='Clothing' and !line.available}" th:href="@{/products/{id}(id=${line.product.id})}" th:text="${zh?'重新选择规格 →':'Choose options →'}"></a>
+                    <a th:if="${line.product!=null and line.size=='' and line.product.category!='Household' and !line.available}" th:href="@{/products/{id}(id=${line.product.id})}" th:text="${zh?'重新选择规格 →':'Choose options →'}"></a>
                     <p th:if="${line.product != null}" th:text="'€' + ${#numbers.formatDecimal(line.product.price, 1, 2)} + ${zh ? ' / 件' : ' each'}">Price</p>
                     <p class="cart-error" th:unless="${line.available}"><span th:text="${storeText.text('This quantity is no longer available. Please reduce it or remove this item.', zh)}">This quantity is no longer available. Please reduce it or remove this item.</span></p>
                     <form class="cart-quantity" method="post" th:action="@{/cart/update}" th:if="${line.product != null}">

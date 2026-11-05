@@ -48,7 +48,7 @@ public class ProductManagementService {
             var f=new ProductEditForm(); f.setId(id);f.setName(r.getString("name"));f.setDescription(r.getString("description"));
             f.setNameZh(r.getString("name_zh")==null?text.text(f.getName(),true):r.getString("name_zh"));
             f.setDescriptionZh(r.getString("description_zh")==null?text.text(f.getDescription(),true):r.getString("description_zh"));
-            f.setCategory(r.getString("category"));f.setAudience(r.getString("audience"));f.setPrice(r.getBigDecimal("price"));f.setStock(r.getInt("stock_quantity"));
+            f.setCategory(r.getString("category"));f.setSubcategory(r.getString("subcategory"));f.setAudience(r.getString("audience"));f.setPrice(r.getBigDecimal("price"));f.setStock(r.getInt("stock_quantity"));
             f.setThreshold(r.getInt("threshold"));f.setPublished(r.getBoolean("published"));f.setImage(r.getString("garment_image"));f.setSecondImage(r.getString("model_image"));f.setRevision(r.getString("revision"));return f;
         },id);
         if(forms.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -94,7 +94,8 @@ public class ProductManagementService {
         ready();
         f.setName(required(f.getName(),150,"English name / 英文名称"));f.setNameZh(required(f.getNameZh(),150,"Chinese name / 中文名称"));
         f.setDescription(required(f.getDescription(),10000,"English description / 英文描述"));f.setDescriptionZh(required(f.getDescriptionZh(),10000,"Chinese description / 中文描述"));
-        if(!Set.of("Clothing","Household").contains(f.getCategory()) || !Set.of("Men","Women","Unisex","Home").contains(f.getAudience()))throw new IllegalArgumentException("Invalid category or collection. / 分类或系列无效。");
+        if(!Set.of("Men","Women","Household").contains(f.getCategory()) || !Set.of("Men","Women","Unisex","Home").contains(f.getAudience()))throw new IllegalArgumentException("Invalid category or collection. / 分类或系列无效。");
+        if(!CatalogCategories.valid(f.getCategory(),f.getSubcategory()))throw new IllegalArgumentException("Invalid subcategory for this category. / 该分类下的子分类无效。");
         if(f.getPrice()==null || f.getPrice().signum()<0 || f.getPrice().compareTo(new BigDecimal("99999999.99"))>0 || f.getPrice().stripTrailingZeros().scale()>2)throw new IllegalArgumentException("Enter a valid price with at most two decimals. / 价格需非负且最多两位小数。");
         stock(f.getStock());stock(f.getThreshold());imagePath(f.getImage());imagePath(f.getSecondImage());
         if(f.getOptions()==null || f.getOptions().size()>100)throw new IllegalArgumentException("Maximum 100 options. / 最多 100 个规格。");
@@ -104,7 +105,7 @@ public class ProductManagementService {
             o.setSize(required(o.getSize(),30,"Size / 尺码"));o.setColor(required(o.getColor(),60,"Colour / 颜色"));stock(o.getStock());
             if(!labels.add((o.getSize()+"\0"+o.getColor()).toLowerCase(Locale.ROOT)) || (o.getId()!=null && !ids.add(o.getId())))throw new IllegalArgumentException("Duplicate option. / 规格不能重复。");
         }
-        if(f.getCategory().equals("Clothing") && f.getOptions().isEmpty())throw new IllegalArgumentException("Clothing needs at least one size/colour option. / 服装至少需要一个尺码颜色规格。");
+        if(!f.getCategory().equals("Household") && f.getOptions().isEmpty())throw new IllegalArgumentException("Clothing needs at least one size/colour option. / 服装至少需要一个尺码颜色规格。");
         Upload a=upload(first),b=upload(second);
         return tx.execute(status->{
             Long id=f.getId();ProductEditForm old=null;
@@ -116,10 +117,10 @@ public class ProductManagementService {
                 Set<Long> oldIds=new HashSet<>();for(var o:old.getOptions())oldIds.add(o.getId());
                 if(!oldIds.equals(ids))throw new IllegalArgumentException("Existing options must be retained; set unused stock to zero. / 请保留已有规格，不再使用的规格可将库存设为零。");
                 for(var o:old.getOptions())for(var edited:f.getOptions())if(o.getId().equals(edited.getId()) && (!o.getSize().equals(edited.getSize()) || !o.getColor().equals(edited.getColor())))throw new IllegalArgumentException("Existing option labels cannot change; add a new option. / 已有规格名称不能改变，请新增规格。");
-                jdbc.update("UPDATE products SET name=?,category=?,description=?,price=? WHERE id=?",f.getName(),f.getCategory(),f.getDescription(),f.getPrice(),id);
+                jdbc.update("UPDATE products SET name=?,category=?,subcategory=?,description=?,price=? WHERE id=?",f.getName(),f.getCategory(),f.getSubcategory(),f.getDescription(),f.getPrice(),id);
             } else {
                 if(!ids.isEmpty())throw new IllegalArgumentException("Invalid option IDs. / 规格编号无效。");
-                var key=new GeneratedKeyHolder();jdbc.update(c->{var ps=c.prepareStatement("INSERT INTO products(name,category,description,price) VALUES (?,?,?,?)",java.sql.Statement.RETURN_GENERATED_KEYS);ps.setString(1,f.getName());ps.setString(2,f.getCategory());ps.setString(3,f.getDescription());ps.setBigDecimal(4,f.getPrice());return ps;},key);id=key.getKey().longValue();
+                var key=new GeneratedKeyHolder();jdbc.update(c->{var ps=c.prepareStatement("INSERT INTO products(name,category,subcategory,description,price) VALUES (?,?,?,?,?)",java.sql.Statement.RETURN_GENERATED_KEYS);ps.setString(1,f.getName());ps.setString(2,f.getCategory());ps.setString(3,f.getSubcategory());ps.setString(4,f.getDescription());ps.setBigDecimal(5,f.getPrice());return ps;},key);id=key.getKey().longValue();
             }
             int total=f.getOptions().isEmpty()?f.getStock():f.getOptions().stream().mapToInt(ProductEditForm.Option::getStock).sum();stock(total);
             String image=saveImage(a,f.getImage()),secondImage=saveImage(b,f.getSecondImage());
