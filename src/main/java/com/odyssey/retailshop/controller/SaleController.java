@@ -43,16 +43,27 @@ public class SaleController {
         return "sale";
     }
 
-    public record Offer(Product product, String title, int discount, BigDecimal price, String image, String featuredImage) {}
+    public record Offer(Product product, String title, int discount, BigDecimal price, String image, String featuredImage, String campaignImage) {}
 
     private Offer offer(Product product, SaleService.Discount discount) {
         String image = product.getGarmentImage();
         String featured = product.getModelImage();
         if (!sales.available()) {
             image = "/images/products/" + DEMO_IMAGES.get(product.getId());
+            if (product.getId() == 1L) featured = "/images/products/ivory-cotton-tee-model-v2.webp";
             if (product.getId() == 2L) featured = "/images/products/olive-overshirt-model-v2.webp";
         }
         return new Offer(product, discount.title(), discount.percent(), discount.price(product.getPrice()),
-            image, featured == null || featured.isBlank() ? image : featured);
+            image, featured == null || featured.isBlank() ? image : featured, campaignImage(image));
+    }
+    // Only the known sample photographs have campaign editions. Uploaded images remain untouched.
+    private String campaignImage(String image) {
+        if (image == null) return null;
+        return switch (image) {
+            case "/images/products/olive-overshirt-product.webp" -> "/images/products/campaign-c/overshirt-hero.jpg";
+            case "/images/products/ivory-cotton-tee-product.webp" -> "/images/products/campaign-c/tee-hero.jpg";
+            case "/images/products/oatmeal-cotton-throw.png" -> "/images/products/campaign-c/throw-hero.jpg";
+            default -> null;
+        };
     }
 }

@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${zh ? '换季特卖 | Odyssey' : 'Seasonal Sale | Odyssey'}">Seasonal Sale | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-photo-stage-2)}">
+    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-artwork-c-1)}">
     <link rel="stylesheet" th:href="@{/css/product-showcase.css(v=1)}">
-    <script defer th:src="@{/js/sale.js}"></script>
+    <script defer th:src="@{/js/sale.js(v=card-background-1)}"></script>
 </head>
 <body class="sale-page">
 <header th:replace="~{fragments/layout :: header('sale')}"></header>
@@ -50,7 +50,12 @@
                 </div>
             </div>
             <article class="sale-feature" th:each="offer, item : ${featuredOffers}" th:hidden="${!item.first}" data-sale-slide>
-                <a th:replace="~{fragments/product-showcase :: showcase(@{/products/{id}(id=${offer.product.id},sale=true)}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, false)}"></a>
+                <a class="sale-campaign-art" th:if="${offer.campaignImage != null}" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+                    <img th:src="@{${offer.campaignImage}}" th:alt="${storeText.productName(offer.product, zh)}" th:loading="${item.first ? 'eager' : 'lazy'}" width="1672" height="941">
+                </a>
+                <th:block th:if="${offer.campaignImage == null}">
+                    <a th:replace="~{fragments/product-showcase :: showcase(@{/products/{id}(id=${offer.product.id},sale=true)}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, true)}"></a>
+                </th:block>
                 <div class="sale-feature-copy">
                     <p class="sale-kicker" th:text="${saleDemo ? storeText.text(offer.product.category, zh) : offer.title}">Clothing</p>
                     <h3 th:text="${storeText.productName(offer.product, zh)}">Canvas Overshirt</h3>

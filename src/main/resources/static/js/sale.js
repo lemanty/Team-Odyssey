@@ -18,6 +18,34 @@
         controls.hidden = false;
     }
 
+    // Extend the photograph's edge colours into its container. The photo itself is untouched.
+    function matchPhotoBackground(img) {
+        if (!img.naturalWidth || !img.naturalHeight) return;
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 24;
+            canvas.height = 24;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0, 24, 24);
+            const stops = [0, 6, 12, 18, 23].map(y => {
+                const left = ctx.getImageData(0, y, 1, 1).data;
+                const right = ctx.getImageData(23, y, 1, 1).data;
+                // Transparent or non-readable photographs retain the neutral fallback.
+                if (left[3] < 250 || right[3] < 250) throw new Error('Transparent edge');
+                const rgb = [0, 1, 2].map(c => Math.round((left[c] + right[c]) / 2));
+                return `rgb(${rgb.join(',')}) ${Math.round(y / 23 * 100)}%`;
+            });
+            img.parentElement.style.background = `linear-gradient(to bottom, ${stops.join(',')})`;
+        } catch (_) {
+            // Cross-origin images without CORS keep the CSS fallback, without affecting the card.
+        }
+    }
+    document.querySelectorAll('.sale-card-art img').forEach(img => {
+        img.addEventListener('load', () => matchPhotoBackground(img));
+        if (img.complete) matchPhotoBackground(img);
+    });
+
     const deals = document.querySelector('[data-sale-deals]');
     const filters = deals.querySelector('[data-sale-filters]');
     const cards = [...deals.querySelectorAll('[data-sale-category]')];
