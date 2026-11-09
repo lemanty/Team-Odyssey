@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CatalogueFilterTests {
  ProductService products=mock(ProductService.class);
  VariantService variants=mock(VariantService.class);
- ProductController controller=new ProductController(products,new MockEnvironment(),mock(StoreText.class),variants,mock(ReviewService.class));
+ ProductController controller=new ProductController(products,new MockEnvironment(),mock(StoreText.class),variants,mock(ReviewService.class),mock(SaleService.class, RETURNS_DEEP_STUBS));
  Product product(long id,int stock){return new Product(id,"Item "+id,"Men","",BigDecimal.TEN,"",stock,null,null);}
  ExtendedModelMap search(String size,String color,boolean stock,int page){var model=new ExtendedModelMap();controller.products(model,new MockHttpServletResponse(),"","","","","","default","",size,color,stock,page);return model;}
  @Test void sameVariantMustMatchBothOptionsAndStock(){
