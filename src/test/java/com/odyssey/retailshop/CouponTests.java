@@ -26,7 +26,7 @@ class CouponTests {
  @Autowired CouponService coupons;@Autowired OrderService orders;@Autowired WalletService wallet;@Autowired MembershipService membership;@Autowired ReturnService returns;@Autowired JdbcTemplate jdbc;@Autowired MockMvc mvc;
  @BeforeEach void setup()throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")){
+  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")){
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");for(String st:sql.split(";"))if(!st.isBlank())jdbc.execute(st);
   }
   jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Employee','staff@test.com','unused','STAFF'),(4,'Admin','admin@test.com','unused','ADMIN')");
@@ -85,5 +85,88 @@ class CouponTests {
   mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf()).param("token",token).param("fulfillment","COLLECTION").param("paymentMethod","WALLET").param("couponCode","WEB")).andExpect(redirectedUrl("/orders"));
   String id=orders.list("a@test.com",false).get(0).id();assertEquals(new BigDecimal("90.00"),orders.get(id,"a@test.com",false).total());jdbc.update("UPDATE coupons SET title='changed',value_amount=99,enabled=FALSE");
   mvc.perform(get("/orders/"+id+"?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("Welcome offer"))).andExpect(content().string(containsString("−€10.00")));
+ }
+
+ @Test void activeCampaignPricesSkuBeforeMembershipAndCouponAndSnapshotsTheOrder() throws Exception {
+  createCampaign("Autumn event", "20", true);
+  createCampaign("Smaller offer", "10", true);
+  jdbc.update("INSERT INTO product_variants(id,product_id,size_label,color_label,stock_quantity) VALUES (101,1,'One size','Natural',5)");
+  jdbc.update("INSERT INTO cart_variants(user_id,variant_id,quantity) VALUES (1,101,1)");
+  silver();
+  coupon("STACK", "FIXED", "10", "100", true);
+
+  mvc.perform(get("/sale")).andExpect(status().isOk()).andExpect(content().string(containsString("Autumn event")))
+      .andExpect(content().string(containsString("€80.00")));
+  mvc.perform(get("/products/1").param("sale", "true")).andExpect(status().isOk())
+      .andExpect(content().string(containsString("€80.00")));
+  mvc.perform(get("/products/1")).andExpect(status().isOk())
+      .andExpect(content().string(containsString("€100.00")))
+      .andExpect(content().string(org.hamcrest.Matchers.not(containsString("€80.00"))));
+  mvc.perform(get("/cart").with(user("a@test.com"))).andExpect(status().isOk())
+      .andExpect(content().string(containsString("€80.00")));
+
+  var session = new MockHttpSession();
+  mvc.perform(get("/checkout").session(session).with(user("a@test.com")).flashAttr("selectedCoupon", "STACK"))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Sale discount")))
+      .andExpect(content().string(containsString("€66.00")));
+  mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+          .param("token", (String) session.getAttribute("checkoutToken")).param("fulfillment", "COLLECTION")
+          .param("paymentMethod", "WALLET").param("couponCode", "STACK").param("quotedTotal", "66.00"))
+      .andExpect(redirectedUrl("/orders"));
+
+  String orderId = orders.list("a@test.com", false).stream()
+      .filter(order -> order.status().equals("PENDING")).findFirst().orElseThrow().id();
+  assertEquals(new BigDecimal("66.00"), orders.get(orderId, "a@test.com", false).total());
+  assertEquals(new BigDecimal("80.00"), orders.items(orderId).get(0).unitPrice());
+  assertEquals(new BigDecimal("934.00"), wallet.balance(1));
+  assertEquals(new BigDecimal("100.00"), jdbc.queryForObject("SELECT price FROM products WHERE id=1", BigDecimal.class));
+  jdbc.update("UPDATE sale_campaigns SET enabled=FALSE");
+  mvc.perform(get("/orders/" + orderId).with(user("a@test.com"))).andExpect(status().isOk())
+      .andExpect(content().string(containsString("−€20.00")))
+      .andExpect(content().string(containsString("€66.00")));
+ }
+
+ @Test void adminEditsCampaignAndStaleCheckoutLeavesCartWalletAndStockIntact() throws Exception {
+  mvc.perform(get("/admin/sales").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isForbidden());
+  mvc.perform(post("/admin/sales").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());
+  mvc.perform(post("/admin/sales").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isForbidden());
+  long campaignId = createCampaign("Weekend offer", "50", true);
+  mvc.perform(get("/admin/sales").param("edit", String.valueOf(campaignId)).with(user("admin@test.com").roles("ADMIN")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Weekend offer")));
+  jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
+  var session = new MockHttpSession();
+  mvc.perform(get("/checkout").session(session).with(user("a@test.com")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("€50.00")));
+
+  var edit = campaignForm("Weekend offer", "50", false).param("id", String.valueOf(campaignId)).param("revision", "0");
+  mvc.perform(edit).andExpect(redirectedUrl("/admin/sales"));
+  mvc.perform(edit).andExpect(status().isOk()).andExpect(content().string(containsString("Campaign has changed")));
+  mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+          .param("token", (String) session.getAttribute("checkoutToken")).param("fulfillment", "COLLECTION")
+          .param("paymentMethod", "WALLET").param("quotedTotal", "50.00"))
+      .andExpect(redirectedUrl("/checkout")).andExpect(flash().attribute("orderError", containsString("Your total changed")));
+
+  assertEquals(new BigDecimal("1000.00"), wallet.balance(1));
+  assertEquals(10, jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1", Integer.class));
+  assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM cart_items", Integer.class));
+  assertTrue(orders.list("a@test.com", false).isEmpty());
+  mvc.perform(get("/sale")).andExpect(status().isOk())
+      .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Weekend offer"))));
+  mvc.perform(get("/products/1").param("sale", "true")).andExpect(status().isOk())
+      .andExpect(content().string(containsString("€100.00")))
+      .andExpect(content().string(org.hamcrest.Matchers.not(containsString("€50.00"))));
+ }
+
+ private long createCampaign(String title, String percent, boolean enabled) throws Exception {
+  mvc.perform(campaignForm(title, percent, enabled)).andExpect(redirectedUrl("/admin/sales"));
+  return jdbc.queryForObject("SELECT id FROM sale_campaigns WHERE title=?", Long.class, title);
+ }
+
+ private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder campaignForm(String title, String percent, boolean enabled) {
+  var now = LocalDateTime.now().withNano(0);
+  return post("/admin/sales").with(user("admin@test.com").roles("ADMIN")).with(csrf())
+      .param("title", title).param("percent", percent).param("productIds", "1")
+      .param("starts", now.minusDays(1).toString()).param("ends", now.plusDays(1).toString())
+      .param("enabled", Boolean.toString(enabled));
  }
 }

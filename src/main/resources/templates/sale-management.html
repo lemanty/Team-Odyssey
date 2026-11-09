@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${zh ? 'zh-CN' : 'en'}">
+<head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${zh ? '特惠活动管理 | Odyssey' : 'Sale campaigns | Odyssey'}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-console.css}">
+    <link rel="stylesheet" th:href="@{/css/sale-management.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('account')}"></header>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/workspace-sidebar :: sidebar('sales')}"></aside>
+    <main class="sale-admin">
+        <p class="eyebrow">ODYSSEY / ADMIN</p>
+        <h1 th:text="${zh ? '特惠活动管理' : 'Sale campaigns'}"></h1>
+        <a class="detail-back" th:href="@{/sale}" th:text="${zh ? '查看顾客活动页 ↗' : 'View storefront sale ↗'}"></a>
+        <p th:if="${saleMessage}" role="status" th:text="${saleMessage}"></p>
+        <p th:if="${saleError}" role="alert" class="cart-error" th:text="${saleError}"></p>
+        <p th:unless="${draft}" th:text="${zh ? '请启用数据库模式以创建或修改特惠活动。' : 'Enable database mode to create or edit sale campaigns.'}"></p>
+        <th:block th:if="${draft}">
+            <section class="order-card" aria-labelledby="campaign-form-title">
+                <h2 id="campaign-form-title" th:text="${draft.id == null ? (zh ? '创建活动' : 'Create campaign') : (zh ? '编辑活动' : 'Edit campaign')}"></h2>
+                <form class="order-form" method="post" th:action="@{/admin/sales}">
+                    <input type="hidden" name="id" th:if="${draft.id != null}" th:value="${draft.id}">
+                    <input type="hidden" name="revision" th:value="${draft.revision}">
+                    <div class="sale-admin-fields">
+                        <label>
+                            <span th:text="${zh ? '活动名称' : 'Campaign name'}"></span>
+                            <input name="title" required maxlength="100" th:value="${draft.title}">
+                        </label>
+                        <label>
+                            <span th:text="${zh ? '减免百分比（填 20 表示减 20%）' : 'Percent off (20 means 20% off)'}"></span>
+                            <input name="percent" type="number" min="1" max="99" step="1" required th:value="${draft.percent}">
+                        </label>
+                        <label>
+                            <span th:text="${zh ? '开始时间' : 'Starts at'}"></span>
+                            <input name="starts" type="datetime-local" required th:value="${draft.starts}">
+                        </label>
+                        <label>
+                            <span th:text="${zh ? '结束时间' : 'Ends at'}"></span>
+                            <input name="ends" type="datetime-local" required th:value="${draft.ends}">
+                        </label>
+                    </div>
+                    <p class="sale-admin-hint" th:text="${(zh ? '活动时间以 ' : 'Campaign times use ') + saleTimezone}"></p>
+                    <fieldset class="sale-product-picker">
+                        <legend th:text="${zh ? '参与商品' : 'Eligible products'}"></legend>
+                        <p th:if="${products.isEmpty()}" th:text="${zh ? '请先添加商品。' : 'Add products first.'}"></p>
+                        <label th:each="product : ${products}">
+                            <input type="checkbox" name="productIds" th:value="${product.id}" th:checked="${draft.productIds.contains(product.id)}">
+                            <span th:text="${(zh ? product.nameZh : product.name) + ' · €' + product.price + (product.published ? '' : (zh ? '（未上架）' : ' (unpublished)'))}"></span>
+                        </label>
+                    </fieldset>
+                    <label class="sale-admin-toggle">
+                        <input type="checkbox" name="enabled" value="true" th:checked="${draft.enabled}">
+                        <span th:text="${zh ? '启用活动（仅在所设时间内生效）' : 'Enable during the scheduled dates'}"></span>
+                    </label>
+                    <div class="sale-admin-actions">
+                        <button class="order-button" type="submit" th:disabled="${products.isEmpty()}" th:text="${zh ? '保存活动' : 'Save campaign'}"></button>
+                        <a th:if="${draft.id != null}" th:href="@{/admin/sales}" th:text="${zh ? '返回创建活动' : 'Back to create campaign'}"></a>
+                    </div>
+                </form>
+            </section>
+            <section aria-labelledby="campaign-list-title">
+                <h2 id="campaign-list-title" th:text="${zh ? '已有活动' : 'Existing campaigns'}"></h2>
+                <p th:if="${campaigns.isEmpty()}" th:text="${zh ? '还没有活动。' : 'No campaigns yet.'}"></p>
+                <article class="order-card sale-admin-row" th:each="campaign : ${campaigns}">
+                    <div>
+                        <h3 th:text="${campaign.title}"></h3>
+                        <p th:text="${'−' + campaign.percent + '% · ' + #temporals.format(campaign.starts, 'yyyy-MM-dd HH:mm') + ' → ' + #temporals.format(campaign.ends, 'yyyy-MM-dd HH:mm')}"></p>
+                        <span class="order-badge" th:switch="${campaign.status(now)}">
+                            <span th:case="'active'" th:text="${zh ? '进行中' : 'Active'}"></span>
+                            <span th:case="'upcoming'" th:text="${zh ? '待开始' : 'Upcoming'}"></span>
+                            <span th:case="'ended'" th:text="${zh ? '已结束' : 'Ended'}"></span>
+                            <span th:case="*" th:text="${zh ? '未启用' : 'Disabled'}"></span>
+                        </span>
+                    </div>
+                    <a class="order-button" th:href="@{/admin/sales(edit=${campaign.id})}" th:text="${zh ? '编辑' : 'Edit'}"></a>
+                </article>
+            </section>
+        </th:block>
+    </main>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

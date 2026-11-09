@@ -162,9 +162,9 @@
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: 50% 38%;
+    object-fit: contain;
 }
+.sale-art-placeholder { display: grid; place-items: center; min-height: inherit; padding: 24px; }
 .sale-main .sale-feature-art:focus-visible { outline-offset: -5px; }
 .sale-feature-index {
     position: absolute;
@@ -241,8 +241,7 @@
 .sale-card:hover { border-color: var(--sale-focus); }
 .sale-card > a { display: flex; flex-direction: column; height: 100%; border-radius: inherit; }
 .sale-card-art { position: relative; overflow: hidden; border-radius: 5px 5px 0 0; aspect-ratio: 1.35; background: var(--sale-sand); }
-.sale-card-art img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
-.sale-card:hover img { transform: scale(1.04); }
+.sale-card-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .sale-card-arrow {
     position: absolute;
     top: 10px;
@@ -281,5 +280,5 @@
     .sale-card-copy { padding: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .sale-card, .sale-card-art img { transition: none; }
+    .sale-card { transition: none; }
 }

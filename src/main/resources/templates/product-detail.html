@@ -14,7 +14,12 @@
 <body class="chosen-design chosen-product-detail">
 <header th:replace="~{fragments/layout :: header('products')}"></header>
 <main class="product-detail">
-    <nav class="product-breadcrumb" th:aria-label="${storeText.text('Breadcrumb', zh)}"><a th:href="@{/products}"><span aria-hidden="true">&#8592;</span> <span th:text="${storeText.text('All products', zh)}">All products</span></a></nav>
+    <nav class="product-breadcrumb" th:aria-label="${storeText.text('Breadcrumb', zh)}">
+        <a th:href="@{${fromSale ? '/sale' : '/products'}}">
+            <span aria-hidden="true">&#8592;</span>
+            <span th:text="${fromSale ? (zh ? '特惠活动' : 'Sale') : storeText.text('All products', zh)}">All products</span>
+        </a>
+    </nav>
     <div class="detail-layout">
         <section class="product-gallery" th:aria-label="${storeText.text('Product photographs', zh)}" aria-roledescription="carousel" data-gallery th:if="${product.garmentImage != null}">
             <div class="gallery-stage" tabindex="0" th:aria-label="${storeText.text('Product photos. Use left and right arrow keys to change photo.', zh)}">
@@ -47,7 +52,14 @@
         <section class="detail-copy" aria-labelledby="product-title">
             <p class="eyebrow"><span th:text="${storeText.text(product.category, zh)}"><span th:text="${storeText.text('Clothing', zh)}">Clothing</span></span><span th:if="${product.audience != null}" th:text="' / ' + ${storeText.text(product.audience, zh)}"> / Women</span></p>
             <h1 id="product-title" th:text="${storeText.productName(product, zh)}">Product name</h1>
-            <p class="detail-price" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
+            <p class="detail-price" th:unless="${saleDiscount}" th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">€0.00</p>
+            <div th:if="${saleDiscount}">
+                <p class="detail-price">
+                    <strong th:text="${'€' + #numbers.formatDecimal(saleDiscount.price(product.price), 1, 2)}"></strong>
+                    <small><del th:text="${'€' + #numbers.formatDecimal(product.price, 1, 2)}"></del></small>
+                </p>
+                <p class="eyebrow" th:text="${(saleDiscount.title.isEmpty() ? (zh ? '活动价' : 'Sale price') : saleDiscount.title) + ' · −' + saleDiscount.percent + '%'}"></p>
+            </div>
             <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
                 <span class="stock-dot" aria-hidden="true"></span>

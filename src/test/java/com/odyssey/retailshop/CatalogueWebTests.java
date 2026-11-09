@@ -90,6 +90,25 @@ class CatalogueWebTests {
     }
 
     @Test
+    void demoDiscountAppearsOnSaleAndItsLinkedDetailOnly() throws Exception {
+        mockMvc.perform(get("/sale"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("href=\"/products/2?sale=true\"")))
+            .andExpect(content().string(containsString("<strong>€29.00</strong>")));
+        mockMvc.perform(get("/products/2").param("sale", "true").param("lang", "zh"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<strong>€29.00</strong>")))
+            .andExpect(content().string(containsString("<del>€58.00</del>")))
+            .andExpect(content().string(containsString("活动价 · −50%")));
+        for (String path : new String[]{"/products", "/products/2"}) {
+            mockMvc.perform(get(path))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("€58.00")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("€29.00"))));
+        }
+    }
+
+    @Test
     void pricesSortAndEmptyOrInvalidFiltersAreExplained() throws Exception {
         String page = mockMvc.perform(get("/products").param("sort", "price-asc"))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
