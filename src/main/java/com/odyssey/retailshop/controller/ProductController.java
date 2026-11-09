@@ -60,8 +60,18 @@ public class ProductController {
             @RequestParam(defaultValue = "") String minPrice,
             @RequestParam(defaultValue = "") String maxPrice,
             @RequestParam(defaultValue = "default") String sort,
-            @RequestParam(defaultValue = "") String priceRange) {
+            @RequestParam(defaultValue = "") String priceRange,
+            @RequestParam(defaultValue = "") String size,
+            @RequestParam(defaultValue = "") String color,
+            @RequestParam(defaultValue = "false") boolean inStock,
+            @RequestParam(defaultValue = "1") int page) {
         var all = productService.getProducts();
+        var visibleIds = all.stream().map(Product::getId).collect(java.util.stream.Collectors.toSet());
+        var options = variants.all().stream().filter(v -> visibleIds.contains(v.productId())).toList();
+        var byProduct = options.stream().collect(java.util.stream.Collectors.groupingBy(com.odyssey.retailshop.service.VariantService.Variant::productId));
+        model.addAttribute("sizes", options.stream().map(v -> v.size()).distinct().sorted().toList());
+        model.addAttribute("colors", options.stream().map(v -> v.color()).distinct().sorted().toList());
+        model.addAttribute("size", size); model.addAttribute("color", color); model.addAttribute("inStock", inStock);
         var highestPrice = all.stream().map(Product::getPrice).filter(java.util.Objects::nonNull)
             .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
         model.addAttribute("priceSliderMax", highestPrice.divide(BigDecimal.valueOf(100), 0,
@@ -96,7 +106,15 @@ public class ProductController {
         model.addAttribute("filterError", invalid);
         final BigDecimal min = lower, max = upper;
         var terms = normalize(q).split("\\s+");
-        var filtered = all.stream()
+        var filtered = all.stream().sorted(Comparator.comparing(Product::getId))
+            .filter(p -> {
+                var choices = byProduct.getOrDefault(p.getId(), java.util.List.of());
+                if (choices.isEmpty()) return size.isBlank() && color.isBlank()
+                    && (!inStock || (p.getStockQuantity()!=null && p.getStockQuantity()>0));
+                return choices.stream().anyMatch(v -> (size.isBlank() || size.equals(v.size()))
+                    && (color.isBlank() || color.equals(v.color()))
+                    && (!inStock || (v.stock()>0 && p.getStockQuantity()!=null && p.getStockQuantity()>0)));
+            })
             .filter(p -> CatalogCategories.matchesCategory(category, p.getCategory()))
             .filter(p -> subcategory.isBlank() || subcategory.equals(p.getSubcategory()))
             .filter(p -> java.util.Arrays.stream(terms).allMatch(searchable(p)::contains));
@@ -104,7 +122,13 @@ public class ProductController {
                 && (max == null || p.getPrice().compareTo(max) <= 0));
         if ("price-asc".equals(sort)) filtered = filtered.sorted(Comparator.comparing(Product::getPrice).thenComparing(Product::getId));
         if ("price-desc".equals(sort)) filtered = filtered.sorted(Comparator.comparing(Product::getPrice).reversed().thenComparing(Product::getId));
-        model.addAttribute("products", invalid ? java.util.List.of() : filtered.toList());
+        var matches = invalid ? java.util.List.<Product>of() : filtered.toList();
+        int totalPages = Math.max(1, (matches.size()+11)/12);
+        int currentPage = Math.max(1, Math.min(page, totalPages));
+        int start = (currentPage-1)*12;
+        model.addAttribute("products", matches.subList(start, Math.min(start+12,matches.size())));
+        model.addAttribute("totalProducts", matches.size());
+        model.addAttribute("page", currentPage); model.addAttribute("totalPages", totalPages);
         // The launcher only reuses a healthy catalogue running in database mode.
         response.setHeader("X-Odyssey-App", "retail-shop");
         response.setHeader("X-Odyssey-Mode", environment.acceptsProfiles(Profiles.of("mysql")) ? "mysql" : "demo");
