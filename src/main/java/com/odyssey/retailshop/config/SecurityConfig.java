@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .requestMatchers("/staff/products", "/staff/products/**").hasRole("ADMIN")
                 .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())
-            .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
+            .exceptionHandling(errors -> errors.accessDeniedHandler(new AuthCsrfAccessDeniedHandler()).defaultAuthenticationEntryPointFor(
                 new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login?cartRequired"),
                 request -> request.getServletPath().startsWith("/cart/")))
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")

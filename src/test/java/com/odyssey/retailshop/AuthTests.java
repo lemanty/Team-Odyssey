@@ -64,7 +64,7 @@ class AuthTests {
         assertTrue(session.isInvalid());
     }
     @Test void csrfLanguagePersistenceAndDemoMode() throws Exception {
-        mvc.perform(post("/register").param("name","Alice")).andExpect(status().isForbidden());
+        mvc.perform(post("/register").param("name","Alice")).andExpect(status().isSeeOther()).andExpect(redirectedUrl("/register?expired"));
         mvc.perform(get("/register")).andExpect(content().string(containsString("Accounts require the MySQL")));
         mvc.perform(get("/login?lang=zh")).andExpect(cookie().value("odyssey_language","zh"))
             .andExpect(cookie().maxAge("odyssey_language",15552000)).andExpect(cookie().httpOnly("odyssey_language",true))
@@ -100,4 +100,30 @@ class AuthTests {
             assertFalse(header.contains("data-new-account-window"));
         }
     }
+    @Test void staleAuthFormsRecoverWithoutSubmittingOrWeakeningOtherCsrfChecks() throws Exception {
+        when(users.available()).thenReturn(true);
+        mvc.perform(post("/login").param("email", "alice@example.com").param("password", "secret"))
+            .andExpect(status().isSeeOther()).andExpect(redirectedUrl("/login?expired"));
+        String window = "0123456789abcdef0123456789abcdef";
+        mvc.perform(post("/register?window=" + window).with(csrf().useInvalidToken()))
+            .andExpect(status().isSeeOther()).andExpect(redirectedUrl("/register?expired&window=" + window));
+        verify(users, never()).create(anyString(), anyString(), anyString());
+        mvc.perform(post("/cart/add").param("productId", "1"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test void repeatedLoginAfterSuccessReturnsToAccountInsteadOf403() throws Exception {
+        when(users.available()).thenReturn(true);
+        when(users.findByEmail("repeat@example.com")).thenReturn(Optional.of(
+            new UserRepository.Account(101,"Repeat","repeat@example.com",encoder.encode("repeat-test-password"),"CUSTOMER")));
+        when(users.findByLogin("repeat@example.com")).thenAnswer(i -> users.findByEmail("repeat@example.com"));
+        var session = new MockHttpSession();
+        mvc.perform(post("/login").session(session).with(csrf()).param("email","repeat@example.com")
+            .param("password","repeat-test-password")).andExpect(redirectedUrl("/account"));
+        mvc.perform(post("/login").session(session).with(csrf().useInvalidToken())
+            .param("email","repeat@example.com").param("password","repeat-test-password"))
+            .andExpect(status().isSeeOther()).andExpect(redirectedUrl("/account"));
+        mvc.perform(get("/account").session(session)).andExpect(status().isOk());
+    }
+
 }

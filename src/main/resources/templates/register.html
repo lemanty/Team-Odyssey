@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '注册 | Odyssey' : 'Create an account | Odyssey'}">Create an account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '注册 | Odyssey' : 'Create an account | Odyssey'}">Create an account | Odyssey</title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script><script defer th:src="@{/js/auth-submit.js(v=1)}"></script></head>
 <body class="chosen-design chosen-register">
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <main class="auth-page">
@@ -15,6 +15,7 @@
             <p th:case="*" th:text="${zh ? '请启动 MySQL 模式后再注册。' : 'Start the MySQL version of the website to register.'}"></p>
         </div>
         <p class="auth-alert" th:unless="${databaseAvailable}" th:text="${zh ? '展示模式无法保存账号，请启动 MySQL 模式。' : 'Accounts require the MySQL version of the website.'}"></p>
+        <p class="auth-notice" role="status" th:if="${param.expired}" th:text="${zh ? '页面已过期，请重新填写并提交。' : 'This form expired. Please enter your details and try again.'}"></p>
         <form class="auth-form" method="post" th:action="@{/register}">
             <label for="name" th:text="${zh ? '姓名或昵称' : 'Your name'}"></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" required th:value="${nameValue}" aria-describedby="name-help">
             <small id="name-help" th:text="${zh ? '注册后可使用此昵称或邮箱登录；昵称重复时请使用邮箱。' : 'Sign in with this name or your email. If the name is shared, use your email.'}"></small>
