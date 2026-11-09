@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${zh ? '换季特卖 | Odyssey' : 'Seasonal Sale | Odyssey'}">Seasonal Sale | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-images-1)}">
+    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-paired-images-1)}">
     <script defer th:src="@{/js/sale.js}"></script>
 </head>
 <body class="sale-page">
@@ -49,8 +49,9 @@
                 </div>
             </div>
             <article class="sale-feature" th:each="offer, item : ${featuredOffers}" th:hidden="${!item.first}" data-sale-slide>
-                <a class="sale-feature-art" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
-                    <img th:if="${!#strings.isEmpty(offer.featuredImage)}" th:src="@{${offer.featuredImage}}" th:alt="${storeText.productName(offer.product, zh)}" th:loading="${item.first ? 'eager' : 'lazy'}">
+                <a class="sale-feature-art" th:classappend="${!#strings.isEmpty(offer.image) and !#strings.isEmpty(offer.featuredImage) and offer.image != offer.featuredImage} ? 'sale-feature-art--paired'" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+                    <img class="sale-feature-model" th:if="${!#strings.isEmpty(offer.featuredImage)}" th:src="@{${offer.featuredImage}}" th:alt="${storeText.productName(offer.product, zh)}" th:loading="${item.first ? 'eager' : 'lazy'}">
+                    <img class="sale-feature-product" th:if="${!#strings.isEmpty(offer.image) and !#strings.isEmpty(offer.featuredImage) and offer.image != offer.featuredImage}" th:src="@{${offer.image}}" th:alt="${storeText.productName(offer.product, zh) + (zh ? ' · 商品展示' : ' · Product view')}" th:loading="${item.first ? 'eager' : 'lazy'}">
                     <span class="sale-art-placeholder" th:if="${#strings.isEmpty(offer.featuredImage)}" th:text="${storeText.productName(offer.product, zh)}"></span>
                     <span class="sale-feature-index" th:text="${'ODYSSEY EDIT / 0' + item.count}">ODYSSEY EDIT / 01</span>
                 </a>
