@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<a th:fragment="showcase(url, name, modelImage, productImage, index, natural)"
+   class="product-showcase" th:href="${url}"
+   th:with="primary=${#strings.isEmpty(modelImage) ? productImage : modelImage}, paired=${!#strings.isEmpty(modelImage) and !#strings.isEmpty(productImage) and modelImage != productImage}"
+   th:classappend="${(paired ? 'product-showcase--paired' : '') + (natural ? ' product-showcase--natural' : '')}">
+    <img class="product-showcase-model" th:if="${!#strings.isEmpty(primary)}"
+         th:src="@{${primary}}" th:alt="${name}"
+         th:loading="${index == 0 ? 'eager' : 'lazy'}">
+    <img class="product-showcase-product" th:if="${paired}"
+         th:src="@{${productImage}}" alt="" aria-hidden="true"
+         th:loading="${index == 0 ? 'eager' : 'lazy'}">
+    <span class="product-showcase-placeholder" th:if="${#strings.isEmpty(primary)}" th:text="${name}"></span>
+    <span class="product-showcase-index" aria-hidden="true" th:text="${'ODYSSEY EDIT / ' + #numbers.formatInteger(index + 1, 2)}"></span>
+</a>
+</body>
+</html>
