@@ -18,31 +18,46 @@
         controls.hidden = false;
     }
 
-    // Extend the photograph's edge colours into its container. The photo itself is untouched.
+    // Extend each edge independently so directional lighting continues without a seam.
+    // The original photograph remains the foreground image, unchanged.
     function matchPhotoBackground(img) {
-        if (!img.naturalWidth || !img.naturalHeight) return;
+        const host = img.parentElement;
+        if (!img.naturalWidth || !img.naturalHeight || !host.clientWidth) return;
         try {
             const canvas = document.createElement('canvas');
-            canvas.width = 24;
-            canvas.height = 24;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const scale = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.round(host.clientWidth * scale);
+            canvas.height = Math.round(host.clientHeight * scale);
+            const ctx = canvas.getContext('2d');
             if (!ctx) return;
-            ctx.drawImage(img, 0, 0, 24, 24);
-            const stops = [0, 6, 12, 18, 23].map(y => {
-                const left = ctx.getImageData(0, y, 1, 1).data;
-                const right = ctx.getImageData(23, y, 1, 1).data;
-                // Transparent or non-readable photographs retain the neutral fallback.
-                if (left[3] < 250 || right[3] < 250) throw new Error('Transparent edge');
-                const rgb = [0, 1, 2].map(c => Math.round((left[c] + right[c]) / 2));
-                return `rgb(${rgb.join(',')}) ${Math.round(y / 23 * 100)}%`;
-            });
-            img.parentElement.style.background = `linear-gradient(to bottom, ${stops.join(',')})`;
+            const ratio = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+            const width = img.naturalWidth * ratio;
+            const height = img.naturalHeight * ratio;
+            const x = (canvas.width - width) / 2;
+            const y = (canvas.height - height) / 2;
+            if (x > 0) {
+                ctx.drawImage(img, 0, 0, 1, img.naturalHeight, 0, y, x + 1, height);
+                ctx.drawImage(img, img.naturalWidth - 1, 0, 1, img.naturalHeight,
+                    x + width - 1, y, x + 1, height);
+            }
+            if (y > 0) {
+                ctx.drawImage(img, 0, 0, img.naturalWidth, 1, x, 0, width, y + 1);
+                ctx.drawImage(img, 0, img.naturalHeight - 1, img.naturalWidth, 1,
+                    x, y + height - 1, width, y + 1);
+            }
+            ctx.drawImage(img, x, y, width, height);
+            host.style.backgroundImage = `url("${canvas.toDataURL()}")`;
+            host.style.backgroundSize = '100% 100%';
         } catch (_) {
-            // Cross-origin images without CORS keep the CSS fallback, without affecting the card.
+            // External images without CORS retain the neutral CSS fallback.
         }
     }
+    const photoObserver = new ResizeObserver(entries => {
+        entries.forEach(({ target }) => matchPhotoBackground(target.querySelector('img')));
+    });
     document.querySelectorAll('.sale-card-art img').forEach(img => {
         img.addEventListener('load', () => matchPhotoBackground(img));
+        photoObserver.observe(img.parentElement);
         if (img.complete) matchPhotoBackground(img);
     });
 
