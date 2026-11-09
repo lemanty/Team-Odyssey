@@ -16,9 +16,11 @@ public class OrderService {
     private final MembershipService membership;
     private final CouponService coupons;
     private final OrderPaymentService payments;
+    private final SaleService sales;
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
-    public OrderService(ObjectProvider<JdbcTemplate> jdbc, ObjectProvider<PlatformTransactionManager> manager, MembershipService membership, OrderPaymentService payments, CouponService coupons) {
+    public OrderService(ObjectProvider<JdbcTemplate> jdbc, ObjectProvider<PlatformTransactionManager> manager, MembershipService membership, OrderPaymentService payments, CouponService coupons, SaleService sales) {
+        this.sales = sales;
         this.coupons=coupons;
         this.payments=payments;
         this.membership=membership;
@@ -77,6 +79,10 @@ public class OrderService {
         return placeFromCart(email,token,fulfillment,address,paymentMethod,"");
     }
     public String placeFromCart(String email, String token, String fulfillment, String address,String paymentMethod,String couponCode) {
+        return placeFromCart(email, token, fulfillment, address, paymentMethod, couponCode, null);
+    }
+    public String placeFromCart(String email, String token, String fulfillment, String address,
+                                String paymentMethod, String couponCode, BigDecimal quotedTotal) {
         ready();
         return tx.execute(status -> {
             Long userId=jdbc.queryForObject("SELECT id FROM users WHERE email=? FOR UPDATE",Long.class,email);
@@ -85,7 +91,7 @@ public class OrderService {
             Map<Long,Integer> cart=new LinkedHashMap<>();
             jdbc.query("SELECT product_id,quantity FROM cart_items WHERE user_id=? ORDER BY product_id",r -> { cart.put(r.getLong(1),r.getInt(2)); },userId);
             jdbc.query("SELECT variant_id,quantity FROM cart_variants WHERE user_id=? ORDER BY variant_id",r -> { cart.put(-r.getLong(1),r.getInt(2)); },userId);
-            String id=place(email,token,cart,fulfillment,address,paymentMethod,couponCode);
+            String id=place(email,token,cart,fulfillment,address,paymentMethod,couponCode,quotedTotal);
             jdbc.update("DELETE FROM cart_items WHERE user_id=?",userId);
             jdbc.update("DELETE FROM cart_variants WHERE user_id=?",userId);
             return id;
@@ -98,6 +104,10 @@ public class OrderService {
         return place(email,token,cart,fulfillment,address,paymentMethod,"");
     }
     public String place(String email, String token, Map<Long,Integer> cart, String fulfillment, String address,String paymentMethod,String couponCode) {
+        return place(email, token, cart, fulfillment, address, paymentMethod, couponCode, null);
+    }
+    private String place(String email, String token, Map<Long,Integer> cart, String fulfillment, String address,
+                         String paymentMethod, String couponCode, BigDecimal quotedTotal) {
         ready();
         String destination = address(fulfillment,address);
         try { UUID.fromString(token); } catch (RuntimeException e) { throw new IllegalArgumentException("Please reopen checkout. / 请重新打开结算页。"); }
@@ -114,8 +124,10 @@ public class OrderService {
                 else productIds.addAll(jdbc.queryForList("SELECT product_id FROM product_variants WHERE id=?",Long.class,-key));
             }
             for (long pid : productIds) jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE",pid);
+            var prices = sales.activePrices();
             List<Item> lines = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;
+            BigDecimal originalTotal = BigDecimal.ZERO;
             // Consistent lock order avoids deadlocks between carts containing the same products.
             for (var entry : new TreeMap<>(cart).entrySet()) {
                 int quantity = entry.getValue();
@@ -138,14 +150,23 @@ public class OrderService {
                 var product = jdbc.query("SELECT name,price FROM products WHERE id=? AND NOT EXISTS (SELECT 1 FROM product_management m WHERE m.product_id=products.id AND m.published=FALSE) FOR UPDATE", (r,n) -> new Item(pid,r.getString("name"),r.getBigDecimal("price"),quantity,vid,sz,cl),productId);
                 if (product.isEmpty() || jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?",quantity,productId,quantity) != 1)
                     throw new IllegalArgumentException("An item has insufficient stock. Please review your bag. / 商品库存不足，请检查购物车。");
-                lines.add(product.get(0)); total = total.add(product.get(0).subtotal());
+                Item regular = product.get(0);
+                BigDecimal unitPrice = prices.price(pid, regular.unitPrice());
+                Item priced = new Item(pid, regular.productName(), unitPrice, quantity, vid, sz, cl);
+                lines.add(priced);
+                originalTotal = originalTotal.add(regular.subtotal());
+                total = total.add(priced.subtotal());
             }
-            var couponQuote = coupons.quote(email,membership.quote(email,total),couponCode,true);
+            var couponQuote = coupons.quote(email,membership.quote(email,total),originalTotal,couponCode,true);
             var quote = couponQuote.membership();
+            if (quotedTotal != null && quote.payable().compareTo(quotedTotal) != 0) {
+                throw new IllegalArgumentException("Your total changed. Review the updated amount before ordering. / 订单金额已变动，请确认更新后的金额再下单。");
+            }
             String id = UUID.randomUUID().toString();
             jdbc.update("INSERT INTO shop_orders(id,user_id,checkout_token,status,fulfillment,address,total) VALUES (?,?,?,'PENDING',?,?,?)",id,userId,token,fulfillment,destination,quote.payable());
             payments.pay(id,userId,paymentMethod,quote.payable());
             membership.save(id,quote);
+            sales.saveOrderDiscount(id, originalTotal.subtract(total));
             coupons.save(id,userId,couponQuote);
             for (Item item : lines) {
                 if(item.variantId()>0) jdbc.update("INSERT INTO order_variant_items(order_id,variant_id,product_id,product_name,unit_price,quantity,size_label,color_label) VALUES (?,?,?,?,?,?,?,?)",id,item.variantId(),item.productId(),item.productName(),item.unitPrice(),item.quantity(),item.size(),item.color());

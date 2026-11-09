@@ -1,0 +1,258 @@
+.sale-page {
+    --sale-panel: #fff;
+    --sale-sage: #e6ecdd;
+    --sale-sand: #e8e2d8;
+    --sale-accent: #345e42;
+    --sale-focus: #637b6a;
+}
+
+.sale-page .site-header {
+    min-height: 76px;
+    padding-block: 12px;
+    padding-inline: clamp(16px, 3.3vw, 48px);
+}
+
+.sale-page .site-header nav { gap: 6px clamp(10px, 1.35vw, 20px); font-size: .875rem; }
+.sale-main :is(a, button):focus-visible { outline: 2px solid var(--sale-focus); outline-offset: 4px; }
+.sale-page [hidden] { display: none; }
+.sale-page h1, .sale-page h2, .sale-page h3 {
+    font-family: inherit;
+    color: inherit;
+    font-weight: 750;
+    margin: 0;
+    line-height: 1.12;
+    letter-spacing: -.035em;
+}
+.sale-main { max-width: none; padding: 0; }
+.sale-container { width: min(1184px, calc(100% - 64px)); margin-inline: auto; }
+
+.sale-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--paper);
+}
+.sale-hero-art {
+    position: absolute;
+    inset: 0 0 0 28%;
+    z-index: -1;
+    background:
+        linear-gradient(90deg, var(--paper), #f8f7f2c9 22%, transparent 62%),
+        url("../images/odyssey-voyage-sea.png") center 48% / cover no-repeat;
+}
+.sale-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    min-height: 358px;
+    padding-block: 46px;
+}
+.sale-kicker {
+    margin: 0 0 8px;
+    color: var(--sale-accent);
+    font-size: .7rem;
+    font-weight: 750;
+    letter-spacing: .15em;
+    line-height: 1.45;
+}
+.sale-hero .sale-kicker { font-size: .78rem; margin-bottom: 15px; }
+.sale-spark { margin-right: 7px; font-size: 1.15em; }
+.sale-page #sale-title {
+    font-size: clamp(3.25rem, 6vw, 6.3rem);
+    line-height: 1;
+    letter-spacing: -.065em;
+}
+.sale-page:lang(zh) #sale-title { letter-spacing: .025em; }
+.sale-intro { margin: 17px 0 24px; color: var(--ink); font-size: clamp(.97rem, 1.4vw, 1.15rem); }
+.sale-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 28px;
+    min-height: 46px;
+    padding: 10px 17px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 4px;
+    font-size: .9rem;
+    font-weight: 750;
+}
+.sale-cta:hover { background: var(--sale-accent); }
+.sale-stamp {
+    flex: none;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    width: clamp(142px, 18vw, 230px);
+    aspect-ratio: 1;
+    margin-right: 4%;
+    border: 1px solid var(--sale-sage);
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    transform: rotate(-8deg);
+    box-shadow: inset 0 0 0 6px var(--ink), inset 0 0 0 7px #f8f7f280, 0 12px 32px #213e3633;
+    font-size: clamp(.53rem, .85vw, .72rem);
+    font-weight: 750;
+    letter-spacing: .1em;
+}
+.sale-stamp strong { font-size: clamp(2.9rem, 6vw, 5.5rem); line-height: 1.05; letter-spacing: -.08em; }
+.sale-stamp small { font-size: .5em; letter-spacing: -.04em; }
+.sale-edition { background: var(--sale-sage); border-block: 1px solid var(--line); }
+.sale-edition .sale-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    min-height: 42px;
+    padding-block: 8px;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+}
+.sale-edition [aria-hidden] { color: var(--sale-accent); margin-right: 6px; }
+.sale-preview-label { color: var(--muted); }
+
+.sale-shelves { padding-block: 35px 56px; }
+.sale-shelves > section + section { margin-top: 40px; }
+.sale-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.sale-heading h2 { font-size: clamp(1.65rem, 3vw, 2.45rem); }
+.sale-carousel-controls { display: flex; align-items: center; gap: 11px; }
+.sale-carousel-count, .sale-results {
+    margin: 0;
+    color: var(--muted);
+    font-size: .8rem;
+    font-variant-numeric: tabular-nums;
+}
+.sale-carousel-controls button, .sale-filters button {
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--sale-panel);
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.sale-carousel-controls button { min-width: 44px; line-height: 1; }
+.sale-carousel-controls button:hover, .sale-filters button:hover { border-color: var(--sale-focus); }
+.sale-feature {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--sale-panel);
+}
+.sale-campaign-art { display: flex; align-items: center; overflow: hidden; background: #eee4d7; }
+.sale-campaign-art img { display: block; width: 100%; height: auto; object-fit: contain; }
+.sale-feature-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: clamp(22px, 3vw, 40px);
+}
+.sale-feature-copy h3 { font-size: clamp(1.55rem, 3vw, 2.65rem); }
+.sale-description { margin: 12px 0 22px; color: var(--muted); font-size: .9rem; }
+.sale-feature-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
+.sale-price {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.sale-discount {
+    display: grid;
+    place-items: center;
+    padding: 5px 11px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 1.32rem;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -.04em;
+}
+.sale-price-values {
+    display: grid;
+    justify-items: end;
+    align-content: center;
+    min-width: 66px;
+    padding: 5px 8px;
+    background: var(--sale-sage);
+    line-height: 1.15;
+}
+.sale-price-values del { color: var(--muted); font-size: .7rem; }
+.sale-price-values strong { color: var(--ink); font-size: .97rem; }
+.sale-detail-link { padding-block: 8px; color: var(--ink); font-size: .85rem; font-weight: 750; }
+.sale-detail-link:hover { color: var(--sale-accent); }
+
+#sale-deals { scroll-margin-top: 18px; }
+.sale-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.sale-filters button { padding: 6px 16px; font-size: .83rem; font-weight: 700; }
+.sale-filters button[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+}
+.sale-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.sale-card {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--sale-panel);
+    transition: border-color .18s ease;
+}
+.sale-card:hover { border-color: var(--sale-focus); }
+.sale-card > a { display: flex; flex-direction: column; height: 100%; border-radius: inherit; }
+.sale-card-art { position: relative; overflow: hidden; border-radius: 5px 5px 0 0; aspect-ratio: 1.35; background: #f4f0e8; }
+.sale-card-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.sale-card-arrow {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    background: var(--paper);
+    font-size: .95rem;
+}
+.sale-card-copy { display: flex; flex: 1; flex-direction: column; padding: 14px; }
+.sale-card-copy .sale-kicker { margin-bottom: 5px; }
+.sale-card h3 { flex: 1; margin-bottom: 13px; font-size: 1rem; line-height: 1.35; letter-spacing: -.01em; }
+.sale-note, .sale-empty { margin: 18px 0 0; color: var(--muted); font-size: .8rem; }
+
+@media (max-width: 850px) {
+    .sale-container { width: calc(100% - 40px); }
+    .sale-stamp { margin-right: 1%; }
+    .sale-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+    .sale-container { width: calc(100% - 32px); }
+    .sale-page .site-header { gap: 4px 16px; }
+    .sale-hero-art { inset-inline-start: 0; opacity: .42; }
+    .sale-hero-content { min-height: 310px; gap: 20px; padding-block: 32px; flex-wrap: wrap; }
+    .sale-page #sale-title { font-size: clamp(2.65rem, 11vw, 4.1rem); }
+    .sale-intro { margin-block: 12px 16px; }
+    .sale-stamp { width: 108px; }
+    .sale-stamp strong { font-size: 2.65rem; }
+    .sale-shelves { padding-block: 26px 40px; }
+    .sale-feature { grid-template-columns: 1fr; }
+
+    .sale-grid { gap: 10px; }
+    .sale-card-copy { padding: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sale-card { transition: none; }
+}

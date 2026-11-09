@@ -27,14 +27,14 @@ public class CouponService {
         LocalDateTime now=LocalDateTime.now();
         return all().stream().filter(c->c.enabled()&&c.ends().isAfter(now)).map(c->new Offer(c,used.contains(c.id())?"Already used / 已使用":now.isBefore(c.starts())?"Not started / 尚未开始":original.compareTo(c.minimum())<0?"Minimum not reached / 未达到使用门槛":"")).toList();
     }
-    public Quote quote(String email,MembershipService.Quote member,String code,boolean lock){
+    public Quote quote(String email,MembershipService.Quote member,BigDecimal originalSubtotal,String code,boolean lock){
         if(code==null||code.isBlank())return new Quote(member,null,BigDecimal.ZERO);
         if(jdbc==null)throw new IllegalArgumentException("Coupons require database mode. / 优惠券需要数据库模式。");
         if(lock&&!TransactionSynchronizationManager.isActualTransactionActive())throw new IllegalStateException("Coupon requires checkout transaction");
         var c=jdbc.query("SELECT * FROM coupons WHERE code=?"+(lock?" FOR UPDATE":""),this::row,code.strip().toUpperCase(Locale.ROOT)).stream().findFirst().orElseThrow(()->new IllegalArgumentException("Coupon not found. / 未找到该优惠券。"));
         LocalDateTime now=LocalDateTime.now();
         if(!c.enabled()||now.isBefore(c.starts())||!now.isBefore(c.ends()))throw new IllegalArgumentException("Coupon is inactive or outside its validity period. / 优惠券未生效、已过期或已停用。");
-        if(member.original().compareTo(c.minimum())<0)throw new IllegalArgumentException("Coupon minimum is not reached. / 商品原价合计未达到优惠券使用门槛。");
+        if(originalSubtotal.compareTo(c.minimum())<0)throw new IllegalArgumentException("Coupon minimum is not reached. / 商品原价合计未达到优惠券使用门槛。");
         // Locking read sees the latest redemption even under MySQL REPEATABLE READ.
         var used=jdbc.queryForList("SELECT cu.order_id FROM coupon_uses cu JOIN users u ON u.id=cu.user_id WHERE cu.coupon_id=? AND u.email=?"+(lock?" FOR UPDATE":""),String.class,c.id(),email);
         if(!used.isEmpty())throw new IllegalArgumentException("This coupon has already been used. / 该优惠券已使用。");

@@ -2,6 +2,7 @@ package com.odyssey.retailshop.controller;
 
 import com.odyssey.retailshop.service.*;
 import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.UUID;
 import org.springframework.stereotype.Controller;
@@ -20,7 +21,8 @@ public class OrderController {
     private final AddressService addresses;
     private final WalletService wallets;
     private final OrderPaymentService payments;
-    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses, WalletService wallets, OrderPaymentService payments, OrderWorkspaceService workspace, ReturnService returns, CouponService coupons) { this.coupons=coupons; this.returns=returns; this.workspace=workspace; this.wallets=wallets; this.payments=payments; this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
+    private final SaleService sales;
+    public OrderController(OrderService orders, CartService cart, MembershipService membership, AddressService addresses, WalletService wallets, OrderPaymentService payments, OrderWorkspaceService workspace, ReturnService returns, CouponService coupons, SaleService sales) { this.sales=sales; this.coupons=coupons; this.returns=returns; this.workspace=workspace; this.wallets=wallets; this.payments=payments; this.addresses=addresses; this.orders=orders; this.cart=cart; this.membership=membership; }
     @GetMapping("/checkout")
     public String checkout(HttpSession session, Model model, Principal user) {
         synchronized(session) {
@@ -28,15 +30,16 @@ public class OrderController {
             model.addAttribute("checkoutToken",session.getAttribute("checkoutToken"));
             var bag=cart.view(session);
             model.addAttribute("bag",bag);
+            model.addAttribute("saleSavings", bag.originalTotal().subtract(bag.total()));
             var memberQuote=membership.quote(user.getName(),bag.total());
             String code=model.containsAttribute("selectedCoupon")?(String)model.getAttribute("selectedCoupon"):"";
             try {
-                var quote=coupons.quote(user.getName(),memberQuote,code,false);
+                var quote=coupons.quote(user.getName(),memberQuote,bag.originalTotal(),code,false);
                 model.addAttribute("pricing",quote.membership());
                 model.addAttribute("couponPricing",quote.coupon()==null?null:new CouponService.Snapshot(quote.coupon().code(),quote.coupon().title(),quote.coupon().stack(),quote.discount()));
                 model.addAttribute("selectedCoupon",quote.coupon()==null?"":quote.coupon().code());
             }catch(IllegalArgumentException e){model.addAttribute("pricing",memberQuote);model.addAttribute("selectedCoupon","");model.addAttribute("orderError",e.getMessage());}
-            model.addAttribute("couponOffers",coupons.offers(user.getName(),bag.total()));
+            model.addAttribute("couponOffers",coupons.offers(user.getName(),bag.originalTotal()));
         }
         model.addAttribute("walletBalance",wallets.available()?wallets.balance(wallets.account(user.getName()).id()):java.math.BigDecimal.ZERO);
         model.addAttribute("addresses",addresses.list(user.getName()));
@@ -49,7 +52,7 @@ public class OrderController {
         return "redirect:/checkout";
     }
     @PostMapping("/orders")
-    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, @RequestParam(required=false) Long addressId, @RequestParam(defaultValue="OFFLINE") String paymentMethod, @RequestParam(defaultValue="") String couponCode, Principal user, HttpSession session, RedirectAttributes flash) {
+    public String place(@RequestParam String token, @RequestParam String fulfillment, @RequestParam(defaultValue="") String address, @RequestParam(required=false) Long addressId, @RequestParam(defaultValue="OFFLINE") String paymentMethod, @RequestParam(defaultValue="") String couponCode, @RequestParam(required=false) BigDecimal quotedTotal, Principal user, HttpSession session, RedirectAttributes flash) {
         synchronized(session) {
             // Old tokens can retry the existing order, but cannot create a new order.
             String previous=(String)session.getAttribute("lastCheckoutToken");
@@ -59,7 +62,7 @@ public class OrderController {
             if (token.equals(previous)) return "redirect:/orders";
             try {
                 String destination="DELIVERY".equals(fulfillment)&&addressId!=null ? addresses.get(user.getName(),addressId).formatted() : address;
-                String id=orders.placeFromCart(user.getName(),token,fulfillment,destination,paymentMethod,couponCode);
+                String id=orders.placeFromCart(user.getName(),token,fulfillment,destination,paymentMethod,couponCode,quotedTotal);
                 session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
                 flash.addFlashAttribute("orderMessage", "WALLET".equals(paymentMethod)?"Order placed and paid from your wallet. / 订单提交成功，已使用储值余额支付。":"Order placed; offline payment is not yet recorded. / 订单提交成功，线下付款尚未记录。");
@@ -101,6 +104,7 @@ public class OrderController {
         model.addAttribute("couponPricing",coupons.snapshot(id));
         model.addAttribute("returnRefunded",returns.refunded(id));
         model.addAttribute("pricing",membership.snapshot(id,order.total()));
+        model.addAttribute("saleSavings",sales.orderDiscount(id));
         model.addAttribute("items",orders.items(id)); model.addAttribute("staffView",staff); return "order-detail";
     }
     @PostMapping("/orders/{id}/edit")

@@ -40,6 +40,7 @@
 </section>
 <form id="selected-checkout-form" class="order-form checkout-sections" method="post" th:action="@{/orders}">
 <input type="hidden" name="token" th:value="${checkoutToken}">
+<input type="hidden" name="quotedTotal" th:value="${pricing.payable.toPlainString()}">
 <section class="checkout-step"><h2 th:text="${zh?'1 · 收货地址':'1 · Delivery address'}"></h2><div id="delivery-details">
 <div id="saved-addresses" th:unless="${#lists.isEmpty(addresses)}">
 <label for="addressId" th:text="${zh?'选择已保存的地址':'Choose a saved address'}"></label>

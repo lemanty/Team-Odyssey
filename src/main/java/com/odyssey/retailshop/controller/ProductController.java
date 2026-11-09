@@ -1,6 +1,7 @@
 package com.odyssey.retailshop.controller;
 
 import com.odyssey.retailshop.service.ProductService;
+import com.odyssey.retailshop.service.SaleService;
 import com.odyssey.retailshop.service.CatalogCategories;
 import org.springframework.stereotype.Controller;
 import com.odyssey.retailshop.service.StoreText;
@@ -26,9 +27,11 @@ public class ProductController {
     private final Environment environment;
     private final StoreText storeText;
     private final com.odyssey.retailshop.service.VariantService variants;
+    private final SaleService sales;
 
-    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants, com.odyssey.retailshop.service.ReviewService reviews) {
+    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants, com.odyssey.retailshop.service.ReviewService reviews, SaleService sales) {
         this.reviews=reviews;
+        this.sales = sales;
         this.productService = productService;
         this.environment = environment;
         this.storeText = storeText;
@@ -36,9 +39,13 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public String productDetail(@PathVariable Long id, Model model, java.security.Principal user, @RequestParam(defaultValue="0") int reviewPage) {
+    public String productDetail(@PathVariable Long id, Model model, java.security.Principal user,
+                                @RequestParam(defaultValue="0") int reviewPage,
+                                @RequestParam(defaultValue="false") boolean sale) {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
+        model.addAttribute("fromSale", sale);
+        if (sale) model.addAttribute("saleDiscount", sales.activePrices().discounts().get(id));
         model.addAttribute("variants",variants.list(id));
         String email=user==null?null:user.getName();
         reviewPage=Math.max(0,Math.min(reviewPage,100000));

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${zh ? '换季特卖 | Odyssey' : 'Seasonal Sale | Odyssey'}">Seasonal Sale | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-artwork-c-1)}">
+    <link rel="stylesheet" th:href="@{/css/product-showcase.css(v=1)}">
+    <script defer th:src="@{/js/sale.js(v=card-background-2)}"></script>
+</head>
+<body class="sale-page">
+<header th:replace="~{fragments/layout :: header('sale')}"></header>
+<main class="sale-main">
+    <section class="sale-hero" aria-labelledby="sale-title">
+        <div class="sale-hero-art" aria-hidden="true"></div>
+        <div class="sale-container sale-hero-content">
+            <div class="sale-hero-copy">
+                <p class="sale-kicker"><span class="sale-spark" aria-hidden="true">✦</span> ODYSSEY SEASONAL EVENT</p>
+                <h1 id="sale-title" th:text="${zh ? '换季特卖' : 'Seasonal Sale'}">Seasonal Sale</h1>
+                <p class="sale-intro" th:text="${zh ? '换一季穿搭，也为家添一点新意。' : 'A fresh season for your wardrobe and your home.'}">A fresh season for your wardrobe and your home.</p>
+                <a class="sale-cta" href="#sale-deals"><span th:text="${zh ? '浏览全部特惠' : 'Explore the deals'}">Explore the deals</span><span aria-hidden="true">↓</span></a>
+            </div>
+            <div class="sale-stamp" th:if="${maxDiscount > 0}">
+                <span th:text="${zh ? '精选商品最高立减' : 'UP TO'}">UP TO</span>
+                <strong><span th:text="${maxDiscount}">50</span><small>%</small></strong>
+                <span th:text="${zh ? '换季特惠' : 'OFF SELECTED GOODS'}">OFF SELECTED GOODS</span>
+            </div>
+        </div>
+    </section>
+    <div class="sale-edition">
+        <div class="sale-container">
+            <span><span aria-hidden="true">✦</span> <span th:text="${zh ? '服装与家居精选' : 'THE CLOTHING & HOME EDIT'}">THE CLOTHING &amp; HOME EDIT</span></span>
+            <span class="sale-preview-label" th:if="${saleDemo}" th:text="${zh ? '演示模式 · 示例活动' : 'DEMO MODE · SAMPLE SALE'}">DEMO MODE · SAMPLE SALE</span>
+        </div>
+    </div>
+
+    <div class="sale-container sale-shelves">
+        <section th:unless="${featuredOffers.isEmpty()}" aria-labelledby="sale-featured-title" data-sale-carousel>
+            <div class="sale-heading">
+                <div>
+                    <p class="sale-kicker">01 / SPOTLIGHT</p>
+                    <h2 id="sale-featured-title" th:text="${zh ? '主推特惠' : 'Featured offers'}">Featured offers</h2>
+                </div>
+                <div class="sale-carousel-controls" th:if="${featuredOffers.size() > 1}" hidden data-sale-controls>
+                    <button type="button" data-sale-prev th:aria-label="${zh ? '上一件主推商品' : 'Previous featured product'}">←</button>
+                    <span class="sale-carousel-count" aria-live="polite"><span data-sale-position>01</span> / <span th:text="${'0' + featuredOffers.size()}">03</span></span>
+                    <button type="button" data-sale-next th:aria-label="${zh ? '下一件主推商品' : 'Next featured product'}">→</button>
+                </div>
+            </div>
+            <article class="sale-feature" th:each="offer, item : ${featuredOffers}" th:hidden="${!item.first}" data-sale-slide>
+                <a class="sale-campaign-art" th:if="${offer.campaignImage != null}" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+                    <img th:src="@{${offer.campaignImage}}" th:alt="${storeText.productName(offer.product, zh)}" th:loading="${item.first ? 'eager' : 'lazy'}" width="1672" height="941">
+                </a>
+                <th:block th:if="${offer.campaignImage == null}">
+                    <a th:replace="~{fragments/product-showcase :: showcase(@{/products/{id}(id=${offer.product.id},sale=true)}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, true)}"></a>
+                </th:block>
+                <div class="sale-feature-copy">
+                    <p class="sale-kicker" th:text="${saleDemo ? storeText.text(offer.product.category, zh) : offer.title}">Clothing</p>
+                    <h3 th:text="${storeText.productName(offer.product, zh)}">Canvas Overshirt</h3>
+                    <p class="sale-description" th:text="${storeText.productDescription(offer.product, zh)}">An easy layer for cooler days.</p>
+                    <div class="sale-feature-actions">
+                        <div th:replace="~{:: salePrice(${offer})}"></div>
+                        <a class="sale-detail-link" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}"><span th:text="${zh ? '查看详情' : 'View details'}">View details</span> <span aria-hidden="true">↗</span></a>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section id="sale-deals" aria-labelledby="sale-deals-title" data-sale-deals>
+            <div class="sale-heading">
+                <div>
+                    <p class="sale-kicker">02 / THE DEALS</p>
+                    <h2 id="sale-deals-title" th:text="${zh ? '全部特惠' : 'All deals'}">All deals</h2>
+                </div>
+                <p class="sale-results" aria-live="polite"><span data-sale-count th:text="${offers.size()}">4</span> <span th:text="${zh ? '件商品' : 'items'}">items</span></p>
+            </div>
+            <div class="sale-filters" data-sale-filters role="group" th:aria-label="${zh ? '特惠商品分类' : 'Deal categories'}" hidden>
+                <button type="button" data-filter="all" aria-pressed="true" th:text="${zh ? '全部' : 'All'}">All</button>
+                <button type="button" data-filter="clothing" aria-pressed="false" th:text="${zh ? '服装' : 'Clothing'}">Clothing</button>
+                <button type="button" data-filter="home" aria-pressed="false" th:text="${zh ? '家居' : 'Home'}">Home</button>
+            </div>
+            <p class="sale-empty" data-sale-empty th:hidden="${!offers.isEmpty()}" th:text="${zh ? '此分类暂无特惠商品。' : 'No deals in this category yet.'}">No deals in this category yet.</p>
+            <div class="sale-grid">
+                <article class="sale-card" th:each="offer : ${offers}" th:attr="data-sale-category=${offer.product.category == 'Household' ? 'home' : 'clothing'}">
+                    <a th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+                        <div class="sale-card-art">
+                            <img th:if="${!#strings.isEmpty(offer.image)}" th:src="@{${offer.image}}" alt="" loading="lazy" width="600" height="800">
+                            <span class="sale-card-arrow" aria-hidden="true">↗</span>
+                        </div>
+                        <div class="sale-card-copy">
+                            <p class="sale-kicker" th:text="${saleDemo ? storeText.text(offer.product.category, zh) : offer.title}">Clothing</p>
+                            <h3 th:text="${storeText.productName(offer.product, zh)}">Product</h3>
+                            <div th:replace="~{:: salePrice(${offer})}"></div>
+                        </div>
+                    </a>
+                </article>
+            </div>
+            <p class="sale-note" th:if="${saleDemo}" th:text="${zh ? '此页面展示示例活动，连接数据库后可管理活动并使用活动价下单。' : 'This page shows a sample sale. Connect the database to manage campaigns and order at sale prices.'}"></p>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:if="${false}">
+    <div th:fragment="salePrice(offer)" class="sale-price">
+        <span class="sale-discount" th:text="${'-' + offer.discount + '%'}">-50%</span>
+        <span class="sale-price-values">
+            <del th:text="${'€' + offer.product.price}">€58.00</del>
+            <strong th:text="${'€' + offer.price}">€29.00</strong>
+        </span>
+    </div>
+</th:block>
+</body>
+</html>

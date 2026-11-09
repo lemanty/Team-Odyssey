@@ -11,9 +11,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartService {
     private final ProductService products;
+    private final SaleService sales;
     private final VariantService variants;
     private final com.odyssey.retailshop.repository.AccountCartRepository accounts;
-    public CartService(ProductService products, com.odyssey.retailshop.repository.AccountCartRepository accounts, VariantService variants) { this.products = products; this.accounts=accounts; this.variants=variants; }
+    public CartService(ProductService products, com.odyssey.retailshop.repository.AccountCartRepository accounts, VariantService variants, SaleService sales) {
+        this.products = products;
+        this.accounts = accounts;
+        this.variants = variants;
+        this.sales = sales;
+    }
     private String owner() {
         var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (auth==null || !auth.isAuthenticated() || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) return null;
@@ -68,21 +74,30 @@ public class CartService {
     public void remove(HttpSession session, long id) {
         synchronized (session) { modify(session, items -> items.remove(id)); }
     }
-    public record Line(long id, Product product, int quantity, BigDecimal subtotal, boolean available, String size, String color) {}
-    public record View(List<Line> lines, BigDecimal total) {}
+    public record Line(long id, Product product, int quantity, BigDecimal unitPrice, BigDecimal subtotal,
+                       boolean available, String size, String color) {}
+    public record View(List<Line> lines, BigDecimal total, BigDecimal originalTotal) {}
     public View view(HttpSession session) {
         synchronized (session) {
+            var items = read(session);
+            if (items.isEmpty()) return new View(List.of(), BigDecimal.ZERO, BigDecimal.ZERO);
+            var prices = sales.activePrices();
             List<Line> lines = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;
-            for (var item : read(session).entrySet()) {
+            BigDecimal originalTotal = BigDecimal.ZERO;
+            for (var item : items.entrySet()) {
                 var variant = item.getKey()<0 ? variants.find(-item.getKey()).orElse(null) : null;
                 Product p = products.getProduct(item.getKey()<0 ? (variant==null?0:variant.productId()) : item.getKey()).orElse(null);
-                BigDecimal subtotal = p == null ? BigDecimal.ZERO : p.getPrice().multiply(BigDecimal.valueOf(item.getValue()));
+                BigDecimal original = p == null ? BigDecimal.ZERO : p.getPrice();
+                BigDecimal unitPrice = p == null ? original : prices.price(p.getId(), original);
+                BigDecimal quantity = BigDecimal.valueOf(item.getValue());
+                BigDecimal subtotal = unitPrice.multiply(quantity);
                 boolean available = p != null && p.getStockQuantity() != null && p.getStockQuantity() >= item.getValue() && (variant!=null ? variant.stock()>=item.getValue() : variants.list(p.getId()).isEmpty());
-                lines.add(new Line(item.getKey(), p, item.getValue(), subtotal, available,variant==null?"":variant.size(),variant==null?"":variant.color()));
+                lines.add(new Line(item.getKey(), p, item.getValue(), unitPrice, subtotal, available,variant==null?"":variant.size(),variant==null?"":variant.color()));
                 total = total.add(subtotal);
+                originalTotal = originalTotal.add(original.multiply(quantity));
             }
-            return new View(lines, total);
+            return new View(lines, total, originalTotal);
         }
     }
 }
