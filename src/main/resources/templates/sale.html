@@ -4,9 +4,9 @@
     <th:block th:replace="~{fragments/site-icons :: icons}"></th:block>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${zh ? '换季特卖 | Odyssey' : 'Seasonal Sale | Odyssey'}">Seasonal Sale | Odyssey</title>
+    <title th:text="${selectedCampaign != null ? selectedCampaign.title + ' | Odyssey' : (zh ? '特惠活动 | Odyssey' : 'Sale events | Odyssey')}">Seasonal Sale | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-artwork-c-1)}">
+    <link rel="stylesheet" th:href="@{/css/sale.css(v=campaign-switch-1)}">
     <link rel="stylesheet" th:href="@{/css/product-showcase.css(v=1)}">
     <script defer th:src="@{/js/sale.js(v=card-background-2)}"></script>
 </head>
@@ -18,9 +18,17 @@
         <div class="sale-container sale-hero-content">
             <div class="sale-hero-copy">
                 <p class="sale-kicker"><span class="sale-spark" aria-hidden="true">✦</span> ODYSSEY SEASONAL EVENT</p>
-                <h1 id="sale-title" th:text="${zh ? '换季特卖' : 'Seasonal Sale'}">Seasonal Sale</h1>
+                <h1 id="sale-title" th:text="${selectedCampaign != null ? selectedCampaign.title : (zh ? '换季特卖' : 'Seasonal Sale')}">Seasonal Sale</h1>
                 <p class="sale-intro" th:text="${zh ? '换一季穿搭，也为家添一点新意。' : 'A fresh season for your wardrobe and your home.'}">A fresh season for your wardrobe and your home.</p>
+                <div class="sale-hero-actions">
                 <a class="sale-cta" href="#sale-deals"><span th:text="${zh ? '浏览全部特惠' : 'Explore the deals'}">Explore the deals</span><span aria-hidden="true">↓</span></a>
+                    <nav class="sale-campaign-switch" th:if="${campaigns.size() > 1}" th:aria-label="${zh ? '切换特惠活动' : 'Choose a campaign'}">
+                        <a th:each="campaign, item : ${campaigns}" th:href="@{/sale(campaign=${campaign.id},lang=${zh ? 'zh' : 'en'})}"
+                           th:text="${item.count}" th:title="${campaign.title}"
+                           th:aria-label="${item.count + ' · ' + campaign.title}"
+                           th:attr="aria-current=${selectedCampaign.id == campaign.id ? 'page' : null}"></a>
+                    </nav>
+                </div>
             </div>
             <div class="sale-stamp" th:if="${maxDiscount > 0}">
                 <span th:text="${zh ? '精选商品最高立减' : 'UP TO'}">UP TO</span>
@@ -45,7 +53,7 @@
                 </div>
                 <div class="sale-carousel-controls" th:if="${featuredOffers.size() > 1}" hidden data-sale-controls>
                     <button type="button" data-sale-prev th:aria-label="${zh ? '上一件主推商品' : 'Previous featured product'}">←</button>
-                    <span class="sale-carousel-count" aria-live="polite"><span data-sale-position>01</span> / <span th:text="${'0' + featuredOffers.size()}">03</span></span>
+                    <span class="sale-carousel-count" aria-live="polite"><span data-sale-position>01</span> / <span th:text="${#numbers.formatInteger(featuredOffers.size(), 2)}">03</span></span>
                     <button type="button" data-sale-next th:aria-label="${zh ? '下一件主推商品' : 'Next featured product'}">→</button>
                 </div>
             </div>
@@ -57,7 +65,6 @@
                     <a th:replace="~{fragments/product-showcase :: showcase(@{/products/{id}(id=${offer.product.id},sale=true)}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, true)}"></a>
                 </th:block>
                 <div class="sale-feature-copy">
-                    <p class="sale-kicker" th:text="${saleDemo ? storeText.text(offer.product.category, zh) : offer.title}">Clothing</p>
                     <h3 th:text="${storeText.productName(offer.product, zh)}">Canvas Overshirt</h3>
                     <p class="sale-description" th:text="${storeText.productDescription(offer.product, zh)}">An easy layer for cooler days.</p>
                     <div class="sale-feature-actions">
@@ -90,13 +97,13 @@
                             <span class="sale-card-arrow" aria-hidden="true">↗</span>
                         </div>
                         <div class="sale-card-copy">
-                            <p class="sale-kicker" th:text="${saleDemo ? storeText.text(offer.product.category, zh) : offer.title}">Clothing</p>
                             <h3 th:text="${storeText.productName(offer.product, zh)}">Product</h3>
                             <div th:replace="~{:: salePrice(${offer})}"></div>
                         </div>
                     </a>
                 </article>
             </div>
+            <p class="sale-note" th:if="${!saleDemo and !offers.isEmpty()}" th:text="${zh ? '商品同时参加多个活动时，展示与结算均自动采用最优惠价格。' : 'Items in multiple campaigns automatically receive the best available price, here and at checkout.'}"></p>
             <p class="sale-note" th:if="${saleDemo}" th:text="${zh ? '此页面展示示例活动，连接数据库后可管理活动并使用活动价下单。' : 'This page shows a sample sale. Connect the database to manage campaigns and order at sale prices.'}"></p>
         </section>
     </div>

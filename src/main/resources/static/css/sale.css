@@ -256,3 +256,10 @@
 @media (prefers-reduced-motion: reduce) {
     .sale-card { transition: none; }
 }
+
+.sale-hero-copy { min-width: 0; }
+.sale-page #sale-title { overflow-wrap: anywhere; }
+.sale-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.sale-campaign-switch { display: flex; flex-wrap: wrap; gap: 8px; }
+.sale-campaign-switch a { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #a6b5a4; border-radius: 50%; color: var(--ink); background: #fffaf0; font-weight: 700; }
+.sale-campaign-switch a[aria-current=page], .sale-campaign-switch a:hover { color: white; background: var(--ink); }

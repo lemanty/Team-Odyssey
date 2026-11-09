@@ -75,6 +75,17 @@ public class SaleService {
         return new Prices(discounts);
     }
 
+    public List<Campaign> activeCampaigns() {
+        if (!available()) return List.of();
+        var now = LocalDateTime.now();
+        return jdbc.query("SELECT * FROM sale_campaigns WHERE enabled = TRUE AND starts_at <= ? AND ends_at > ? ORDER BY id",
+            this::readCampaign, now, now);
+    }
+
+    public Set<Long> featuredProductIds(long id) {
+        return Set.copyOf(jdbc.queryForList("SELECT product_id FROM sale_campaign_featured WHERE campaign_id = ?", Long.class, id));
+    }
+
     public List<Campaign> campaigns() {
         return jdbc.query("SELECT * FROM sale_campaigns ORDER BY id DESC", this::readCampaign);
     }
@@ -91,7 +102,15 @@ public class SaleService {
 
     public long save(Long id, int revision, String title, int percent, LocalDateTime starts, LocalDateTime ends,
                      boolean enabled, Set<Long> productIds) {
+        return save(id, revision, title, percent, starts, ends, enabled, productIds, Set.of());
+    }
+
+    public long save(Long id, int revision, String title, int percent, LocalDateTime starts, LocalDateTime ends,
+                     boolean enabled, Set<Long> productIds, Set<Long> featuredIds) {
         if (!available()) throw new IllegalArgumentException("Database mode required. / 需要数据库模式。");
+        if (!productIds.containsAll(featuredIds)) {
+            throw new IllegalArgumentException("Featured products must join this campaign. / 主推商品必须是本活动的参与商品。");
+        }
         String cleanTitle = title.strip();
         if (cleanTitle.isEmpty() || cleanTitle.length() > 100 || percent < 1 || percent > 99 || !ends.isAfter(starts)) {
             throw new IllegalArgumentException("Check the title, dates and discount (1–99%). / 请检查名称、起止时间和折扣（1–99%）。");
@@ -133,6 +152,10 @@ public class SaleService {
             }
             List<Object[]> assignments = productIds.stream().sorted().map(product -> new Object[]{campaignId, product}).toList();
             jdbc.batchUpdate("INSERT INTO sale_campaign_products(campaign_id, product_id) VALUES (?, ?)", assignments);
+            if (!featuredIds.isEmpty()) {
+                jdbc.batchUpdate("INSERT INTO sale_campaign_featured(campaign_id, product_id) VALUES (?, ?)",
+                    featuredIds.stream().sorted().map(product -> new Object[]{campaignId, product}).toList());
+            }
             return campaignId;
         });
     }

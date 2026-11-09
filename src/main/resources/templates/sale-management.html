@@ -7,16 +7,19 @@
     <title th:text="${zh ? '特惠活动管理 | Odyssey' : 'Sale campaigns | Odyssey'}"></title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin-console.css}">
-    <link rel="stylesheet" th:href="@{/css/sale-management.css}">
+    <link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}">
+    <link rel="stylesheet" th:href="@{/css/operations-design.css(v=full-product-3)}">
+    <link rel="stylesheet" th:href="@{/css/sale-management.css(v=featured-1)}">
+    <script defer th:src="@{/js/sale-management.js(v=1)}"></script>
 </head>
-<body>
+<body class="chosen-design ops-design ops-sales">
 <header th:replace="~{fragments/layout :: header('account')}"></header>
 <div class="admin-shell">
     <aside th:replace="~{fragments/workspace-sidebar :: sidebar('sales')}"></aside>
     <main class="sale-admin">
         <p class="eyebrow">ODYSSEY / ADMIN</p>
         <h1 th:text="${zh ? '特惠活动管理' : 'Sale campaigns'}"></h1>
-        <a class="detail-back" th:href="@{/sale}" th:text="${zh ? '查看顾客活动页 ↗' : 'View storefront sale ↗'}"></a>
+        <a class="sale-storefront-link" th:href="@{/sale}" th:text="${zh ? '查看顾客活动页 ↗' : 'View storefront sale ↗'}"></a>
         <p th:if="${saleMessage}" role="status" th:text="${saleMessage}"></p>
         <p th:if="${saleError}" role="alert" class="cart-error" th:text="${saleError}"></p>
         <p th:unless="${draft}" th:text="${zh ? '请启用数据库模式以创建或修改特惠活动。' : 'Enable database mode to create or edit sale campaigns.'}"></p>
@@ -48,10 +51,17 @@
                     <fieldset class="sale-product-picker">
                         <legend th:text="${zh ? '参与商品' : 'Eligible products'}"></legend>
                         <p th:if="${products.isEmpty()}" th:text="${zh ? '请先添加商品。' : 'Add products first.'}"></p>
-                        <label th:each="product : ${products}">
-                            <input type="checkbox" name="productIds" th:value="${product.id}" th:checked="${draft.productIds.contains(product.id)}">
-                            <span th:text="${(zh ? product.nameZh : product.name) + ' · €' + product.price + (product.published ? '' : (zh ? '（未上架）' : ' (unpublished)'))}"></span>
-                        </label>
+                        <p class="sale-admin-hint" th:text="${zh ? '勾选参与商品，再选择主推；不选主推则不显示主推区。' : 'Select eligible products, then mark featured items. Leave featured empty to hide the spotlight.'}"></p>
+                        <div class="sale-product-row" th:each="product : ${products}">
+                            <label>
+                                <input type="checkbox" name="productIds" th:value="${product.id}" th:checked="${draft.productIds.contains(product.id)}">
+                                <span th:text="${(zh ? product.nameZh : product.name) + ' · €' + product.price + (product.published ? '' : (zh ? '（未上架）' : ' (unpublished)'))}"></span>
+                            </label>
+                            <label class="sale-feature-choice">
+                                <input type="checkbox" name="featuredIds" th:value="${product.id}" th:checked="${draft.featuredIds.contains(product.id)}">
+                                <span th:text="${zh ? '主推' : 'Featured'}"></span>
+                            </label>
+                        </div>
                     </fieldset>
                     <label class="sale-admin-toggle">
                         <input type="checkbox" name="enabled" value="true" th:checked="${draft.enabled}">

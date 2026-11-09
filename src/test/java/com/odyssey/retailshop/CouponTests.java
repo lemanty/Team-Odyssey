@@ -26,7 +26,7 @@ class CouponTests {
  @Autowired CouponService coupons;@Autowired OrderService orders;@Autowired WalletService wallet;@Autowired MembershipService membership;@Autowired ReturnService returns;@Autowired JdbcTemplate jdbc;@Autowired MockMvc mvc;
  @BeforeEach void setup()throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")){
+  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")){
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");for(String st:sql.split(";"))if(!st.isBlank())jdbc.execute(st);
   }
   jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Employee','staff@test.com','unused','STAFF'),(4,'Admin','admin@test.com','unused','ADMIN')");
@@ -155,6 +155,48 @@ class CouponTests {
   mvc.perform(get("/products/1").param("sale", "true")).andExpect(status().isOk())
       .andExpect(content().string(containsString("€100.00")))
       .andExpect(content().string(org.hamcrest.Matchers.not(containsString("€50.00"))));
+ }
+
+ @Test void campaignsStaySeparateAndFeatureSelectionsAreScoped() throws Exception {
+  jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (2,'Shirt','Men','Cotton',50)");
+  jdbc.update("INSERT INTO product_details VALUES (2,'Men',10,'/shirt.png','')");
+  mvc.perform(campaignForm("First event", "20", true).param("featuredIds", "1"))
+      .andExpect(redirectedUrl("/admin/sales"));
+  long first = jdbc.queryForObject("SELECT id FROM sale_campaigns WHERE title='First event'", Long.class);
+  var secondForm = campaignForm("Second event", "40", true);
+  secondForm.param("productIds", "2").param("featuredIds", "2");
+  mvc.perform(secondForm).andExpect(redirectedUrl("/admin/sales"));
+  long second = jdbc.queryForObject("SELECT id FROM sale_campaigns WHERE title='Second event'", Long.class);
+  var one = mvc.perform(get("/sale").param("campaign", ""+first)).andExpect(status().isOk()).andReturn().getModelAndView().getModel();
+  assertEquals(first, ((SaleService.Campaign)one.get("selectedCampaign")).id());
+  assertEquals(2, ((List<?>)one.get("campaigns")).size());
+  var firstOffers = (List<com.odyssey.retailshop.controller.SaleController.Offer>)one.get("offers");
+  assertEquals(List.of(1L), firstOffers.stream().map(o -> o.product().getId()).toList());
+  assertEquals(1, ((List<?>)one.get("featuredOffers")).size());
+  // A shared product still uses the best price, exactly as cart and checkout do.
+  assertEquals(new BigDecimal("60.00"), firstOffers.get(0).price());
+  var two = mvc.perform(get("/sale").param("campaign", ""+second)).andExpect(status().isOk()).andReturn().getModelAndView().getModel();
+  var highlights = (List<com.odyssey.retailshop.controller.SaleController.Offer>)two.get("featuredOffers");
+  assertEquals(List.of(2L), highlights.stream().map(o -> o.product().getId()).toList());
+  mvc.perform(get("/sale")).andExpect(content().string(containsString("First event</h1>")))
+      .andExpect(content().string(containsString("aria-label=\"2 · Second event\"")));
+  jdbc.update("UPDATE sale_campaigns SET enabled=FALSE WHERE id=?", second);
+  mvc.perform(get("/sale").param("campaign", ""+second)).andExpect(status().isNotFound());
+ }
+
+ @Test void featuredMustParticipateAndCanBeRemovedOnEdit() throws Exception {
+  mvc.perform(campaignForm("Invalid feature", "20", true).param("featuredIds", "999"))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Featured products must join")));
+  assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM sale_campaigns", Integer.class));
+  mvc.perform(campaignForm("Editable", "20", true).param("featuredIds", "1"))
+      .andExpect(redirectedUrl("/admin/sales"));
+  long id = jdbc.queryForObject("SELECT id FROM sale_campaigns", Long.class);
+  mvc.perform(get("/admin/sales").param("edit", ""+id).with(user("admin@test.com").roles("ADMIN")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("name=\"featuredIds\"")));
+  mvc.perform(campaignForm("Editable", "20", true).param("id", ""+id).param("revision", "0"))
+      .andExpect(redirectedUrl("/admin/sales"));
+  assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM sale_campaign_featured", Integer.class));
+  mvc.perform(get("/sale")).andExpect(model().attribute("featuredOffers", List.of()));
  }
 
  private long createCampaign(String title, String percent, boolean enabled) throws Exception {
