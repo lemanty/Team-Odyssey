@@ -38,13 +38,31 @@ public class ProductController {
         this.variants=variants;
     }
 
+    @org.springframework.web.bind.annotation.ModelAttribute("shoppingAvailable")
+    public boolean shoppingAvailable() {
+        return environment.acceptsProfiles(Profiles.of("mysql","production"));
+    }
+
+    @org.springframework.web.bind.annotation.ModelAttribute("catalogueQuery")
+    public String catalogueQuery(jakarta.servlet.http.HttpServletRequest request) {
+        var query = org.springframework.web.util.UriComponentsBuilder.newInstance();
+        for (String key : java.util.List.of("q","category","subcategory","priceRange","minPrice","maxPrice","sort","size","color","inStock","page")) {
+            String value = request.getParameter(key);
+            if (value != null && !value.isBlank()) query.queryParam(key, value);
+        }
+        return query.build().encode().toUriString();
+    }
+
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id, Model model, java.security.Principal user,
                                 @RequestParam(defaultValue="0") int reviewPage,
-                                @RequestParam(defaultValue="false") boolean sale) {
+                                @RequestParam(defaultValue="false") boolean sale,
+                                @RequestParam(defaultValue="") String catalogue) {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
         model.addAttribute("fromSale", sale);
+        model.addAttribute("backToCatalogue", sale ? "/sale" : "/products" +
+            (catalogue.startsWith("?") ? catalogue : ""));
         if (sale) model.addAttribute("saleDiscount", sales.activePrices().discounts().get(id));
         model.addAttribute("variants",variants.list(id));
         String email=user==null?null:user.getName();
@@ -88,7 +106,7 @@ public class ProductController {
         model.addAttribute("q", q);
         model.addAttribute("category", category);
         model.addAttribute("subcategory", subcategory);
-        if (priceRange.isBlank()) priceRange = minPrice.isBlank() && maxPrice.isBlank() ? "all" : "custom";
+        if (priceRange.isBlank() || ("custom".equals(priceRange) && minPrice.isBlank() && maxPrice.isBlank())) priceRange = minPrice.isBlank() && maxPrice.isBlank() ? "all" : "custom";
         switch (priceRange) {
             case "under25" -> { minPrice = ""; maxPrice = "24.99"; }
             case "25to50" -> { minPrice = "25"; maxPrice = "49.99"; }

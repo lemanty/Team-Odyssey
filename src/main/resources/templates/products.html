@@ -47,8 +47,8 @@
             </div>
             <div class="price-slider-scale"><span>€0</span><span id="price-scale-max">€200</span></div>
         </div>
-        <label><span th:text="${zh?'尺码':'Size'}"></span><select name="size"><option value="" th:text="${zh?'全部尺码':'All sizes'}"></option><option th:each="v:${sizes}" th:value="${v}" th:text="${v}" th:selected="${size==v}"></option><option th:if="${!#strings.isEmpty(size) and !#lists.contains(sizes,size)}" th:value="${size}" th:text="${size}" selected></option></select></label>
-<label><span th:text="${zh?'颜色':'Color'}"></span><select name="color"><option value="" th:text="${zh?'全部颜色':'All colors'}"></option><option th:each="v:${colors}" th:value="${v}" th:text="${storeText.text(v,zh)}" th:selected="${color==v}"></option><option th:if="${!#strings.isEmpty(color) and !#lists.contains(colors,color)}" th:value="${color}" th:text="${color}" selected></option></select></label>
+        <label th:if="${!sizes.isEmpty() or !size.isEmpty()}"><span th:text="${zh?'尺码':'Size'}"></span><select name="size"><option value="" th:text="${zh?'全部尺码':'All sizes'}"></option><option th:each="v:${sizes}" th:value="${v}" th:text="${v}" th:selected="${size==v}"></option><option th:if="${!#strings.isEmpty(size) and !#lists.contains(sizes,size)}" th:value="${size}" th:text="${size}" selected></option></select></label>
+<label th:if="${!colors.isEmpty() or !color.isEmpty()}"><span th:text="${zh?'颜色':'Color'}"></span><select name="color"><option value="" th:text="${zh?'全部颜色':'All colors'}"></option><option th:each="v:${colors}" th:value="${v}" th:text="${storeText.text(v,zh)}" th:selected="${color==v}"></option><option th:if="${!#strings.isEmpty(color) and !#lists.contains(colors,color)}" th:value="${color}" th:text="${color}" selected></option></select></label>
 <label><input type="checkbox" name="inStock" value="true" th:checked="${inStock}"><span th:text="${zh?'只看有货':'In stock only'}"></span></label>
 <label><span th:text="${zh ? '排序' : 'Sort by'}"></span><select name="sort">
             <option value="default" th:selected="${sort == 'default'}" th:text="${zh ? '默认排序' : 'Default'}"></option>
@@ -66,10 +66,11 @@
     <p class="filter-error" role="alert" th:if="${filterError}" th:text="${zh ? '请输入有效的非负价格（最多两位小数），最低价不能超过最高价。' : 'Enter valid nonnegative prices (up to two decimal places). Minimum must not exceed maximum.'}"></p>
     <div class="section-heading"><h2><span th:text="${storeText.text('All products', zh)}">All products</span></h2><span th:text="${totalProducts} + ${zh ? ' 件商品' : ' items'}">0 items</span></div>
     <p th:if="${#lists.isEmpty(products) and !filterError}"><span th:text="${zh ? '没有找到符合条件的商品，请尝试其他关键词或放宽筛选条件。' : 'No matching products. Try another keyword or broaden your filters.'}">Our next collection is on its way. Check back soon.</span></p>
+    <p th:unless="${shoppingAvailable}" th:text="${zh?'演示模式仅供浏览，暂不支持购买。':'Browse-only demo. Purchasing is unavailable.'}"></p>
     <div class="product-grid">
         <article class="product-card" th:each="product, status : ${products}"
                  th:id="${product.id == products.^[category == #vars.product.category].id} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
-            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
+            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id},catalogue=${catalogueQuery.isEmpty()?null:catalogueQuery})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
             <div class="product-art" th:classappend="${product.category != 'Household' ? 'clothing-art' : 'home-art'}">
                 <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)}" loading="lazy" width="600" height="800">
                 <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category != 'Household' ? '穿着' : '居家') : (product.category != 'Household' ? 'WEAR' : 'LIVE')}">GOODS</span>
@@ -81,8 +82,8 @@
                 <span class="card-detail-link"><span th:text="${storeText.text('Discover this piece', zh)}">Discover this piece</span> <span aria-hidden="true">↗</span></span>
             </div>
             </a>
-            <details class="product-disclosure" data-smooth-details><summary><span th:text="${zh?'商品信息':'Product information'}"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div class="disclosure-body"><p th:text="${storeText.productDescription(product,zh)}"></p><a th:href="@{/products/{id}(id=${product.id})}" th:text="${zh?'查看详情与规格 →':'Details & options →'}"></a></div></details>
-            <div class="product-purchase-actions" th:if="${!signedIn or product.category == 'Household'}">
+            <details class="product-disclosure" data-smooth-details><summary><span th:text="${zh?'商品信息':'Product information'}"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div class="disclosure-body"><p th:text="${storeText.productDescription(product,zh)}"></p><a th:href="@{/products/{id}(id=${product.id},catalogue=${catalogueQuery.isEmpty()?null:catalogueQuery})}" th:text="${zh?'查看详情与规格 →':'Details & options →'}"></a></div></details>
+            <div class="product-purchase-actions" th:if="${shoppingAvailable and (!signedIn or product.category == 'Household')}">
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
             <form th:if="${signedIn and product.category == 'Household'}" class="add-to-cart" method="post" th:action="@{/cart/add}">
                 <input type="hidden" name="csrf" th:value="${cartToken}">

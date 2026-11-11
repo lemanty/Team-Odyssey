@@ -42,7 +42,7 @@ class CartTests {
         }
         mvc.perform(get("/cart").session(session)).andExpect(content().string(containsString("Your bag is empty")));
         mvc.perform(get("/login?cartRequired=true&lang=zh")).andExpect(content().string(containsString("请先登录后再加入购物车")));
-        mvc.perform(get("/products/42")).andExpect(content().string(containsString("/login?cartRequired=true")));
+        mvc.perform(get("/products/42")).andExpect(content().string(containsString("Browse-only demo")));
     }
     @Test void chineseCartIncludesProductLabelsFeedbackAndEmptyState() throws Exception {
         when(products.getProduct(42L)).thenReturn(Optional.of(new Product(42L,"Soft Knit Cardigan","Clothing","Cotton",new BigDecimal("49.00"),"Women",5,null,null)));
