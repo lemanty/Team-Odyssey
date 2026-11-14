@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/products/*/reviews", "/products/*/reviews/**").authenticated()
                 .requestMatchers("/staff/support", "/staff/support/**").hasRole("STAFF")
                 .requestMatchers("/support", "/support/**").hasAnyRole("CUSTOMER", "STAFF")
-                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**").authenticated()
+                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**", "/favorites", "/favorites/**").authenticated()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff/coupons", "/staff/coupons/**").hasRole("ADMIN")
                 .requestMatchers("/staff/products", "/staff/products/**").hasRole("ADMIN")

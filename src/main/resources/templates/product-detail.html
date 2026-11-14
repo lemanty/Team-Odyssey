@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
     <script th:src="@{/js/product-gallery.js(v=colours-2)}" defer></script>
 <link rel="stylesheet" th:href="@{/css/product-reviews.css}">
+<link rel="stylesheet" th:href="@{/css/favorites.css}">
 <link rel="stylesheet" th:href="@{/css/variant-picker.css(v=2)}">
 <script th:src="@{/js/variant-picker.js(v=1)}" defer></script>
 <link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
@@ -66,6 +67,16 @@
                 <span th:text="${product.stockQuantity > 0 ? (zh ? '现货 · 剩余 ' + product.stockQuantity + ' 件' : 'In stock · ' + product.stockQuantity + ' available') : (zh ? '暂时缺货' : 'Out of stock')}">In stock</span>
             </div>
             <p class="detail-stock" th:if="${product.stockQuantity == null}"><span th:text="${storeText.text('Stock information coming soon', zh)}">Stock information coming soon</span></p>
+
+            <div class="favorite-panel" id="favourites">
+                <form th:if="${signedIn}" method="post" th:action="@{/favorites/{id}(id=${product.id})}">
+                    <button type="submit" class="favorite-button" th:classappend="${favorited} ? ' is-favorite'" th:attr="aria-pressed=${favorited}" th:text="${favorited ? (zh?'★ 已收藏':'★ Saved') : (zh?'☆ 收藏商品':'☆ Save for later')}">☆ Save for later</button>
+                </form>
+                <a th:unless="${signedIn}" class="favorite-button" th:href="@{/login}" th:text="${zh?'☆ 收藏商品':'☆ Save for later'}">☆ Save for later</a>
+                <small th:text="${zh?'收藏后，缺货规格补货时会收到站内提醒。':'We will send a stock alert here when a sold-out option returns.'}">We will send a stock alert here when a sold-out option returns.</small>
+            </div>
+            <p class="favorite-feedback" role="status" th:if="${favoriteMessage}" th:text="${storeText.text(favoriteMessage, zh)}"></p>
+            <p class="favorite-feedback favorite-error" role="alert" th:if="${favoriteError}" th:text="${storeText.text(favoriteError, zh)}"></p>
 
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
             <form th:if="${signedIn}" class="add-to-cart" method="post" th:action="@{/cart/add}">

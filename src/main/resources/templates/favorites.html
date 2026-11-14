@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${zh ? 'zh-CN' : 'en'}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/site-icons :: icons}"></th:block><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${zh ? '收藏与到货提醒 | Odyssey' : 'Favourites & stock alerts | Odyssey'}"></title><link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}"><link rel="stylesheet" th:href="@{/css/account-center.css(v=readable-1)}"><link rel="stylesheet" th:href="@{/css/favorites.css(v=compact-3)}"><link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<body class="chosen-design chosen-account"><header th:replace="~{fragments/layout :: header('account')}"></header>
+<div class="customer-shell"><aside th:replace="~{fragments/customer-sidebar :: sidebar('favorites')}"></aside><main class="account-center">
+<section class="account-welcome"><div><p class="eyebrow">YOUR ODYSSEY</p><h1 th:text="${zh ? '收藏与到货提醒' : 'Favourites & stock alerts'}"></h1><p class="account-lead" th:text="${zh ? '保存心仪单品；缺货规格补货时，我们会在这里通知你。' : 'Save pieces you love and hear from us when a sold-out option returns.'}"></p></div><span class="account-role" th:text="${unreadNotifications > 0 ? (zh ? '未读提醒 ' + unreadNotifications : unreadNotifications + ' unread') : (zh ? '暂无未读' : 'All caught up')}"></span></section>
+<p th:unless="${favoritesAvailable}" th:text="${zh ? '收藏功能需要数据库模式。' : 'Favourites require database mode.'}"></p>
+<p role="status" th:if="${favoriteMessage}" th:text="${storeText.text(favoriteMessage, zh)}"></p><p role="alert" th:if="${favoriteError}" th:text="${storeText.text(favoriteError, zh)}"></p>
+<section class="account-workspace" th:if="${favoritesAvailable}">
+<h2 th:text="${zh ? '我的收藏' : 'Saved products'}"></h2>
+<p th:if="${#lists.isEmpty(favorites)}" th:text="${zh ? '还没有收藏商品，去商品页点“收藏商品”吧。' : 'No saved products yet. Choose “Save for later” on a product page.'}"></p>
+<div class="favorite-grid" th:unless="${#lists.isEmpty(favorites)}">
+<article class="favorite-card" th:each="f:${favorites}">
+<a class="favorite-card-media" th:href="@{/products/{id}(id=${f.productId})}"><img th:if="${f.image != null}" th:src="@{${f.image}}" alt="" loading="lazy"><span th:unless="${f.image != null}">ODYSSEY</span></a>
+<div class="favorite-card-body">
+<p class="eyebrow" th:text="${f.stock > 0 ? (zh ? '现货' : 'In stock') : (zh ? '暂时缺货' : 'Out of stock')}"></p>
+<h3><a th:href="@{/products/{id}(id=${f.productId})}" th:text="${(zh and f.nameZh != null) ? f.nameZh : f.name}"></a></h3>
+<p class="favorite-price" th:text="${'€' + #numbers.formatDecimal(f.price, 1, 2)}"></p>
+<form method="post" th:action="@{/favorites/{id}(id=${f.productId})}"><input type="hidden" name="returnTo" value="favorites"><button class="favorite-remove" th:text="${zh ? '取消收藏' : 'Remove'}"></button></form>
+</div>
+</article>
+</div>
+</section>
+<section class="account-workspace" id="notifications" th:if="${favoritesAvailable}">
+<div class="notification-heading"><h2 th:text="${zh ? '到货提醒' : 'Stock alerts'}"></h2><form th:if="${unreadNotifications > 0}" method="post" th:action="@{/account/notifications/read-all}"><button class="favorite-remove" th:text="${zh ? '全部标为已读' : 'Mark all as read'}"></button></form></div>
+<p th:if="${#lists.isEmpty(notifications)}" th:text="${zh ? '还没有到货提醒。收藏缺货商品，补货后会在这里收到通知。' : 'No stock alerts yet. Save a sold-out product and we will notify you when it returns.'}"></p>
+<ul class="notification-list" th:unless="${#lists.isEmpty(notifications)}">
+<li th:each="n:${notifications}" th:classappend="${!n.read} ? 'is-unread'">
+<img th:if="${n.image != null}" th:src="@{${n.image}}" alt="" loading="lazy">
+<div>
+<p><strong th:text="${(zh and n.nameZh != null) ? n.nameZh : n.name}"></strong></p>
+<p th:text="${(n.size == '' and n.color == '') ? (zh ? '默认款式' : 'Standard option') : n.size + (n.size != '' and n.color != '' ? ' / ' : '') + storeText.text(n.color, zh)}"></p>
+<time th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}"></time>
+</div>
+<a th:href="@{/products/{id}(id=${n.productId})}" th:text="${zh ? '去看看' : 'View product'}"></a>
+<form th:unless="${n.read}" method="post" th:action="@{/account/notifications/{id}/read(id=${n.id})}"><button th:text="${zh ? '标为已读' : 'Mark read'}"></button></form>
+</li>
+</ul>
+</section>
+<div class="account-bottom"><a th:href="@{/products}" th:text="${zh ? '继续探索商品 →' : 'Continue exploring →'}"></a><a th:href="@{/account}" th:text="${zh ? '返回账号' : 'Back to account'}"></a></div>
+</main></div><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

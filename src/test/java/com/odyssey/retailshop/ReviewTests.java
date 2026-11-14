@@ -12,6 +12,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.containsString;
@@ -26,7 +27,7 @@ class ReviewTests {
  @Autowired JdbcTemplate jdbc; @Autowired MockMvc mvc;
  @BeforeEach void setup() throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql")) {
+  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","024-review-images.sql","025-favorites-notifications.sql")) {
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");
    for(String statement:sql.split(";"))if(!statement.isBlank())jdbc.execute(statement);
   }
@@ -87,5 +88,18 @@ class ReviewTests {
   assertEquals(3,reviews.replies(1,page.reviews()).get(first).size());
   mvc.perform(get("/products/1?lang=zh").with(user("a@test.com"))).andExpect(status().isOk()).andExpect(content().string(containsString("回复 @已删除评论"))).andExpect(content().string(containsString("Third level")));
   reviews.delete(1,first,"a@test.com");assertEquals(1,reviews.page(1,0).total());assertEquals("Nested answer",reviews.replies(1,page.reviews()).get(first).get(1).body());
+ }
+ @Test void reviewPhotoIsOptionalServedAndRemovedWithReview() throws Exception {
+  var image=new java.awt.image.BufferedImage(3,3,java.awt.image.BufferedImage.TYPE_INT_RGB);
+  var bytes=new java.io.ByteArrayOutputStream();javax.imageio.ImageIO.write(image,"png",bytes);
+  reviews.save(1,"a@test.com",5,"With photo","",new MockMultipartFile("image","photo.png","image/png",bytes.toByteArray()));
+  var saved=reviews.own(1,"a@test.com");assertTrue(saved.image());
+  var served=reviews.image(saved.id()).orElseThrow();assertEquals("image/png",served.type());assertTrue(served.bytes().length>0);
+  mvc.perform(get("/review-images/"+saved.id())).andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+  mvc.perform(get("/products/1?lang=zh")).andExpect(status().isOk()).andExpect(content().string(containsString("/review-images/"+saved.id())));
+  assertThrows(IllegalArgumentException.class,()->reviews.save(1,"a@test.com",4,"Bad photo","",new MockMultipartFile("image","bad.png","image/png","not an image".getBytes())));
+  assertEquals(1,reviews.page(1,0).total());
+  reviews.delete(1,saved.id(),"a@test.com");
+  mvc.perform(get("/review-images/"+saved.id())).andExpect(status().isNotFound());
  }
 }

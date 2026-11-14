@@ -6,9 +6,11 @@ import java.util.*;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -19,13 +21,13 @@ public class ReviewService {
         jdbc=database.getIfAvailable();var tm=manager.getIfAvailable();tx=tm==null?null:new TransactionTemplate(tm);
     }
     public boolean available(){return jdbc!=null&&tx!=null;}
-    public record Review(long id,String author,int rating,String body,boolean purchased,String size,String color,LocalDateTime createdAt,LocalDateTime updatedAt,long userId,boolean staff,Long parentId,boolean deleted) {}
+    public record Review(long id,String author,int rating,String body,boolean purchased,String size,String color,LocalDateTime createdAt,LocalDateTime updatedAt,long userId,boolean staff,Long parentId,boolean deleted,boolean image) {}
     public record Purchase(String key,String size,String color,LocalDateTime date) {}
     public record Page(List<Review> reviews,long total,BigDecimal average,boolean more) {}
     private Review row(java.sql.ResultSet r,int n)throws java.sql.SQLException{
-        return new Review(r.getLong("id"),r.getString("role").equals("DELETED")?"":r.getString("display_name"),r.getInt("rating"),r.getString("body"),r.getString("order_id")!=null,r.getString("size_label"),r.getString("color_label"),r.getTimestamp("created_at").toLocalDateTime(),r.getTimestamp("updated_at").toLocalDateTime(),r.getLong("user_id"),"STAFF".equals(r.getString("role")),r.getObject("parent_id",Long.class),r.getBoolean("deleted"));
+        return new Review(r.getLong("id"),r.getString("role").equals("DELETED")?"":r.getString("display_name"),r.getInt("rating"),r.getString("body"),r.getString("order_id")!=null,r.getString("size_label"),r.getString("color_label"),r.getTimestamp("created_at").toLocalDateTime(),r.getTimestamp("updated_at").toLocalDateTime(),r.getLong("user_id"),"STAFF".equals(r.getString("role")),r.getObject("parent_id",Long.class),r.getBoolean("deleted"),r.getBoolean("has_image"));
     }
-    private String select(){return "SELECT r.*,u.display_name,u.role FROM product_review_messages r JOIN users u ON u.id=r.user_id ";}
+    private String select(){return "SELECT r.*,u.display_name,u.role,i.review_id IS NOT NULL AS has_image FROM product_review_messages r JOIN users u ON u.id=r.user_id LEFT JOIN product_review_images i ON i.review_id=r.id ";} 
     public Page page(long product,int page){
         if(!available())return new Page(List.of(),0,BigDecimal.ZERO,false);
         long count=jdbc.queryForObject("SELECT COUNT(*) FROM product_review_messages WHERE product_id=? AND parent_id IS NULL AND deleted=FALSE",Long.class,product);
@@ -40,8 +42,12 @@ public class ReviewService {
         return jdbc.query("SELECT i.order_id,i.variant_id,i.size_label,i.color_label,o.created_at FROM order_all_items i JOIN shop_orders o ON o.id=i.order_id JOIN users u ON u.id=o.user_id WHERE i.product_id=? AND u.email=? AND o.status='COMPLETED' ORDER BY o.created_at DESC,o.id,i.variant_id",(r,n)->new Purchase(r.getString(1)+":"+r.getLong(2),r.getString(3),r.getString(4),r.getTimestamp(5).toLocalDateTime()),product,email);
     }
     public void save(long product,String email,int rating,String body,String purchaseKey){
+        save(product,email,rating,body,purchaseKey,null);
+    }
+    public void save(long product,String email,int rating,String body,String purchaseKey,MultipartFile photo){
         if(!available())throw new IllegalArgumentException("Reviews require database mode. / 评论需要数据库模式。");
         if(rating<1||rating>5||body==null||body.isBlank()||body.strip().length()>2000)throw new IllegalArgumentException("Choose 1–5 stars and enter a review within 2000 characters. / 请选择1–5星，填写1–2000字的评论。");
+        SupportImage image=SupportImage.from(photo);
         tx.executeWithoutResult(s->{
             var ids=jdbc.queryForList("SELECT id FROM users WHERE email=? AND role<>'DELETED' FOR UPDATE",Long.class,email);
             if(ids.isEmpty())throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -53,8 +59,16 @@ public class ReviewService {
             Purchase purchase=key.isEmpty()?(choices.isEmpty()?null:choices.get(0)):choices.stream().filter(p->p.key().equals(key)).findFirst().orElseThrow(()->new IllegalArgumentException("Choose a completed purchase of this product. / 请选择本人已完成订单中的该商品规格。"));
             String order=null,size="",color="";long variant=0;
             if(purchase!=null){String[] parts=purchase.key().split(":");order=parts[0];variant=Long.parseLong(parts[1]);size=purchase.size();color=purchase.color();}
-            jdbc.update("INSERT INTO product_review_messages(product_id,user_id,rating,body,order_id,variant_id,size_label,color_label) VALUES (?,?,?,?,?,?,?,?)",product,uid,rating,body.strip(),order,variant,size,color);
+            var keys=new GeneratedKeyHolder();
+            final String orderValue=order,sizeValue=size,colorValue=color;final long variantValue=variant;
+            jdbc.update(c->{var ps=c.prepareStatement("INSERT INTO product_review_messages(product_id,user_id,rating,body,order_id,variant_id,size_label,color_label) VALUES (?,?,?,?,?,?,?,?)",java.sql.Statement.RETURN_GENERATED_KEYS);ps.setLong(1,product);ps.setLong(2,uid);ps.setInt(3,rating);ps.setString(4,body.strip());ps.setString(5,orderValue);ps.setLong(6,variantValue);ps.setString(7,sizeValue);ps.setString(8,colorValue);return ps;},keys);
+            if(image!=null){Map<String,Object> generated=keys.getKeyList().get(0);Number reviewKey=generated.values().stream().filter(Number.class::isInstance).map(Number.class::cast).findFirst().orElseThrow();jdbc.update("INSERT INTO product_review_images(review_id,content_type,image_data) VALUES (?,?,?)",reviewKey.longValue(),image.type(),image.bytes());}
         });
+    }
+    /** Review photographs are served from the database, one per review. */
+    public Optional<SupportImage> image(long review){
+        if(!available())return Optional.empty();
+        return jdbc.query("SELECT i.content_type,i.image_data FROM product_review_images i JOIN product_review_messages r ON r.id=i.review_id WHERE i.review_id=? AND r.deleted=FALSE",(r,n)->new SupportImage(r.getBytes(2),r.getString(1)),review).stream().findFirst();
     }
     public long viewer(String email){
         if(!available()||email==null)return -1;

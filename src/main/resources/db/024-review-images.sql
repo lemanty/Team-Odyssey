@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS product_review_images (
+ review_id BIGINT PRIMARY KEY,
+ content_type VARCHAR(40) NOT NULL,
+ image_data LONGBLOB NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(review_id) REFERENCES product_review_messages(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
