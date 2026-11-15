@@ -95,4 +95,30 @@ class FavoriteTests {
   mvc.perform(post("/account/notifications/"+unread+"/read").with(user("a@test.com")).with(csrf())).andExpect(status().is3xxRedirection());
   assertEquals(0,favorites.unread("a@test.com"));
  }
+
+ @Test void addingStockedOptionToPublishedProductSavesAndNotifies() {
+  var f=form(0,true);
+  f.setCategory("Men"); f.setSubcategory("tops"); f.setAudience("Men");
+  var first=new ProductEditForm.Option();
+  first.setSize("M"); first.setColor("Green"); first.setStock(0);
+  f.getOptions().add(first);
+  long id=manager.save(f,null,null);
+  favorites.toggle(id,"a@test.com");
+  var edit=manager.edit(id);
+  var added=new ProductEditForm.Option();
+  added.setSize("L"); added.setColor("Green"); added.setStock(3);
+  edit.getOptions().add(added);
+  assertDoesNotThrow(()->manager.save(edit,null,null));
+  var saved=manager.edit(id);
+  assertEquals(3,saved.getStock());
+  assertEquals(2,saved.getOptions().size());
+  var newOption=saved.getOptions().get(1);
+  assertEquals("L",newOption.getSize());
+  assertEquals(3,newOption.getStock());
+  assertEquals(newOption.getId(),jdbc.queryForObject(
+    "SELECT variant_id FROM stock_notifications WHERE user_id=1 AND product_id=?",Long.class,id));
+  assertEquals(1,favorites.notifications("a@test.com").size());
+  manager.save(manager.edit(id),null,null);
+  assertEquals(1,favorites.notifications("a@test.com").size());
+ }
 }
