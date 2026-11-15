@@ -47,6 +47,8 @@ public class SaleService {
         }
     }
 
+    public record ActiveOffer(Long campaignId, long productId, Discount discount) {}
+
     public record Campaign(long id, String title, int percent, LocalDateTime starts, LocalDateTime ends,
                            boolean enabled, int revision) {
         public String status(LocalDateTime now) {
@@ -61,18 +63,27 @@ public class SaleService {
     }
 
     public Prices activePrices() {
-        if (!available()) return DEMO_PRICES;
         var discounts = new LinkedHashMap<Long, Discount>();
+        for (var offer : activeOffers()) {
+            discounts.putIfAbsent(offer.productId(), offer.discount());
+        }
+        return new Prices(discounts);
+    }
+
+    public List<ActiveOffer> activeOffers() {
+        if (!available()) {
+            return DEMO_PRICES.discounts().entrySet().stream()
+                .map(entry -> new ActiveOffer(null, entry.getKey(), entry.getValue()))
+                .toList();
+        }
         LocalDateTime now = LocalDateTime.now();
-        jdbc.query("""
-            SELECT p.product_id, c.title, c.percent_off
+        return jdbc.query("""
+            SELECT c.id AS campaign_id, p.product_id, c.title, c.percent_off
             FROM sale_campaigns c JOIN sale_campaign_products p ON p.campaign_id = c.id
             WHERE c.enabled = TRUE AND c.starts_at <= ? AND c.ends_at > ?
             ORDER BY c.percent_off DESC, c.id DESC, p.product_id
-            """, row -> {
-                discounts.putIfAbsent(row.getLong("product_id"), new Discount(row.getString("title"), row.getInt("percent_off")));
-            }, now, now);
-        return new Prices(discounts);
+            """, (row, index) -> new ActiveOffer(row.getLong("campaign_id"), row.getLong("product_id"),
+                new Discount(row.getString("title"), row.getInt("percent_off"))), now, now);
     }
 
     public List<Campaign> activeCampaigns() {

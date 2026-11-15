@@ -6,6 +6,8 @@ import com.odyssey.retailshop.service.SaleService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,13 +38,13 @@ public class SaleController {
         var selected = campaign == null ? campaigns.stream().findFirst().orElse(null) :
             campaigns.stream().filter(c -> c.id() == campaign).findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        var eligible = selected == null ? java.util.Set.<Long>of() : java.util.Set.copyOf(sales.productIds(selected.id()));
         var featured = selected == null ? java.util.Set.<Long>of() : sales.featuredProductIds(selected.id());
-        var discounts = sales.activePrices().discounts();
-        List<Offer> offers = products.getProducts().stream()
-            .filter(product -> discounts.containsKey(product.getId()))
-            .filter(product -> !sales.available() || eligible.contains(product.getId()))
-            .map(product -> offer(product, discounts.get(product.getId())))
+        var publishedProducts = products.getProducts().stream()
+            .collect(Collectors.toMap(Product::getId, Function.identity()));
+        List<Offer> offers = sales.activeOffers().stream()
+            .filter(active -> !sales.available() || selected != null && Long.valueOf(selected.id()).equals(active.campaignId()))
+            .filter(active -> publishedProducts.containsKey(active.productId()))
+            .map(active -> offer(publishedProducts.get(active.productId()), active))
             .sorted(java.util.Comparator.comparingInt(Offer::discount).reversed())
             .toList();
 
@@ -57,9 +59,11 @@ public class SaleController {
         return "sale";
     }
 
-    public record Offer(Product product, String title, int discount, BigDecimal price, String image, String featuredImage, String campaignImage) {}
+    public record Offer(Product product, Long campaignId, String title, int discount, BigDecimal price,
+                        String image, String featuredImage, String campaignImage) {}
 
-    private Offer offer(Product product, SaleService.Discount discount) {
+    private Offer offer(Product product, SaleService.ActiveOffer active) {
+        var discount = active.discount();
         String image = product.getGarmentImage();
         String featured = product.getModelImage();
         if (!sales.available()) {
@@ -67,7 +71,7 @@ public class SaleController {
             if (product.getId() == 1L) featured = "/images/products/ivory-cotton-tee-model-v2.webp";
             if (product.getId() == 2L) featured = "/images/products/olive-overshirt-model-v2.webp";
         }
-        return new Offer(product, discount.title(), discount.percent(), discount.price(product.getPrice()),
+        return new Offer(product, active.campaignId(), discount.title(), discount.percent(), discount.price(product.getPrice()),
             image, featured == null || featured.isBlank() ? image : featured, campaignImage(image));
     }
     // Only the known sample photographs have campaign editions. Uploaded images remain untouched.

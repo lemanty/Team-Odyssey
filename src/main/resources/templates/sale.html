@@ -57,19 +57,20 @@
                     <button type="button" data-sale-next th:aria-label="${zh ? '下一件主推商品' : 'Next featured product'}">→</button>
                 </div>
             </div>
-            <article class="sale-feature" th:each="offer, item : ${featuredOffers}" th:hidden="${!item.first}" data-sale-slide>
-                <a class="sale-campaign-art" th:if="${offer.campaignImage != null}" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+            <article class="sale-feature" th:each="offer, item : ${featuredOffers}" th:hidden="${!item.first}" data-sale-slide
+                     th:with="detailUrl=${saleDemo} ? @{/products/{id}(id=${offer.product.id},sale=true)} : @{/products/{id}(id=${offer.product.id},sale=true,campaign=${offer.campaignId})}">
+                <a class="sale-campaign-art" th:if="${offer.campaignImage != null}" th:href="${detailUrl}">
                     <img th:src="@{${offer.campaignImage}}" th:alt="${storeText.productName(offer.product, zh)}" th:loading="${item.first ? 'eager' : 'lazy'}" width="1672" height="941">
                 </a>
                 <th:block th:if="${offer.campaignImage == null}">
-                    <a th:replace="~{fragments/product-showcase :: showcase(@{/products/{id}(id=${offer.product.id},sale=true)}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, true)}"></a>
+                    <a th:replace="~{fragments/product-showcase :: showcase(${detailUrl}, ${storeText.productName(offer.product, zh)}, ${offer.featuredImage}, ${offer.image}, ${item.index}, true)}"></a>
                 </th:block>
                 <div class="sale-feature-copy">
                     <h3 th:text="${storeText.productName(offer.product, zh)}">Canvas Overshirt</h3>
                     <p class="sale-description" th:text="${storeText.productDescription(offer.product, zh)}">An easy layer for cooler days.</p>
                     <div class="sale-feature-actions">
                         <div th:replace="~{:: salePrice(${offer})}"></div>
-                        <a class="sale-detail-link" th:href="@{/products/{id}(id=${offer.product.id},sale=true)}"><span th:text="${zh ? '查看详情' : 'View details'}">View details</span> <span aria-hidden="true">↗</span></a>
+                        <a class="sale-detail-link" th:href="${detailUrl}"><span th:text="${zh ? '查看详情' : 'View details'}">View details</span> <span aria-hidden="true">↗</span></a>
                     </div>
                 </div>
             </article>
@@ -81,7 +82,7 @@
                     <p class="sale-kicker">02 / THE DEALS</p>
                     <h2 id="sale-deals-title" th:text="${zh ? '全部特惠' : 'All deals'}">All deals</h2>
                 </div>
-                <p class="sale-results" aria-live="polite"><span data-sale-count th:text="${offers.size()}">4</span> <span th:text="${zh ? '件商品' : 'items'}">items</span></p>
+                <p class="sale-results" aria-live="polite"><span data-sale-count th:text="${offers.size()}">4</span> <span th:text="${zh ? '项优惠' : 'offers'}">offers</span></p>
             </div>
             <div class="sale-filters" data-sale-filters role="group" th:aria-label="${zh ? '特惠商品分类' : 'Deal categories'}" hidden>
                 <button type="button" data-filter="all" aria-pressed="true" th:text="${zh ? '全部' : 'All'}">All</button>
@@ -91,7 +92,7 @@
             <p class="sale-empty" data-sale-empty th:hidden="${!offers.isEmpty()}" th:text="${zh ? '此分类暂无特惠商品。' : 'No deals in this category yet.'}">No deals in this category yet.</p>
             <div class="sale-grid">
                 <article class="sale-card" th:each="offer : ${offers}" th:attr="data-sale-category=${offer.product.category == 'Household' ? 'home' : 'clothing'}">
-                    <a th:href="@{/products/{id}(id=${offer.product.id},sale=true)}">
+                    <a th:href="${saleDemo} ? @{/products/{id}(id=${offer.product.id},sale=true)} : @{/products/{id}(id=${offer.product.id},sale=true,campaign=${offer.campaignId})}">
                         <div class="sale-card-art">
                             <img th:if="${!#strings.isEmpty(offer.image)}" th:src="@{${offer.image}}" alt="" loading="lazy" width="600" height="800">
                             <span class="sale-card-arrow" aria-hidden="true">↗</span>
@@ -103,7 +104,7 @@
                     </a>
                 </article>
             </div>
-            <p class="sale-note" th:if="${!saleDemo and !offers.isEmpty()}" th:text="${zh ? '商品同时参加多个活动时，展示与结算均自动采用最优惠价格。' : 'Items in multiple campaigns automatically receive the best available price, here and at checkout.'}"></p>
+            <p class="sale-note" th:if="${!saleDemo and !offers.isEmpty()}" th:text="${zh ? '此页展示当前活动价格；商品同时参加多个活动时，购物车与结算自动采用最优惠价格。' : 'This page shows the selected campaign price. Cart and checkout automatically use the best available campaign price.'}"></p>
             <p class="sale-note" th:if="${saleDemo}" th:text="${zh ? '此页面展示示例活动，连接数据库后可管理活动并使用活动价下单。' : 'This page shows a sample sale. Connect the database to manage campaigns and order at sale prices.'}"></p>
         </section>
     </div>
