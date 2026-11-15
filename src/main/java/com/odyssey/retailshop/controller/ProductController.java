@@ -28,10 +28,12 @@ public class ProductController {
     private final StoreText storeText;
     private final com.odyssey.retailshop.service.VariantService variants;
     private final SaleService sales;
+    private final com.odyssey.retailshop.service.FavoriteService favorites;
 
-    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants, com.odyssey.retailshop.service.ReviewService reviews, SaleService sales) {
+    public ProductController(ProductService productService, Environment environment, StoreText storeText, com.odyssey.retailshop.service.VariantService variants, com.odyssey.retailshop.service.ReviewService reviews, SaleService sales, com.odyssey.retailshop.service.FavoriteService favorites) {
         this.reviews=reviews;
         this.sales = sales;
+        this.favorites=favorites;
         this.productService = productService;
         this.environment = environment;
         this.storeText = storeText;
@@ -56,6 +58,7 @@ public class ProductController {
         model.addAttribute("reviewTargets",replyTargets);model.addAttribute("reviewViewer",reviews.viewer(email));model.addAttribute("reviewPage",reviewPage);
         model.addAttribute("reviewsAvailable",reviews.available());
         model.addAttribute("reviewPurchases",reviews.purchases(id,email));
+        model.addAttribute("favorited",favorites.favorited(id,email));
         return "product-detail";
     }
 

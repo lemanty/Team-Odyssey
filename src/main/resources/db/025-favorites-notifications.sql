@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS product_favorites (
+ user_id BIGINT NOT NULL,
+ product_id BIGINT NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(user_id, product_id),
+ FOREIGN KEY(user_id) REFERENCES users(id),
+ FOREIGN KEY(product_id) REFERENCES products(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS stock_notifications (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT NOT NULL,
+ product_id BIGINT NOT NULL,
+ variant_id BIGINT NOT NULL DEFAULT 0,
+ size_label VARCHAR(30) NOT NULL DEFAULT '',
+ color_label VARCHAR(60) NOT NULL DEFAULT '',
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ read_at TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id),
+ FOREIGN KEY(product_id) REFERENCES products(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

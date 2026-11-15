@@ -20,8 +20,9 @@ public class ProductManagementService {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
     private final StoreText text;
-    public ProductManagementService(ObjectProvider<JdbcTemplate> db, ObjectProvider<PlatformTransactionManager> tm, StoreText text) {
-        jdbc=db.getIfAvailable(); var manager=tm.getIfAvailable(); tx=manager==null?null:new TransactionTemplate(manager); this.text=text;
+    private final FavoriteService favorites;
+    public ProductManagementService(ObjectProvider<JdbcTemplate> db, ObjectProvider<PlatformTransactionManager> tm, StoreText text, FavoriteService favorites) {
+        jdbc=db.getIfAvailable(); var manager=tm.getIfAvailable(); tx=manager==null?null:new TransactionTemplate(manager); this.text=text; this.favorites=favorites;
     }
     public boolean available() { return jdbc!=null; }
     private void ready() { if(!available()) throw new IllegalArgumentException("Product management requires database mode. / 商品管理需要数据库模式。"); }
@@ -127,12 +128,41 @@ public class ProductManagementService {
             if(f.getPublished() && image.isBlank())throw new IllegalArgumentException("Add a main image before publishing. / 上架前请添加主图。");
             int changed=jdbc.update("UPDATE product_details SET audience=?,stock_quantity=?,garment_image=?,model_image=? WHERE product_id=?",f.getAudience(),total,image,secondImage,id);
             if(changed==0)jdbc.update("INSERT INTO product_details(product_id,audience,stock_quantity,garment_image,model_image) VALUES (?,?,?,?,?)",id,f.getAudience(),total,image,secondImage);
+            Map<ProductEditForm.Option, Long> savedOptionIds = new HashMap<>();
+            final long productId = id;
             for(var o:f.getOptions()) {
-                if(o.getId()==null)jdbc.update("INSERT INTO product_variants(product_id,size_label,color_label,stock_quantity) VALUES (?,?,?,?)",id,o.getSize(),o.getColor(),o.getStock());
+                if (o.getId() == null) {
+                    var key = new GeneratedKeyHolder();
+                    jdbc.update(connection -> {
+                        var statement = connection.prepareStatement(
+                            "INSERT INTO product_variants(product_id,size_label,color_label,stock_quantity) VALUES (?,?,?,?)",
+                            java.sql.Statement.RETURN_GENERATED_KEYS);
+                        statement.setLong(1, productId);
+                        statement.setString(2, o.getSize());
+                        statement.setString(3, o.getColor());
+                        statement.setInt(4, o.getStock());
+                        return statement;
+                    }, key);
+                    // Do not mutate the form: a rolled-back transaction must remain retryable.
+                    savedOptionIds.put(o, key.getKey().longValue());
+                }
                 else jdbc.update("UPDATE product_variants SET stock_quantity=? WHERE id=? AND product_id=?",o.getStock(),o.getId(),id);
             }
             changed=jdbc.update("UPDATE product_management SET name_zh=?,description_zh=?,published=?,low_stock_threshold=?,revision=revision+1 WHERE product_id=?",f.getNameZh(),f.getDescriptionZh(),f.getPublished(),f.getThreshold(),id);
             if(changed==0)jdbc.update("INSERT INTO product_management(product_id,name_zh,description_zh,published,low_stock_threshold,revision) VALUES (?,?,?,?,?,1)",id,f.getNameZh(),f.getDescriptionZh(),f.getPublished(),f.getThreshold());
+            // A sold-out published product returning to stock alerts everyone who saved it.
+            if(old!=null && old.getPublished() && f.getPublished()) {
+                if(f.getOptions().isEmpty()) {
+                    if(old.getStock()<=0 && total>0)favorites.notifyRestock(id,0,"","");
+                } else {
+                    Map<Long,Integer> before=new HashMap<>();
+                    for(var option:old.getOptions())before.put(option.getId(),option.getStock());
+                    for(var option:f.getOptions()) {
+                        int previous=option.getId()==null?0:before.getOrDefault(option.getId(),0);
+                        if(previous<=0 && option.getStock()>0)favorites.notifyRestock(id,savedOptionIds.getOrDefault(option,option.getId()),option.getSize(),option.getColor());
+                    }
+                }
+            }
             return id;
         });
     }
