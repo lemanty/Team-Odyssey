@@ -50,13 +50,13 @@ public class SecurityConfig {
                 .requestMatchers("/products/*/reviews", "/products/*/reviews/**").authenticated()
                 .requestMatchers("/staff/support", "/staff/support/**").hasRole("STAFF")
                 .requestMatchers("/support", "/support/**").hasAnyRole("CUSTOMER", "STAFF")
-                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**").authenticated()
+                .requestMatchers("/cart/add", "/cart/update", "/cart/remove", "/orders", "/orders/**", "/checkout", "/checkout/**", "/account", "/account/**", "/favorites", "/favorites/**").authenticated()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff/coupons", "/staff/coupons/**").hasRole("ADMIN")
                 .requestMatchers("/staff/products", "/staff/products/**").hasRole("ADMIN")
                 .requestMatchers("/staff", "/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .anyRequest().permitAll())
-            .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
+            .exceptionHandling(errors -> errors.accessDeniedHandler(new AuthCsrfAccessDeniedHandler()).defaultAuthenticationEntryPointFor(
                 new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login?cartRequired"),
                 request -> request.getServletPath().startsWith("/cart/")))
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")

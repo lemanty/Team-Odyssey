@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Controller
 public class SaleController {
@@ -30,10 +33,16 @@ public class SaleController {
     }
 
     @GetMapping("/sale")
-    public String sale(Model model) {
+    public String sale(@RequestParam(required = false) Long campaign, Model model) {
+        var campaigns = sales.activeCampaigns();
+        var selected = campaign == null ? campaigns.stream().findFirst().orElse(null) :
+            campaigns.stream().filter(c -> c.id() == campaign).findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var featured = selected == null ? java.util.Set.<Long>of() : sales.featuredProductIds(selected.id());
         var publishedProducts = products.getProducts().stream()
             .collect(Collectors.toMap(Product::getId, Function.identity()));
         List<Offer> offers = sales.activeOffers().stream()
+            .filter(active -> !sales.available() || selected != null && Long.valueOf(selected.id()).equals(active.campaignId()))
             .filter(active -> publishedProducts.containsKey(active.productId()))
             .map(active -> offer(publishedProducts.get(active.productId()), active))
             .sorted(java.util.Comparator.comparingInt(Offer::discount).reversed())
@@ -41,7 +50,11 @@ public class SaleController {
 
         model.addAttribute("saleDemo", !sales.available());
         model.addAttribute("offers", offers);
-        model.addAttribute("featuredOffers", offers.stream().limit(3).toList());
+        model.addAttribute("campaigns", campaigns);
+        model.addAttribute("selectedCampaign", selected);
+        model.addAttribute("featuredOffers", sales.available()
+            ? offers.stream().filter(offer -> featured.contains(offer.product().getId())).toList()
+            : offers.stream().limit(3).toList());
         model.addAttribute("maxDiscount", offers.stream().mapToInt(Offer::discount).max().orElse(0));
         return "sale";
     }

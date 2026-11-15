@@ -1,0 +1,11 @@
+.sales-report { min-width:0; }
+.sales-report form, .sales-totals { display:flex; flex-wrap:wrap; gap:1rem; margin:1.5rem 0; }
+.sales-report form { align-items:flex-end; }
+.sales-report form label, .sales-totals p { display:grid; gap:.4rem; }
+.sales-report input { padding:.6rem; font:inherit; }
+.sales-totals p { flex:1 1 8rem; padding:1rem; margin:0; background:#f2f3ed; border-radius:.5rem; }
+.sales-totals strong { font-size:1.35rem; font-variant-numeric:tabular-nums; }
+.sales-report table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.sales-report caption { text-align:left; font-weight:700; margin:1rem 0; }
+.sales-report th,.sales-report td { padding:.7rem; text-align:right; border-bottom:1px solid #d9ddd5; }
+.sales-report th:first-child,.sales-report td:first-child { text-align:left; }

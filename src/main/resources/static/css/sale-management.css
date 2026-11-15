@@ -23,3 +23,10 @@
 @media (max-width: 720px) {
     .sale-admin-fields { grid-template-columns: 1fr; }
 }
+
+.ops-sales .sale-admin > h1 { font-size: 30px; }
+.sale-storefront-link { display: inline-block; margin: 0 0 22px; }
+.sale-product-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); padding: 8px 0; }
+.sale-product-row > label:first-child { min-width: 0; }
+.sale-feature-choice { flex-shrink: 0; font-size: 13px; }
+.ops-sales input[type=checkbox] { min-height: 0; width: 16px; height: 16px; flex-shrink: 0; }

@@ -22,7 +22,7 @@ class ReturnsTests {
  @Autowired ReturnService returns;@Autowired OrderService orders;@Autowired WalletService wallet;@Autowired SupportService support;@Autowired OrderWorkspaceService workspace;@Autowired JdbcTemplate jdbc;@Autowired MockMvc mvc;
  @BeforeEach void setup()throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","016_support_returns.sql")){
+  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","006-account-cart.sql","007-support.sql","008-support-attachments.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","024-review-images.sql","025-favorites-notifications.sql","016_support_returns.sql")){
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");for(String st:sql.split(";"))if(!st.isBlank())jdbc.execute(st);
   }
   jdbc.update("INSERT INTO users(id,display_name,email,password_hash,role) VALUES (1,'Alice','a@test.com','unused','CUSTOMER'),(2,'Bob','b@test.com','unused','CUSTOMER'),(3,'Employee','staff@test.com','unused','STAFF')");
@@ -38,6 +38,27 @@ class ReturnsTests {
   returns.process(id,"staff@test.com","REJECTED","Rejected",false,false,false);
   assertEquals(3,returns.availableQuantities(o,"a@test.com").get(1L));
   assertThrows(org.springframework.web.server.ResponseStatusException.class,()->returns.availableQuantities(o,"b@test.com"));
+ }
+ @Autowired SalesReportService sales;
+ @Test void salesReportCountsMixedOrdersOnceAndDeductsCompletedRefunds() throws Exception {
+  String order=buy("WALLET");
+  String claim=request(order,1);
+  receive(claim);
+  returns.process(claim,"staff@test.com","COMPLETED","Refund",false,true,false);
+  jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (2,'Lamp','Household','Lamp',5)");
+  jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES (?,2,'Lamp',5,1)",order);
+  jdbc.update("UPDATE shop_orders SET total=40 WHERE id=?",order);
+  orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,1),"COLLECTION","","OFFLINE");
+  var today=java.time.LocalDate.now();
+  var result=sales.read(today.minusDays(1),today.plusDays(1));
+  assertEquals(1,result.orders());assertEquals(4,result.units());
+  assertEquals(0,result.net().compareTo(new BigDecimal("27.50")));
+  assertEquals(1,result.products().get(0).returned());
+  assertEquals(0,sales.read(today.minusDays(5),today.minusDays(4)).orders());
+  mvc.perform(get("/staff/reports/sales").with(user("staff@test.com").roles("STAFF")))
+    .andExpect(status().isOk()).andExpect(content().string(containsString("Vase")));
+  mvc.perform(get("/staff/reports/sales").with(user("a@test.com").roles("CUSTOMER")))
+    .andExpect(status().isForbidden());
  }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
