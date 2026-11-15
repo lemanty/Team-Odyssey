@@ -39,6 +39,27 @@ class ReturnsTests {
   assertEquals(3,returns.availableQuantities(o,"a@test.com").get(1L));
   assertThrows(org.springframework.web.server.ResponseStatusException.class,()->returns.availableQuantities(o,"b@test.com"));
  }
+ @Autowired SalesReportService sales;
+ @Test void salesReportCountsMixedOrdersOnceAndDeductsCompletedRefunds() throws Exception {
+  String order=buy("WALLET");
+  String claim=request(order,1);
+  receive(claim);
+  returns.process(claim,"staff@test.com","COMPLETED","Refund",false,true,false);
+  jdbc.update("INSERT INTO products(id,name,category,description,price) VALUES (2,'Lamp','Household','Lamp',5)");
+  jdbc.update("INSERT INTO order_items(order_id,product_id,product_name,unit_price,quantity) VALUES (?,2,'Lamp',5,1)",order);
+  jdbc.update("UPDATE shop_orders SET total=40 WHERE id=?",order);
+  orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,1),"COLLECTION","","OFFLINE");
+  var today=java.time.LocalDate.now();
+  var result=sales.read(today.minusDays(1),today.plusDays(1));
+  assertEquals(1,result.orders());assertEquals(4,result.units());
+  assertEquals(0,result.net().compareTo(new BigDecimal("27.50")));
+  assertEquals(1,result.products().get(0).returned());
+  assertEquals(0,sales.read(today.minusDays(5),today.minusDays(4)).orders());
+  mvc.perform(get("/staff/reports/sales").with(user("staff@test.com").roles("STAFF")))
+    .andExpect(status().isOk()).andExpect(content().string(containsString("Vase")));
+  mvc.perform(get("/staff/reports/sales").with(user("a@test.com").roles("CUSTOMER")))
+    .andExpect(status().isForbidden());
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
