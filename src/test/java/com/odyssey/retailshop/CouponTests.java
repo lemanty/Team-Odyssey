@@ -126,6 +126,55 @@ class CouponTests {
       .andExpect(content().string(containsString("€66.00")));
  }
 
+ @Test void overlappingCampaignsKeepTheirOwnOffersAndCheckoutUsesTheBestPrice() throws Exception {
+  long original = createCampaign("Original offer", "10", true);
+  long newer = createCampaign("New offer", "30", true);
+
+  mvc.perform(get("/admin/sales").with(user("admin@test.com").roles("ADMIN")))
+      .andExpect(status().isOk())
+      .andExpect(content().string(containsString("−10%")))
+      .andExpect(content().string(containsString("−30%")));
+  mvc.perform(get("/sale")).andExpect(status().isOk())
+      .andExpect(content().string(containsString("Original offer")))
+      .andExpect(content().string(containsString("€90.00")))
+      .andExpect(content().string(containsString("campaign=" + original)))
+      .andExpect(content().string(containsString("New offer")))
+      .andExpect(content().string(containsString("campaign=" + newer)))
+      .andExpect(content().string(containsString("€70.00")));
+  mvc.perform(get("/products/1").param("sale", "true").param("campaign", Long.toString(original)))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Original offer · −10%")))
+      .andExpect(content().string(containsString("€90.00")))
+      .andExpect(content().string(containsString("Best current sale price: €70.00")));
+  mvc.perform(get("/products/1").param("sale", "true").param("campaign", Long.toString(newer)))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("New offer · −30%")))
+      .andExpect(content().string(containsString("€70.00")));
+
+  String orderId = orders.place("a@test.com", UUID.randomUUID().toString(), Map.of(1L, 1), "COLLECTION", "", "WALLET", null);
+  assertEquals(new BigDecimal("70.00"), orders.get(orderId, "a@test.com", false).total());
+
+  mvc.perform(campaignForm("New offer", "25", true).param("id", Long.toString(newer)))
+      .andExpect(redirectedUrl("/admin/sales"));
+  mvc.perform(get("/admin/sales").with(user("admin@test.com").roles("ADMIN")))
+      .andExpect(status().isOk())
+      .andExpect(content().string(containsString("−10%")))
+      .andExpect(content().string(containsString("−25%")))
+      .andExpect(content().string(org.hamcrest.Matchers.not(containsString("−30%"))));
+  mvc.perform(get("/products/1").param("sale", "true").param("campaign", Long.toString(original)))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Original offer · −10%")))
+      .andExpect(content().string(containsString("€90.00")))
+      .andExpect(content().string(containsString("Best current sale price: €75.00")));
+  mvc.perform(get("/products/1").param("sale", "true").param("campaign", Long.toString(newer)))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("New offer · −25%")))
+      .andExpect(content().string(containsString("€75.00")));
+
+  mvc.perform(campaignForm("New offer", "25", false).param("id", Long.toString(newer)).param("revision", "1"))
+      .andExpect(redirectedUrl("/admin/sales"));
+  mvc.perform(get("/sale")).andExpect(status().isOk())
+      .andExpect(content().string(containsString("Original offer")))
+      .andExpect(content().string(containsString("€90.00")))
+      .andExpect(content().string(org.hamcrest.Matchers.not(containsString("New offer"))));
+ }
+
  @Test void adminEditsCampaignAndStaleCheckoutLeavesCartWalletAndStockIntact() throws Exception {
   mvc.perform(get("/admin/sales").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isForbidden());
   mvc.perform(post("/admin/sales").with(user("staff@test.com").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());

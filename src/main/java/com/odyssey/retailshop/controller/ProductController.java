@@ -41,11 +41,22 @@ public class ProductController {
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id, Model model, java.security.Principal user,
                                 @RequestParam(defaultValue="0") int reviewPage,
-                                @RequestParam(defaultValue="false") boolean sale) {
+                                @RequestParam(defaultValue="false") boolean sale,
+                                @RequestParam(required = false) Long campaign) {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
         model.addAttribute("fromSale", sale);
-        if (sale) model.addAttribute("saleDiscount", sales.activePrices().discounts().get(id));
+        if (sale) {
+            var offers = sales.activeOffers().stream().filter(offer -> offer.productId() == id).toList();
+            if (!offers.isEmpty()) {
+                var best = offers.get(0).discount();
+                var selected = offers.stream()
+                    .filter(offer -> campaign != null && campaign.equals(offer.campaignId()))
+                    .findFirst().map(SaleService.ActiveOffer::discount).orElse(best);
+                model.addAttribute("saleDiscount", selected);
+                if (best.percent() > selected.percent()) model.addAttribute("bestSaleDiscount", best);
+            }
+        }
         model.addAttribute("variants",variants.list(id));
         String email=user==null?null:user.getName();
         reviewPage=Math.max(0,Math.min(reviewPage,100000));

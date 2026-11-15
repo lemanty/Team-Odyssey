@@ -59,6 +59,7 @@
                     <small><del th:text="${'€' + #numbers.formatDecimal(product.price, 1, 2)}"></del></small>
                 </p>
                 <p class="eyebrow" th:text="${(saleDiscount.title.isEmpty() ? (zh ? '活动价' : 'Sale price') : saleDiscount.title) + ' · −' + saleDiscount.percent + '%'}"></p>
+                <p th:if="${bestSaleDiscount}" th:text="${(zh ? '当前最优活动价：€' : 'Best current sale price: €') + #numbers.formatDecimal(bestSaleDiscount.price(product.price), 1, 2)}"></p>
             </div>
             <p class="detail-description" th:text="${storeText.productDescription(product, zh)}">Description</p>
             <div class="detail-stock" th:if="${product.stockQuantity != null}" th:classappend="${product.stockQuantity == 0} ? 'sold-out'">
