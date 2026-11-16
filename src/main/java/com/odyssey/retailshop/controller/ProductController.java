@@ -61,6 +61,7 @@ public class ProductController {
         model.addAttribute("product", productService.getProduct(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found")));
         model.addAttribute("fromSale", sale);
+        model.addAttribute("catalogueContext", catalogue.startsWith("?") ? catalogue : null);
         model.addAttribute("backToCatalogue", sale ? "/sale" : "/products" +
             (catalogue.startsWith("?") ? catalogue : ""));
         if (sale) model.addAttribute("saleDiscount", sales.activePrices().discounts().get(id));
