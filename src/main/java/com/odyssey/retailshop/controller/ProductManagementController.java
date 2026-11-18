@@ -34,6 +34,7 @@ public class ProductManagementController {
             products.adjustStock(productId,revision,quantity,values,actor.getName(),params.getOrDefault("reason",""));
             model.addAttribute("stockSuccess",true);
         } catch(IllegalArgumentException ex) {
+            model.addAttribute("adjustmentReason",params.getOrDefault("reason",""));
             model.addAttribute("stockError",ex instanceof NumberFormatException ? "Invalid quantity. / 数量格式无效。" : ex.getMessage());
         }
         return inventory(params.getOrDefault("q",""),productId,model);

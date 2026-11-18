@@ -25,7 +25,7 @@
 <div class="stock-selected-heading"><img th:if="${stockForm.image!=null and !stockForm.image.isBlank()}" th:src="${stockForm.image}" alt=""><h3 tabindex="-1" data-stock-heading th:text="${zh?stockForm.nameZh:stockForm.name}"></h3></div><p th:text="${zh?'填写可售库存。有规格的商品按尺码、颜色分别保存，总数自动合计。':'Enter available stock. Products with options are counted by size and colour.'}"></p>
 <div class="stock-options"><label th:if="${stockForm.options.isEmpty()}"><span th:text="${zh?'可售库存':'Available stock'}"></span><input type="number" name="quantity" th:value="${stockForm.stock}" min="0" max="1000000" required></label>
 <label th:each="o:${stockForm.options}"><span th:text="${storeText.text(o.color,zh)+' / '+o.size}"></span><input type="number" th:name="${'stock_'+o.id}" th:value="${o.stock}" min="0" max="1000000" required></label></div>
-<label><span th:text="${zh?'调整原因':'Adjustment reason'}"></span><textarea name="reason" maxlength="300" required></textarea></label>
+<label><span th:text="${zh?'调整原因':'Adjustment reason'}"></span><textarea name="reason" maxlength="300" required th:text="${adjustmentReason}"></textarea></label>
 <button type="submit" th:text="${zh?'保存库存':'Save stock'}"></button>
 </form>
 <section th:if="${adjustments!=null}">
