@@ -191,4 +191,20 @@ class ProductManagementTests {
   long id=manager.save(f,null,null);
   assertEquals("bedroom",manager.edit(id).getSubcategory());
  }
+
+ @Test void inventoryReasonAndRevisionProtectAudit() {
+  long id=manager.save(form(),null,null);
+  var original=manager.edit(id);
+  assertThrows(IllegalArgumentException.class,()->manager.adjustStock(id,original.getRevision(),7,Map.of(),"staff@test.com",""));
+  assertTrue(manager.adjustments(id).isEmpty());
+  manager.adjustStock(id,original.getRevision(),7,Map.of(),"staff@test.com","Delivery checked");
+  assertEquals(1,manager.adjustments(id).size());
+  var entry=manager.adjustments(id).get(0);
+  assertEquals(original.getStock().intValue(),entry.before());
+  assertEquals(7,entry.after());
+  assertEquals("Delivery checked",entry.reason());
+  assertThrows(IllegalArgumentException.class,()->manager.adjustStock(id,original.getRevision(),8,Map.of(),"staff@test.com","Stale edit"));
+  assertEquals(1,manager.adjustments(id).size());
+  assertEquals(7,manager.edit(id).getStock());
+ }
 }
