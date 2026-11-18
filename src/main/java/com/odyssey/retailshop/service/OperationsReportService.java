@@ -118,7 +118,11 @@ public class OperationsReportService {
     }
 
     public Table returns(LocalDate start, LocalDate end, String status) {
-        String clause = status.equals("PENDING") ? " AND r.status IN ('REQUESTED','APPROVED','RECEIVED')" : "";
+        String clause = switch (status) {
+            case "PENDING" -> " AND r.status IN ('REQUESTED','APPROVED','RECEIVED')";
+            case "COMPLETED" -> " AND r.status='COMPLETED'";
+            default -> "";
+        };
         return query(List.of("Return / 售后编号","Order / 订单","Status / 状态","Reason / 原因",
             "Refund EUR / 已退款","Requested / 申请时间","Updated / 更新时间","Elapsed hours / 处理或等待小时"),
             """
