@@ -122,6 +122,18 @@ class ReturnsTests {
   jdbc.update("UPDATE product_details SET stock_quantity=6 WHERE product_id=1");
   assertTrue(analytics.inventory("low").rows().isEmpty());
  }
+
+ @Test void analyticsSeparatesPendingAndRefundedReturns() {
+  String order=buy("WALLET");String claim=request(order,1);
+  var today=java.time.LocalDate.now();
+  assertEquals(1,analytics.returns(today,today,"PENDING").rows().size());
+  assertTrue(analytics.returns(today,today,"COMPLETED").rows().isEmpty());
+  receive(claim);returns.process(claim,"staff@test.com","COMPLETED","Inspected",false,true,false);
+  assertTrue(analytics.returns(today,today,"PENDING").rows().isEmpty());
+  var refunded=analytics.returns(today,today,"COMPLETED").rows().get(0);
+  assertEquals(0,new BigDecimal(refunded.get(4)).compareTo(new BigDecimal("12.50")));
+  assertEquals("Damaged",analytics.reasons(today,today).rows().get(0).get(0));
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
