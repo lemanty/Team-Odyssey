@@ -93,6 +93,9 @@ public class OperationsReportController {
                 }
                 if (section.equals("returns")) {
                     model.addAttribute("reasons",operations.reasons(f.start(),f.end()));
+                    model.addAttribute("averageReturnHours",table.rows().stream()
+                        .filter(row -> Set.of("COMPLETED","REJECTED").contains(row.get(2)))
+                        .mapToLong(row -> Long.parseLong(row.get(7))).average().orElse(0));
                     model.addAttribute("refundTotal",table.rows().stream().filter(row -> row.get(2).equals("COMPLETED"))
                         .map(row -> new BigDecimal(row.get(4))).reduce(BigDecimal.ZERO,BigDecimal::add));
                     model.addAttribute("pendingCount",table.rows().stream()
