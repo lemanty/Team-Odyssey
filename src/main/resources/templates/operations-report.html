@@ -24,6 +24,7 @@
 </nav>
 <form method="get" th:action="@{/staff/reports/operations}">
 <input type="hidden" name="section" th:value="${filters.section}">
+<input th:if="${filters.product!=null}" type="hidden" name="product" th:value="${filters.product}">
 <label><span th:text="${zh?'开始日期':'From'}"></span><input type="date" name="start" required th:value="${filters.start}"></label>
 <label><span th:text="${zh?'结束日期':'Through'}"></span><input type="date" name="end" required th:value="${filters.end}"></label>
 <th:block th:if="${filters.section=='orders'}">

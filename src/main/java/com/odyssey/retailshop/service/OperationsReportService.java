@@ -44,9 +44,10 @@ public class OperationsReportService {
     }
 
     public Table categories(LocalDate start, LocalDate end) {
-        return query(List.of("Category / 当前分类", "Units / 件数", "Before discounts EUR / 折前金额"),
+        return query(List.of("Category / 当前分类", "Units / 件数", "Before discounts EUR / 折前金额","Share % / 占比"),
             """
-            SELECT p.category, SUM(i.quantity), SUM(i.quantity*i.unit_price)
+            SELECT p.category, SUM(i.quantity), SUM(i.quantity*i.unit_price),
+                COALESCE(ROUND(100.0*SUM(i.quantity*i.unit_price)/NULLIF(SUM(SUM(i.quantity*i.unit_price)) OVER(),0),2),0)
             FROM order_all_items i JOIN shop_orders o ON o.id=i.order_id
             JOIN products p ON p.id=i.product_id
             WHERE o.status='COMPLETED' AND o.created_at>=? AND o.created_at<?
