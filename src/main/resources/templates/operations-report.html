@@ -43,6 +43,10 @@
 </p>
 <p th:unless="${available}" th:text="${zh?'请连接数据库查看经营数据。':'Connect the database to view operations data.'}"></p>
 <th:block th:if="${table}">
+<p th:if="${filters.product!=null}">
+<a th:href="@{/staff/reports/operations(section=products,start=${filters.start},end=${filters.end},sort=${filters.sort})}" th:text="${zh?'返回商品排行':'Back to product ranking'}"></a>
+<a th:href="@{/products/{id}(id=${filters.product})}" th:text="${zh?'查看商品':'View product'}"></a>
+</p>
 <a class="btn" th:href="@{/staff/reports/operations/export(section=${filters.section},start=${filters.start},end=${filters.end},status=${filters.status},fulfillment=${filters.fulfillment},q=${filters.q},stock=${filters.stock},sort=${filters.sort},product=${filters.product})}" th:text="${zh?'导出当前结果 CSV':'Export current results CSV'}"></a>
 <p th:if="${filters.section=='inventory'}" th:text="${zh?'库存为当前值。补货参考量将库存补至预警线以上1件，实际采购请结合需求确定。':'Stock is current. Suggested top-up brings stock one unit above its alert threshold. Adjust purchasing to demand.'}"></p>
 <p th:if="${filters.section=='sales' or filters.section=='products'}" th:text="${zh?'按下单日期统计当前已完成订单。退货数据含这些订单截至查询时已完成的退货。分类采用商品当前分类。':'Completed orders grouped by placement date. Returns include completed returns for these orders to date. Categories use the current catalogue.'}"></p>
@@ -75,7 +79,7 @@
 <table><caption th:text="${zh?'当前筛选结果':'Current filtered results'}"></caption><thead><tr><th th:each="column:${table.columns}" th:text="${column}" scope="col"></th><th scope="col" th:unless="${filters.section=='sales'}" th:text="${zh?'查看':'View'}"></th></tr></thead><tbody>
 <tr th:each="row:${table.rows}"><td th:each="cell:${row}" th:text="${cell}"></td>
 <td th:if="${filters.section=='products' and filters.product==null}">
-<a th:href="@{/staff/reports/operations(section=products,product=${row[0]},start=${filters.start},end=${filters.end})}" th:text="${zh?'销售明细':'Sales detail'}"></a>
+<a th:href="@{/staff/reports/operations(section=products,product=${row[0]},sort=${filters.sort},start=${filters.start},end=${filters.end})}" th:text="${zh?'销售明细':'Sales detail'}"></a>
 <a th:href="@{/products/{id}(id=${row[0]})}" th:text="${zh?'商品页':'Product page'}"></a>
 </td>
 <td th:if="${filters.section=='orders' or (filters.section=='products' and filters.product!=null)}"><a target="_blank" rel="noopener" th:href="@{/staff/orders/{id}(id=${row[0]})}" th:text="${zh?'打开订单':'Open order'}"></a></td>
