@@ -87,6 +87,18 @@ class ReturnsTests {
       new OperationsReportService.Table(List.of("Name"),List.of(List.of("=1+1"),List.of("a,\"b\""))));
   assertTrue(csv.contains("'=1+1"));assertTrue(csv.contains("a,\"\"b\"\""));
  }
+
+ @Test void analyticsZeroSalesAndCategoryShares() throws Exception {
+  var today=java.time.LocalDate.now();
+  mvc.perform(get("/staff/reports/operations").with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk())
+      .andExpect(content().string(containsString("Previous sales are zero")));
+  buy("WALLET");
+  var category=analytics.categories(today,today).rows().get(0);
+  assertEquals(0,new BigDecimal(category.get(3)).compareTo(new BigDecimal("100")));
+  var zero=analytics.products(today.minusDays(5),today.minusDays(4),"slow").rows().get(0);
+  assertEquals("0",zero.get(2));
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
