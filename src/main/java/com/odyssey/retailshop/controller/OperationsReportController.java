@@ -66,6 +66,7 @@ public class OperationsReportController {
             @RequestParam(defaultValue="") String q, @RequestParam(defaultValue="all") String stock,
             @RequestParam(defaultValue="top") String sort, @RequestParam(required=false) Long product,
             Model model, jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control","no-store");
         model.addAttribute("available", operations.available());
         try {
             Filters f = filters(section,start,end,status,fulfillment,q,stock,sort,product);
