@@ -82,6 +82,11 @@ public class OperationsReportController {
                     model.addAttribute("comparisonStart",f.start().minusDays(days));
                     model.addAttribute("comparisonEnd",f.start().minusDays(1));
                     model.addAttribute("salesDifference",current.sales().subtract(previous.sales()));
+                    model.addAttribute("salesPercent",previous.sales().signum()==0 ? null :
+                        current.sales().subtract(previous.sales()).multiply(BigDecimal.valueOf(100))
+                            .divide(previous.sales(),2,java.math.RoundingMode.HALF_UP));
+                    model.addAttribute("averageOrder",current.orders()==0 ? BigDecimal.ZERO :
+                        current.sales().divide(BigDecimal.valueOf(current.orders()),2,java.math.RoundingMode.HALF_UP));
                     model.addAttribute("categories",operations.categories(f.start(),f.end()));
                     model.addAttribute("trendMax",table.rows().stream().map(row -> new BigDecimal(row.get(2)))
                         .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO).max(BigDecimal.ONE));

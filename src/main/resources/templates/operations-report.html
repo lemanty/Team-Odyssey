@@ -52,6 +52,8 @@
 <dt th:text="${zh?'上期折后销售额':'Previous discounted sales'}"></dt><dd th:text="${'€'+previous.sales}"></dd>
 <dt th:text="${zh?'销售额变化':'Sales change'}"></dt><dd th:text="${'€'+salesDifference}"></dd>
 <dt th:text="${zh?'完成订单数（本期 / 上期）':'Completed orders (current / previous)'}"></dt><dd th:text="${current.orders+' / '+previous.orders}"></dd>
+<dt th:text="${zh?'销售额变化率':'Sales change %'}"></dt><dd th:text="${salesPercent==null?(zh?'上期为零，无法计算百分比':'Previous sales are zero, percentage unavailable'):salesPercent+'%'}"></dd>
+<dt th:text="${zh?'平均订单金额':'Average order value'}"></dt><dd th:text="${'€'+averageOrder}"></dd>
 <dt th:text="${zh?'退款后净额':'Net after refunds'}"></dt><dd th:text="${'€'+current.net()}"></dd>
 </dl>
 <h2 th:text="${zh?'每日销售趋势':'Daily sales trend'}"></h2>
