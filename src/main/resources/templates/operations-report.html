@@ -36,6 +36,7 @@
 <label th:if="${filters.section=='products'}"><span th:text="${zh?'销量排序':'Sales ranking'}"></span><select name="sort"><option value="top" th:selected="${filters.sort=='top'}" th:text="${zh?'高销量优先':'Best sellers'}"></option><option value="slow" th:selected="${filters.sort=='slow'}" th:text="${zh?'低销量及零销量优先':'Slow and zero sellers'}"></option></select></label>
 <label th:if="${filters.section=='returns'}"><span th:text="${zh?'售后状态':'Return status'}"></span><select name="status"><option value="ALL" th:text="${zh?'全部':'All'}"></option><option value="PENDING" th:selected="${filters.status=='PENDING'}" th:text="${zh?'待处理':'Pending'}"></option><option value="COMPLETED" th:selected="${filters.status=='COMPLETED'}" th:text="${zh?'已完成退款明细':'Completed refund details'}"></option></select></label>
 <button class="btn" th:text="${zh?'查看':'Apply'}"></button>
+<a th:href="@{/staff/reports/operations(section=${filters.section})}" th:text="${zh?'清除筛选':'Clear filters'}"></a>
 </form>
 <p class="report-presets" th:unless="${filters.section=='inventory'}">
 <a th:each="days:${ {7,30,90} }" th:href="@{/staff/reports/operations(section=${filters.section},start=${#temporals.createToday().minusDays(days-1)},end=${#temporals.createToday()},status=${filters.status},fulfillment=${filters.fulfillment},q=${filters.q},sort=${filters.sort},product=${filters.product})}" th:text="${zh?'最近'+days+'天':'Last '+days+' days'}"></a>
