@@ -110,6 +110,18 @@ class ReturnsTests {
   mvc.perform(get("/staff/reports/operations/export").param("section","unknown")
       .with(user("staff@test.com").roles("STAFF"))).andExpect(status().isBadRequest());
  }
+
+ @Test void analyticsInventoryThresholdBoundaries() {
+  jdbc.update("UPDATE product_details SET stock_quantity=5 WHERE product_id=1");
+  assertEquals(1,analytics.inventory("low").rows().size());
+  assertEquals("1",analytics.inventory("low").rows().get(0).get(5));
+  assertTrue(analytics.inventory("out").rows().isEmpty());
+  jdbc.update("UPDATE product_details SET stock_quantity=0 WHERE product_id=1");
+  assertEquals(1,analytics.inventory("out").rows().size());
+  assertEquals("6",analytics.inventory("out").rows().get(0).get(5));
+  jdbc.update("UPDATE product_details SET stock_quantity=6 WHERE product_id=1");
+  assertTrue(analytics.inventory("low").rows().isEmpty());
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
