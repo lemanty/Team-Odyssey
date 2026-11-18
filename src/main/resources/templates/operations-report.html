@@ -84,7 +84,7 @@
 </td>
 <td th:if="${filters.section=='orders' or (filters.section=='products' and filters.product!=null)}"><a target="_blank" rel="noopener" th:href="@{/staff/orders/{id}(id=${row[0]})}" th:text="${zh?'打开订单':'Open order'}"></a></td>
 <td th:if="${filters.section=='returns'}"><a target="_blank" rel="noopener" th:href="@{/staff/returns/{id}(id=${row[0]})}" th:text="${zh?'处理售后':'Open return'}"></a></td>
-<td th:if="${filters.section=='inventory'}"><a th:href="@{${isAdmin?'/admin?section=inventory':'/staff'}}" th:text="${zh?'库存工作台':'Inventory workspace'}"></a></td>
+<td th:if="${filters.section=='inventory'}"><a th:href="@{${isAdmin?'/admin':'/staff'}(section=inventory,productId=${row[0]})}" th:text="${zh?'库存工作台':'Inventory workspace'}"></a></td>
 </tr></tbody></table>
 </div>
 <section th:if="${categories}">
