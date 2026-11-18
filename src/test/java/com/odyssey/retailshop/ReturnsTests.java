@@ -99,6 +99,17 @@ class ReturnsTests {
   var zero=analytics.products(today.minusDays(5),today.minusDays(4),"slow").rows().get(0);
   assertEquals("0",zero.get(2));
  }
+
+ @Test void analyticsRejectsInvalidDatesAndFilters() throws Exception {
+  for(String start:List.of("bad-date","1999-12-31","2999-01-01")) {
+   for(String path:List.of("/staff/reports/operations","/staff/reports/operations/export")) {
+    mvc.perform(get(path).param("start",start).with(user("staff@test.com").roles("STAFF")))
+       .andExpect(status().isBadRequest());
+   }
+  }
+  mvc.perform(get("/staff/reports/operations/export").param("section","unknown")
+      .with(user("staff@test.com").roles("STAFF"))).andExpect(status().isBadRequest());
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
