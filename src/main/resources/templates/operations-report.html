@@ -6,6 +6,7 @@
 <link rel="stylesheet" th:href="@{/css/style.css}">
 <link rel="stylesheet" th:href="@{/css/admin-console.css}">
 <link rel="stylesheet" th:href="@{/css/operations-report.css}">
+<script defer th:src="@{/js/report-table.js}"></script>
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header('account')}"></header>
@@ -76,7 +77,7 @@
 </section>
 <p th:if="${table.rows.isEmpty()}" th:text="${zh?'所选条件下暂无数据，请调整筛选条件。':'No matching data. Try adjusting your filters.'}"></p>
 <div class="report-table" th:unless="${table.rows.isEmpty()}">
-<table><caption th:text="${zh?'当前筛选结果':'Current filtered results'}"></caption><thead><tr><th th:each="column:${table.columns}" th:text="${column}" scope="col"></th><th scope="col" th:unless="${filters.section=='sales'}" th:text="${zh?'查看':'View'}"></th></tr></thead><tbody>
+<table data-report-table><caption th:text="${zh?'当前筛选结果':'Current filtered results'}"></caption><thead><tr><th th:each="column:${table.columns}" th:text="${column}" scope="col"></th><th scope="col" th:unless="${filters.section=='sales'}" th:text="${zh?'查看':'View'}"></th></tr></thead><tbody>
 <tr th:each="row:${table.rows}"><td th:each="cell:${row}" th:text="${cell}"></td>
 <td th:if="${filters.section=='products' and filters.product==null}">
 <a th:href="@{/staff/reports/operations(section=products,product=${row[0]},sort=${filters.sort},start=${filters.start},end=${filters.end})}" th:text="${zh?'销售明细':'Sales detail'}"></a>

@@ -22,3 +22,7 @@
  .trend-day { grid-template-columns:90px 1fr 70px; gap:4px; font-size:12px; }
  .report-summary { padding:12px; }
 }
+
+.report-pagination { display:flex; gap:16px; align-items:center; margin-top:20px; }
+.report-pagination button { min-height:44px; }
+.report-presets { display:flex; flex-wrap:wrap; gap:16px; }
