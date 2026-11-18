@@ -104,6 +104,9 @@ public class OperationsReportController {
                         .mapToLong(row -> Long.parseLong(row.get(7))).average().orElse(0));
                     model.addAttribute("refundTotal",table.rows().stream().filter(row -> row.get(2).equals("COMPLETED"))
                         .map(row -> new BigDecimal(row.get(4))).reduce(BigDecimal.ZERO,BigDecimal::add));
+                    model.addAttribute("oldestPendingHours",table.rows().stream()
+                        .filter(row -> Set.of("REQUESTED","APPROVED","RECEIVED").contains(row.get(2)))
+                        .mapToLong(row -> Long.parseLong(row.get(7))).max().orElse(0));
                     model.addAttribute("pendingCount",table.rows().stream()
                         .filter(row -> Set.of("REQUESTED","APPROVED","RECEIVED").contains(row.get(2))).count());
                 }

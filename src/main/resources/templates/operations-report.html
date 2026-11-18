@@ -73,6 +73,7 @@
 </section>
 <section th:if="${refundTotal!=null}" class="report-summary">
 <p><span th:text="${zh?'已结束申请平均处理小时数':'Average closed-request processing hours'}"></span> <strong th:text="${#numbers.formatDecimal(averageReturnHours,1,1)}"></strong></p>
+<p><span th:text="${zh?'待处理申请最长等待小时数':'Longest pending wait in hours'}"></span> <strong th:text="${oldestPendingHours}"></strong></p>
 <p><span th:text="${zh?'当前结果已退款总额':'Refund total in current results'}"></span> <strong th:text="${'€'+refundTotal}"></strong></p>
 <p><a th:href="@{/staff/reports/operations(section=returns,status=PENDING,start=${filters.start},end=${filters.end})}"><span th:text="${zh?'期间内待处理申请':'Pending requests in period'}"></span> <strong th:text="${pendingCount}"></strong></a></p>
 </section>
