@@ -30,6 +30,7 @@ public class OrderController {
             model.addAttribute("checkoutToken",session.getAttribute("checkoutToken"));
             var bag=cart.view(session);
             model.addAttribute("bag",bag);
+            model.addAttribute("lastCheckoutId", session.getAttribute("lastCheckoutId"));
             model.addAttribute("saleSavings", bag.originalTotal().subtract(bag.total()));
             var memberQuote=membership.quote(user.getName(),bag.total());
             String code=model.containsAttribute("selectedCoupon")?(String)model.getAttribute("selectedCoupon"):"";

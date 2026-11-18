@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${zh == true ? 'zh-CN' : 'en'}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${zh == true ? '权限不足 | Odyssey' : 'Access denied | Odyssey'}">Access denied | Odyssey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="order-page">
+    <h1 th:text="${zh == true ? '权限不足' : 'Access denied'}"></h1>
+    <p th:text="${zh == true ? '当前账号无权执行此操作。请返回账号页查看可用功能。' : 'Your account does not have permission for this action. Return to your account to see the options available to you.'}"></p>
+    <a class="order-button" th:href="@{/account}" th:text="${zh == true ? '返回我的账号' : 'Return to your account'}"></a>
+</main>
+</body>
+</html>
