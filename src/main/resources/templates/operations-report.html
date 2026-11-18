@@ -90,6 +90,7 @@
 </div>
 <section th:if="${categories}">
 <h2 th:text="${zh?'分类销售构成（折前金额）':'Category sales mix (before discounts)'}"></h2>
+<div th:each="r:${categories.rows}" class="category-share"><span th:text="${r[0]}"></span><meter min="0" max="100" th:value="${r[3]}" th:aria-label="${r[0]}"></meter><span th:text="${r[3]+'%'}"></span></div>
 <div class="report-table"><table><thead><tr><th th:each="c:${categories.columns}" th:text="${c}" scope="col"></th></tr></thead><tbody><tr th:each="r:${categories.rows}"><td th:each="c:${r}" th:text="${c}"></td></tr></tbody></table></div>
 </section>
 <section th:if="${reasons}">

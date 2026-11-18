@@ -26,3 +26,6 @@
 .report-pagination { display:flex; gap:16px; align-items:center; margin-top:20px; }
 .report-pagination button { min-height:44px; }
 .report-presets { display:flex; flex-wrap:wrap; gap:16px; }
+
+.category-share { display:grid; grid-template-columns:100px 1fr 70px; gap:12px; align-items:center; }
+.category-share meter { width:100%; height:28px; }
