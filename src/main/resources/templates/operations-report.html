@@ -78,7 +78,7 @@
 <p><a th:href="@{/staff/reports/operations(section=returns,status=PENDING,start=${filters.start},end=${filters.end})}"><span th:text="${zh?'期间内待处理申请':'Pending requests in period'}"></span> <strong th:text="${pendingCount}"></strong></a></p>
 </section>
 <p th:if="${table.rows.isEmpty()}" th:text="${zh?'所选条件下暂无数据，请调整筛选条件。':'No matching data. Try adjusting your filters.'}"></p>
-<div class="report-table" th:unless="${table.rows.isEmpty()}">
+<div class="report-table" tabindex="0" role="region" th:aria-label="${zh?'筛选结果，可横向滚动':'Results, scroll horizontally'}" th:unless="${table.rows.isEmpty()}">
 <table data-report-table><caption th:text="${zh?'当前筛选结果':'Current filtered results'}"></caption><thead><tr><th th:each="column:${table.columns}" th:text="${column}" scope="col"></th><th scope="col" th:unless="${filters.section=='sales'}" th:text="${zh?'查看':'View'}"></th></tr></thead><tbody>
 <tr th:each="row:${table.rows}"><td th:each="cell:${row}" th:text="${cell}"></td>
 <td th:if="${filters.section=='products' and filters.product==null}">

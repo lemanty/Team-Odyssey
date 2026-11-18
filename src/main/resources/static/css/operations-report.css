@@ -29,3 +29,5 @@
 
 .category-share { display:grid; grid-template-columns:100px 1fr 70px; gap:12px; align-items:center; }
 .category-share meter { width:100%; height:28px; }
+
+.report-table:focus-visible, .report-tabs a:focus-visible { outline:3px solid #315f50; outline-offset:3px; }
