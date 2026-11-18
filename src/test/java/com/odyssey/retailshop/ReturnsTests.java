@@ -60,6 +60,33 @@ class ReturnsTests {
   mvc.perform(get("/staff/reports/sales").with(user("a@test.com").roles("CUSTOMER")))
     .andExpect(status().isForbidden());
  }
+ @Autowired OperationsReportService analytics;
+ @Test void analyticsHandlesTotalsFiltersEmptyDaysAndExports() throws Exception {
+  String order=buy("WALLET");
+  String claim=request(order,1);receive(claim);
+  returns.process(claim,"staff@test.com","COMPLETED","Inspected",false,true,false);
+  var today=java.time.LocalDate.now();
+  assertEquals(3,analytics.trend(today.minusDays(2),today).rows().size());
+  assertEquals("0",analytics.trend(today.minusDays(2),today).rows().get(0).get(1));
+  var product=analytics.products(today,today,"top").rows().get(0);
+  assertEquals("3",product.get(2));assertEquals("1",product.get(4));
+  assertEquals(0,new BigDecimal(product.get(5)).compareTo(new BigDecimal("33.33")));
+  assertEquals(1,analytics.orders(today,today,"COMPLETED","COLLECTION","Alice").rows().size());
+  assertEquals(0,analytics.orders(today,today,"COMPLETED","DELIVERY","Alice").rows().size());
+  assertEquals(0,analytics.returns(today,today,"PENDING").rows().size());
+  assertEquals(1,analytics.productOrders(today,today,1).rows().size());
+  for(String section:List.of("sales","products","inventory","orders","returns")) {
+   mvc.perform(get("/staff/reports/operations").param("section",section).with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Export current results")));
+   mvc.perform(get("/staff/reports/operations/export").param("section",section).with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"));
+  }
+  mvc.perform(get("/staff/reports/operations").param("start","invalid").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isBadRequest());
+  mvc.perform(get("/staff/reports/operations/export").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isForbidden());
+  var csv=com.odyssey.retailshop.controller.OperationsReportController.csv(
+      new OperationsReportService.Table(List.of("Name"),List.of(List.of("=1+1"),List.of("a,\"b\""))));
+  assertTrue(csv.contains("'=1+1"));assertTrue(csv.contains("a,\"\"b\"\""));
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());
