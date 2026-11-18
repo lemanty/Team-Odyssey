@@ -185,6 +185,39 @@ public class ProductManagementService {
             save(current,null,null);
         });
     }
+    public void adjustStock(long id, String revision, Integer quantity, Map<Long,Integer> options,
+                            String actor, String reason) {
+        ready();
+        if (reason == null || reason.isBlank() || reason.strip().length() > 300) {
+            throw new IllegalArgumentException("Enter an adjustment reason (up to 300 characters). / 请填写调整原因（最多300字）。");
+        }
+        tx.executeWithoutResult(transaction -> {
+            jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE", id);
+            var before = edit(id);
+            updateStock(id, revision, quantity, options);
+            if (before.getOptions().isEmpty()) {
+                recordAdjustment(id, 0, before.getStock(), quantity, actor, reason.strip());
+            } else {
+                for (var option : before.getOptions()) {
+                    recordAdjustment(id, option.getId(), option.getStock(), options.get(option.getId()), actor, reason.strip());
+                }
+            }
+        });
+    }
+
+    private void recordAdjustment(long product, long variant, int before, int after, String actor, String reason) {
+        if (before == after) return;
+        jdbc.update("INSERT INTO stock_adjustments(product_id,variant_id,before_quantity,after_quantity,actor,reason) VALUES(?,?,?,?,?,?)",
+            product, variant, before, after, actor, reason);
+    }
+
+    public record Adjustment(long variant, int before, int after, String actor, String reason, java.time.LocalDateTime date) {}
+    public List<Adjustment> adjustments(long product) {
+        return jdbc.query("SELECT * FROM stock_adjustments WHERE product_id=? ORDER BY id DESC LIMIT 100",
+            (row, index) -> new Adjustment(row.getLong("variant_id"), row.getInt("before_quantity"),
+                row.getInt("after_quantity"), row.getString("actor"), row.getString("reason"),
+                row.getTimestamp("created_at").toLocalDateTime()), product);
+    }
     public record Image(byte[] bytes,String type) {}
     public Optional<Image> image(String id) { return jdbc==null?Optional.empty():jdbc.query("SELECT image_data,content_type FROM catalogue_images WHERE id=?",(r,n)->new Image(r.getBytes(1),r.getString(2)),id).stream().findFirst(); }
 }
