@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${zh?'zh-CN':'en'}">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title th:text="${zh?'经营分析 | Odyssey':'Operations analytics | Odyssey'}"></title>
+<link rel="stylesheet" th:href="@{/css/style.css}">
+<link rel="stylesheet" th:href="@{/css/admin-console.css}">
+<link rel="stylesheet" th:href="@{/css/operations-report.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header('account')}"></header>
+<div class="admin-shell">
+<aside th:replace="~{fragments/workspace-sidebar :: sidebar('analytics')}"></aside>
+<main class="analytics">
+<h1 th:text="${zh?'经营分析':'Operations analytics'}"></h1>
+<p role="alert" th:if="${error}" th:text="${storeText.text(error,zh)}"></p>
+<a th:if="${error}" th:href="@{/staff/reports/operations}" th:text="${zh?'重置筛选':'Reset filters'}"></a>
+<th:block th:if="${filters}">
+<nav class="report-tabs" aria-label="Reports">
+<a th:each="section:${ {'sales','products','inventory','orders','returns'} }"
+   th:href="@{/staff/reports/operations(section=${section},start=${filters.start},end=${filters.end})}"
+   th:attr="aria-current=${section==filters.section?'page':null}"
+   th:text="${section=='sales'?(zh?'销售趋势':'Sales'):section=='products'?(zh?'商品分析':'Products'):section=='inventory'?(zh?'库存预警':'Inventory'):section=='orders'?(zh?'订单分析':'Orders'):(zh?'售后分析':'Returns')}"></a>
+</nav>
+<form method="get" th:action="@{/staff/reports/operations}">
+<input type="hidden" name="section" th:value="${filters.section}">
+<label><span th:text="${zh?'开始日期':'From'}"></span><input type="date" name="start" required th:value="${filters.start}"></label>
+<label><span th:text="${zh?'结束日期':'Through'}"></span><input type="date" name="end" required th:value="${filters.end}"></label>
+<th:block th:if="${filters.section=='orders'}">
+<label><span th:text="${zh?'订单号、姓名或邮箱':'Order, name or email'}"></span><input type="search" name="q" th:value="${filters.q}"></label>
+<label><span th:text="${zh?'订单状态':'Status'}"></span><select name="status"><option th:each="s:${ {'ALL','PENDING','PREPARING','SHIPPED','READY','COMPLETED','CANCELLED'} }" th:value="${s}" th:text="${s}" th:selected="${s==filters.status}"></option></select></label>
+<label><span th:text="${zh?'配送方式':'Fulfillment'}"></span><select name="fulfillment"><option th:each="s:${ {'ALL','DELIVERY','COLLECTION'} }" th:value="${s}" th:text="${s}" th:selected="${s==filters.fulfillment}"></option></select></label>
+</th:block>
+<label th:if="${filters.section=='inventory'}"><span th:text="${zh?'库存状态':'Stock'}"></span><select name="stock"><option th:each="s:${ {'all','low','out'} }" th:value="${s}" th:selected="${s==filters.stock}" th:text="${s=='all'?(zh?'全部':'All'):s=='low'?(zh?'低库存':'Low stock'):(zh?'缺货':'Out of stock')}"></option></select></label>
+<label th:if="${filters.section=='products'}"><span th:text="${zh?'销量排序':'Sales ranking'}"></span><select name="sort"><option value="top" th:selected="${filters.sort=='top'}" th:text="${zh?'高销量优先':'Best sellers'}"></option><option value="slow" th:selected="${filters.sort=='slow'}" th:text="${zh?'低销量及零销量优先':'Slow and zero sellers'}"></option></select></label>
+<label th:if="${filters.section=='returns'}"><span th:text="${zh?'售后状态':'Return status'}"></span><select name="status"><option value="ALL" th:text="${zh?'全部':'All'}"></option><option value="PENDING" th:selected="${filters.status=='PENDING'}" th:text="${zh?'待处理':'Pending'}"></option></select></label>
+<button class="btn" th:text="${zh?'查看':'Apply'}"></button>
+</form>
+<p th:unless="${available}" th:text="${zh?'请连接数据库查看经营数据。':'Connect the database to view operations data.'}"></p>
+<th:block th:if="${table}">
+<a class="btn" th:href="@{/staff/reports/operations/export(section=${filters.section},start=${filters.start},end=${filters.end},status=${filters.status},fulfillment=${filters.fulfillment},q=${filters.q},stock=${filters.stock},sort=${filters.sort},product=${filters.product})}" th:text="${zh?'导出当前结果 CSV':'Export current results CSV'}"></a>
+<p th:if="${filters.section=='inventory'}" th:text="${zh?'库存为当前值。补货参考量将库存补至预警线以上1件，实际采购请结合需求确定。':'Stock is current. Suggested top-up brings stock one unit above its alert threshold. Adjust purchasing to demand.'}"></p>
+<p th:if="${filters.section=='sales' or filters.section=='products'}" th:text="${zh?'按下单日期统计当前已完成订单。退货数据含这些订单截至查询时已完成的退货。分类采用商品当前分类。':'Completed orders grouped by placement date. Returns include completed returns for these orders to date. Categories use the current catalogue.'}"></p>
+<p th:if="${filters.section=='returns'}" th:text="${zh?'按售后申请日期统计。已结束申请显示处理时长，待处理申请显示等待时长。':'Grouped by return request date. Closed requests show processing time, open requests show waiting time.'}"></p>
+<p th:if="${filters.section=='orders'}" th:text="${zh?'已完成或取消订单显示从下单至结束的小时数，其余显示距下单的等待小时数。':'Completed or cancelled orders show hours from placement to closure. Other orders show hours since placement.'}"></p>
+<section th:if="${current}" class="report-summary">
+<h2 th:text="${zh?'与上一个等长周期比较':'Compared with the previous equal-length period'}"></h2>
+<p th:text="${comparisonStart+' — '+comparisonEnd}"></p>
+<dl>
+<dt th:text="${zh?'本期折后销售额':'Current discounted sales'}"></dt><dd th:text="${'€'+current.sales}"></dd>
+<dt th:text="${zh?'上期折后销售额':'Previous discounted sales'}"></dt><dd th:text="${'€'+previous.sales}"></dd>
+<dt th:text="${zh?'销售额变化':'Sales change'}"></dt><dd th:text="${'€'+salesDifference}"></dd>
+<dt th:text="${zh?'完成订单数（本期 / 上期）':'Completed orders (current / previous)'}"></dt><dd th:text="${current.orders+' / '+previous.orders}"></dd>
+<dt th:text="${zh?'退款后净额':'Net after refunds'}"></dt><dd th:text="${'€'+current.net()}"></dd>
+</dl>
+<h2 th:text="${zh?'每日销售趋势':'Daily sales trend'}"></h2>
+<div class="trend" role="img" th:aria-label="${zh?'每日折后销售额，下方有完整数据表':'Daily discounted sales, full data in the table below'}">
+<div th:each="row:${table.rows}" class="trend-day"><span th:text="${row[0]}"></span><meter min="0" th:max="${trendMax}" th:value="${row[2]}"></meter><span th:text="${'€'+row[2]}"></span></div>
+</div>
+</section>
+<section th:if="${refundTotal!=null}" class="report-summary">
+<p><span th:text="${zh?'当前结果已退款总额':'Refund total in current results'}"></span> <strong th:text="${'€'+refundTotal}"></strong></p>
+<p><a th:href="@{/staff/reports/operations(section=returns,status=PENDING,start=${filters.start},end=${filters.end})}"><span th:text="${zh?'期间内待处理申请':'Pending requests in period'}"></span> <strong th:text="${pendingCount}"></strong></a></p>
+</section>
+<p th:if="${table.rows.isEmpty()}" th:text="${zh?'所选条件下暂无数据，请调整筛选条件。':'No matching data. Try adjusting your filters.'}"></p>
+<div class="report-table" th:unless="${table.rows.isEmpty()}">
+<table><caption th:text="${zh?'当前筛选结果':'Current filtered results'}"></caption><thead><tr><th th:each="column:${table.columns}" th:text="${column}" scope="col"></th><th scope="col" th:unless="${filters.section=='sales'}" th:text="${zh?'查看':'View'}"></th></tr></thead><tbody>
+<tr th:each="row:${table.rows}"><td th:each="cell:${row}" th:text="${cell}"></td>
+<td th:if="${filters.section=='products' and filters.product==null}">
+<a th:href="@{/staff/reports/operations(section=products,product=${row[0]},start=${filters.start},end=${filters.end})}" th:text="${zh?'销售明细':'Sales detail'}"></a>
+<a th:href="@{/products/{id}(id=${row[0]})}" th:text="${zh?'商品页':'Product page'}"></a>
+</td>
+<td th:if="${filters.section=='orders' or (filters.section=='products' and filters.product!=null)}"><a target="_blank" rel="noopener" th:href="@{/staff/orders/{id}(id=${row[0]})}" th:text="${zh?'打开订单':'Open order'}"></a></td>
+<td th:if="${filters.section=='returns'}"><a target="_blank" rel="noopener" th:href="@{/staff/returns/{id}(id=${row[0]})}" th:text="${zh?'处理售后':'Open return'}"></a></td>
+<td th:if="${filters.section=='inventory'}"><a th:href="@{${isAdmin?'/admin?section=inventory':'/staff'}}" th:text="${zh?'库存工作台':'Inventory workspace'}"></a></td>
+</tr></tbody></table>
+</div>
+<section th:if="${categories}">
+<h2 th:text="${zh?'分类销售构成（折前金额）':'Category sales mix (before discounts)'}"></h2>
+<div class="report-table"><table><thead><tr><th th:each="c:${categories.columns}" th:text="${c}" scope="col"></th></tr></thead><tbody><tr th:each="r:${categories.rows}"><td th:each="c:${r}" th:text="${c}"></td></tr></tbody></table></div>
+</section>
+<section th:if="${reasons}">
+<h2 th:text="${zh?'退货原因汇总（相同原文合并）':'Return reasons (identical wording grouped)'}"></h2>
+<div class="report-table"><table><thead><tr><th th:each="c:${reasons.columns}" th:text="${c}" scope="col"></th></tr></thead><tbody><tr th:each="r:${reasons.rows}"><td th:each="c:${r}" th:text="${c}"></td></tr></tbody></table></div>
+</section>
+</th:block></th:block>
+</main></div>
+</body></html>

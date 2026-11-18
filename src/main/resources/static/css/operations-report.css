@@ -1,0 +1,24 @@
+.analytics { min-width:0; padding:clamp(16px,3vw,40px); max-width:1200px; }
+.analytics form,.report-tabs { display:flex; flex-wrap:wrap; gap:16px; margin:20px 0; align-items:end; }
+.analytics label { display:grid; gap:6px; }
+.analytics input,.analytics select,.analytics button { min-height:44px; max-width:100%; }
+.report-tabs a { padding:10px; border-bottom:2px solid transparent; }
+.report-tabs [aria-current=page] { border-color:currentColor; font-weight:bold; }
+.report-table { overflow:auto; max-width:100%; margin:24px 0; }
+.analytics table { border-collapse:collapse; width:100%; }
+.analytics th,.analytics td { padding:12px; text-align:left; border-bottom:1px solid #d8ddd6; overflow-wrap:anywhere; min-width:90px; }
+.analytics td a { display:block; margin:6px 0; }
+.analytics caption { text-align:left; font-weight:bold; padding:12px; }
+.report-summary { background:#f4f5ef; padding:20px; margin-top:24px; border-radius:12px; }
+.report-summary dl { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.report-summary dd { margin:0; font-weight:bold; }
+.trend { max-height:360px; overflow:auto; }
+.trend-day { display:grid; grid-template-columns:100px 1fr 100px; gap:12px; align-items:center; padding:4px 0; }
+.trend-day meter { width:100%; height:24px; }
+@media(max-width:600px) {
+ .admin-shell { display:block; }
+ .analytics form { align-items:stretch; }
+ .analytics label { width:100%; }
+ .trend-day { grid-template-columns:90px 1fr 70px; gap:4px; font-size:12px; }
+ .report-summary { padding:12px; }
+}
