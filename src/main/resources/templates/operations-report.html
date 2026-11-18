@@ -53,6 +53,7 @@
 <p th:if="${filters.section=='sales' or filters.section=='products'}" th:text="${zh?'按下单日期统计当前已完成订单。退货数据含这些订单截至查询时已完成的退货。分类采用商品当前分类。':'Completed orders grouped by placement date. Returns include completed returns for these orders to date. Categories use the current catalogue.'}"></p>
 <p th:if="${filters.section=='returns'}" th:text="${zh?'按售后申请日期统计。已结束申请显示处理时长，待处理申请显示等待时长。':'Grouped by return request date. Closed requests show processing time, open requests show waiting time.'}"></p>
 <p th:if="${filters.section=='orders'}" th:text="${zh?'已完成或取消订单显示从下单至结束的小时数，其余显示距下单的等待小时数。':'Completed or cancelled orders show hours from placement to closure. Other orders show hours since placement.'}"></p>
+<p th:if="${orderCount!=null}"><span th:text="${zh?'筛选结果订单数 / 订单额合计':'Matching orders / total order value'}"></span> <strong th:text="${orderCount+' / €'+orderTotal}"></strong></p>
 <section th:if="${current}" class="report-summary">
 <h2 th:text="${zh?'与上一个等长周期比较':'Compared with the previous equal-length period'}"></h2>
 <p th:text="${comparisonStart+' — '+comparisonEnd}"></p>

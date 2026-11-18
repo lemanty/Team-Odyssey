@@ -74,6 +74,11 @@ public class OperationsReportController {
             if (operations.available()) {
                 Table table = table(f);
                 model.addAttribute("table",table);
+                if (section.equals("orders")) {
+                    model.addAttribute("orderCount",table.rows().size());
+                    model.addAttribute("orderTotal",table.rows().stream().map(row -> new BigDecimal(row.get(4)))
+                        .reduce(BigDecimal.ZERO,BigDecimal::add));
+                }
                 if (section.equals("sales")) {
                     long days = ChronoUnit.DAYS.between(f.start(),f.end())+1;
                     var current = sales.read(f.start(),f.end());
