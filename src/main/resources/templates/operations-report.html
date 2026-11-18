@@ -30,8 +30,8 @@
 <label><span th:text="${zh?'结束日期':'Through'}"></span><input type="date" name="end" required th:value="${filters.end}"></label>
 <th:block th:if="${filters.section=='orders'}">
 <label><span th:text="${zh?'订单号、姓名或邮箱':'Order, name or email'}"></span><input type="search" name="q" th:value="${filters.q}"></label>
-<label><span th:text="${zh?'订单状态':'Status'}"></span><select name="status"><option th:each="s:${ {'ALL','PENDING','PREPARING','SHIPPED','READY','COMPLETED','CANCELLED'} }" th:value="${s}" th:text="${s}" th:selected="${s==filters.status}"></option></select></label>
-<label><span th:text="${zh?'配送方式':'Fulfillment'}"></span><select name="fulfillment"><option th:each="s:${ {'ALL','DELIVERY','COLLECTION'} }" th:value="${s}" th:text="${s}" th:selected="${s==filters.fulfillment}"></option></select></label>
+<label><span th:text="${zh?'订单状态':'Status'}"></span><select name="status"><option th:each="s:${ {'ALL','PENDING','PREPARING','SHIPPED','READY','COMPLETED','CANCELLED'} }" th:value="${s}" th:text="${zh?statusLabels[s]:s}" th:selected="${s==filters.status}"></option></select></label>
+<label><span th:text="${zh?'配送方式':'Fulfillment'}"></span><select name="fulfillment"><option th:each="s:${ {'ALL','DELIVERY','COLLECTION'} }" th:value="${s}" th:text="${zh?fulfillmentLabels[s]:s}" th:selected="${s==filters.fulfillment}"></option></select></label>
 </th:block>
 <label th:if="${filters.section=='inventory'}"><span th:text="${zh?'库存状态':'Stock'}"></span><select name="stock"><option th:each="s:${ {'all','low','out'} }" th:value="${s}" th:selected="${s==filters.stock}" th:text="${s=='all'?(zh?'全部':'All'):s=='low'?(zh?'低库存':'Low stock'):(zh?'缺货':'Out of stock')}"></option></select></label>
 <label th:if="${filters.section=='products'}"><span th:text="${zh?'销量排序':'Sales ranking'}"></span><select name="sort"><option value="top" th:selected="${filters.sort=='top'}" th:text="${zh?'高销量优先':'Best sellers'}"></option><option value="slow" th:selected="${filters.sort=='slow'}" th:text="${zh?'低销量及零销量优先':'Slow and zero sellers'}"></option></select></label>

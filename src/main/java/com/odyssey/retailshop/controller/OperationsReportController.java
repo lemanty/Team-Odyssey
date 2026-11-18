@@ -68,6 +68,9 @@ public class OperationsReportController {
             Model model, jakarta.servlet.http.HttpServletResponse response) {
         response.setHeader("Cache-Control","no-store");
         model.addAttribute("available", operations.available());
+        model.addAttribute("statusLabels",Map.of("ALL","全部","PENDING","待备货","PREPARING","备货中",
+            "SHIPPED","已发货","READY","待自提","COMPLETED","已完成","CANCELLED","已取消"));
+        model.addAttribute("fulfillmentLabels",Map.of("ALL","全部","DELIVERY","配送","COLLECTION","自提"));
         try {
             Filters f = filters(section,start,end,status,fulfillment,q,stock,sort,product);
             model.addAttribute("filters",f);
