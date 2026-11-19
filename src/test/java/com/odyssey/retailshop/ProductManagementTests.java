@@ -207,4 +207,16 @@ class ProductManagementTests {
   assertEquals(1,manager.adjustments(id).size());
   assertEquals(7,manager.edit(id).getStock());
  }
+
+ @Test void inventoryAdjustmentPreservesIncompleteLegacyCatalogue() {
+  long id=manager.save(form(),null,null);
+  jdbc.update("UPDATE products SET subcategory='' WHERE id=?",id);
+  jdbc.update("UPDATE product_details SET garment_image='' WHERE product_id=?",id);
+  var original=manager.edit(id);
+  manager.adjustStock(id,original.getRevision(),9,Map.of(),"staff@test.com","Counted stock");
+  assertEquals(9,manager.edit(id).getStock());
+  assertEquals("",manager.edit(id).getImage());
+  assertEquals("",manager.edit(id).getSubcategory());
+  assertEquals(1,manager.adjustments(id).size());
+ }
 }
