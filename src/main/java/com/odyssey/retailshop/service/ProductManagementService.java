@@ -188,14 +188,14 @@ public class ProductManagementService {
             for (var option : current.getOptions()) {
                 int before = jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=?",Integer.class,option.getId());
                 jdbc.update("UPDATE product_variants SET stock_quantity=? WHERE id=?",option.getStock(),option.getId());
-                if (before == 0 && option.getStock() > 0) {
+                if (current.getPublished() && before == 0 && option.getStock() > 0) {
                     favorites.notifyRestock(id,option.getId(),option.getSize(),option.getColor());
                 }
             }
             int before = jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=?",Integer.class,id);
             jdbc.update("UPDATE product_details SET stock_quantity=? WHERE product_id=?",total,id);
             jdbc.update("UPDATE product_management SET revision=revision+1 WHERE product_id=?",id);
-            if (current.getOptions().isEmpty() && before == 0 && total > 0) {
+            if (current.getPublished() && current.getOptions().isEmpty() && before == 0 && total > 0) {
                 favorites.notifyRestock(id,0L,"","");
             }
         });
