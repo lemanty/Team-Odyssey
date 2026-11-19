@@ -26,7 +26,9 @@ public class CartController {
     }
     @GetMapping("/cart")
     public String cart(HttpSession session, Model model) {
-        model.addAttribute("bag", cart.view(session));
+        var bag = cart.view(session);
+        model.addAttribute("bag", bag);
+        model.addAttribute("checkoutReady", !bag.lines().isEmpty() && bag.lines().stream().allMatch(CartService.Line::available));
         return "cart";
     }
     @PostMapping("/cart/add")

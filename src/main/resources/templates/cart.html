@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Your bag | Odyssey', zh)}">Your bag | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
-<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script><script defer th:src="@{/js/cart-checkout.js}"></script></head>
 <body class="chosen-design chosen-cart">
 <header th:replace="~{fragments/layout :: header('cart')}"></header>
 <main class="cart-page">
@@ -34,7 +34,8 @@
                         <del th:if="${line.unitPrice.compareTo(line.product.price) < 0}" th:text="${'€' + #numbers.formatDecimal(line.product.price, 1, 2)}"></del>
                         <span th:text="${'€' + #numbers.formatDecimal(line.unitPrice, 1, 2) + (zh ? ' / 件' : ' each')}">Price</span>
                     </p>
-                    <p class="cart-error" th:unless="${line.available}"><span th:text="${storeText.text('This quantity is no longer available. Please reduce it or remove this item.', zh)}">This quantity is no longer available. Please reduce it or remove this item.</span></p>
+                    <p class="cart-error" th:if="${line.product==null}" th:text="${zh?'商品已下架，请移除后再结算。':'This item is no longer for sale. Remove it before checkout.'}"></p>
+                    <p class="cart-error" th:if="${line.product!=null and !line.available}"><span th:text="${storeText.text('This quantity is no longer available. Please reduce it or remove this item.', zh)}">This quantity is no longer available. Please reduce it or remove this item.</span></p>
                     <form class="cart-quantity" method="post" th:action="@{/cart/update}" th:if="${line.product != null}">
                         <input type="hidden" name="csrf" th:value="${cartToken}">
                         <input type="hidden" name="productId" th:value="${line.id}">
@@ -58,7 +59,9 @@
             <h2><span th:text="${storeText.text('Bag summary', zh)}">Bag summary</span></h2>
             <div class="cart-total"><span><span th:text="${storeText.text('Subtotal', zh)}">Subtotal</span></span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
             <p class="cart-summary-note"><span th:text="${zh?'购物车保存在你的账号中，加入购物车不会预留库存。':'Your bag is saved to your account. Adding items does not reserve stock.'}">Sign in to add items. Your bag is saved to your account. Adding to your bag does not reserve stock.</span></p>
-            <a class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
+            <p id="cart-unsaved" role="alert" hidden th:text="${zh?'数量修改尚未保存，请先点击更新，再前往结算。':'Quantity changes are not saved. Select Update before proceeding to checkout.'}"></p>
+            <p th:unless="${checkoutReady}" role="alert" th:text="${zh?'请先调整缺货商品数量或移除不可购买的商品，再结算。':'Reduce unavailable quantities or remove unavailable items before checkout.'}"></p>
+            <a th:if="${checkoutReady}" data-cart-checkout class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
             <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </aside>
     </div>
