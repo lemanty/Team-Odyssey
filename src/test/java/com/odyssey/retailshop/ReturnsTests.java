@@ -60,6 +60,80 @@ class ReturnsTests {
   mvc.perform(get("/staff/reports/sales").with(user("a@test.com").roles("CUSTOMER")))
     .andExpect(status().isForbidden());
  }
+ @Autowired OperationsReportService analytics;
+ @Test void analyticsHandlesTotalsFiltersEmptyDaysAndExports() throws Exception {
+  String order=buy("WALLET");
+  String claim=request(order,1);receive(claim);
+  returns.process(claim,"staff@test.com","COMPLETED","Inspected",false,true,false);
+  var today=java.time.LocalDate.now();
+  assertEquals(3,analytics.trend(today.minusDays(2),today).rows().size());
+  assertEquals("0",analytics.trend(today.minusDays(2),today).rows().get(0).get(1));
+  var product=analytics.products(today,today,"top").rows().get(0);
+  assertEquals("3",product.get(2));assertEquals("1",product.get(4));
+  assertEquals(0,new BigDecimal(product.get(5)).compareTo(new BigDecimal("33.33")));
+  assertEquals(1,analytics.orders(today,today,"COMPLETED","COLLECTION","Alice").rows().size());
+  assertEquals(0,analytics.orders(today,today,"COMPLETED","DELIVERY","Alice").rows().size());
+  assertEquals(0,analytics.returns(today,today,"PENDING").rows().size());
+  assertEquals(1,analytics.productOrders(today,today,1).rows().size());
+  for(String section:List.of("sales","products","inventory","orders","returns")) {
+   mvc.perform(get("/staff/reports/operations").param("section",section).with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Export current results")));
+   mvc.perform(get("/staff/reports/operations/export").param("section",section).with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"));
+  }
+  mvc.perform(get("/staff/reports/operations").param("start","invalid").with(user("staff@test.com").roles("STAFF"))).andExpect(status().isBadRequest());
+  mvc.perform(get("/staff/reports/operations/export").with(user("a@test.com").roles("CUSTOMER"))).andExpect(status().isForbidden());
+  var csv=com.odyssey.retailshop.controller.OperationsReportController.csv(
+      new OperationsReportService.Table(List.of("Name"),List.of(List.of("=1+1"),List.of("a,\"b\""))));
+  assertTrue(csv.contains("'=1+1"));assertTrue(csv.contains("a,\"\"b\"\""));
+ }
+
+ @Test void analyticsZeroSalesAndCategoryShares() throws Exception {
+  var today=java.time.LocalDate.now();
+  mvc.perform(get("/staff/reports/operations").with(user("staff@test.com").roles("STAFF")))
+      .andExpect(status().isOk())
+      .andExpect(content().string(containsString("Previous sales are zero")));
+  buy("WALLET");
+  var category=analytics.categories(today,today).rows().get(0);
+  assertEquals(0,new BigDecimal(category.get(3)).compareTo(new BigDecimal("100")));
+  var zero=analytics.products(today.minusDays(5),today.minusDays(4),"slow").rows().get(0);
+  assertEquals("0",zero.get(2));
+ }
+
+ @Test void analyticsRejectsInvalidDatesAndFilters() throws Exception {
+  for(String start:List.of("bad-date","1999-12-31","2999-01-01")) {
+   for(String path:List.of("/staff/reports/operations","/staff/reports/operations/export")) {
+    mvc.perform(get(path).param("start",start).with(user("staff@test.com").roles("STAFF")))
+       .andExpect(status().isBadRequest());
+   }
+  }
+  mvc.perform(get("/staff/reports/operations/export").param("section","unknown")
+      .with(user("staff@test.com").roles("STAFF"))).andExpect(status().isBadRequest());
+ }
+
+ @Test void analyticsInventoryThresholdBoundaries() {
+  jdbc.update("UPDATE product_details SET stock_quantity=5 WHERE product_id=1");
+  assertEquals(1,analytics.inventory("low").rows().size());
+  assertEquals("1",analytics.inventory("low").rows().get(0).get(5));
+  assertTrue(analytics.inventory("out").rows().isEmpty());
+  jdbc.update("UPDATE product_details SET stock_quantity=0 WHERE product_id=1");
+  assertEquals(1,analytics.inventory("out").rows().size());
+  assertEquals("6",analytics.inventory("out").rows().get(0).get(5));
+  jdbc.update("UPDATE product_details SET stock_quantity=6 WHERE product_id=1");
+  assertTrue(analytics.inventory("low").rows().isEmpty());
+ }
+
+ @Test void analyticsSeparatesPendingAndRefundedReturns() {
+  String order=buy("WALLET");String claim=request(order,1);
+  var today=java.time.LocalDate.now();
+  assertEquals(1,analytics.returns(today,today,"PENDING").rows().size());
+  assertTrue(analytics.returns(today,today,"COMPLETED").rows().isEmpty());
+  receive(claim);returns.process(claim,"staff@test.com","COMPLETED","Inspected",false,true,false);
+  assertTrue(analytics.returns(today,today,"PENDING").rows().isEmpty());
+  var refunded=analytics.returns(today,today,"COMPLETED").rows().get(0);
+  assertEquals(0,new BigDecimal(refunded.get(4)).compareTo(new BigDecimal("12.50")));
+  assertEquals("Damaged",analytics.reasons(today,today).rows().get(0).get(0));
+ }
  @Test void partialRefundStockAndDuplicateCompletion() {
   String order=buy("WALLET"),id=request(order,1);receive(id);returns.process(id,"staff@test.com","COMPLETED","Refund approved",true,true,false);returns.process(id,"staff@test.com","COMPLETED","Retry",true,true,false);
   assertEquals(new BigDecimal("75.00"),wallet.balance(1));assertEquals(8,jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class));assertEquals(4,returns.events(id).size());assertEquals(order,wallet.history(1).get(0).orderId());assertEquals("REFUND",wallet.history(1).get(0).kind());

@@ -123,7 +123,12 @@ public class OrderService {
                 if (key >= 0) productIds.add(key);
                 else productIds.addAll(jdbc.queryForList("SELECT product_id FROM product_variants WHERE id=?",Long.class,-key));
             }
-            for (long pid : productIds) jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE",pid);
+            for (long pid : productIds) {
+                jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE", pid);
+                if (!jdbc.queryForList("SELECT product_id FROM product_management WHERE product_id=? AND published=FALSE FOR UPDATE", Long.class, pid).isEmpty()) {
+                    throw new IllegalArgumentException("An item is no longer for sale. Remove it from your bag to continue. / 商品已下架，请从购物车移除后再结算。");
+                }
+            }
             var prices = sales.activePrices();
             List<Item> lines = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;

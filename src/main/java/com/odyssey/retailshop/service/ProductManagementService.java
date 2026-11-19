@@ -182,8 +182,56 @@ public class ProductManagementService {
                 if(!ids.equals(options.keySet())) throw new IllegalArgumentException("Reload all options. / 请重新加载完整规格。");
                 for(var option:current.getOptions()) { stock(options.get(option.getId())); option.setStock(options.get(option.getId())); }
             }
-            save(current,null,null);
+            int total = current.getOptions().isEmpty() ? current.getStock() :
+                current.getOptions().stream().mapToInt(ProductEditForm.Option::getStock).sum();
+            stock(total);
+            for (var option : current.getOptions()) {
+                int before = jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=?",Integer.class,option.getId());
+                jdbc.update("UPDATE product_variants SET stock_quantity=? WHERE id=?",option.getStock(),option.getId());
+                if (current.getPublished() && before == 0 && option.getStock() > 0) {
+                    favorites.notifyRestock(id,option.getId(),option.getSize(),option.getColor());
+                }
+            }
+            int before = jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=?",Integer.class,id);
+            jdbc.update("UPDATE product_details SET stock_quantity=? WHERE product_id=?",total,id);
+            jdbc.update("UPDATE product_management SET revision=revision+1 WHERE product_id=?",id);
+            if (current.getPublished() && current.getOptions().isEmpty() && before == 0 && total > 0) {
+                favorites.notifyRestock(id,0L,"","");
+            }
         });
+    }
+    public void adjustStock(long id, String revision, Integer quantity, Map<Long,Integer> options,
+                            String actor, String reason) {
+        ready();
+        if (reason == null || reason.isBlank() || reason.strip().length() > 300) {
+            throw new IllegalArgumentException("Enter an adjustment reason (up to 300 characters). / 请填写调整原因（最多300字）。");
+        }
+        tx.executeWithoutResult(transaction -> {
+            jdbc.queryForList("SELECT id FROM products WHERE id=? FOR UPDATE", id);
+            var before = edit(id);
+            updateStock(id, revision, quantity, options);
+            if (before.getOptions().isEmpty()) {
+                recordAdjustment(id, 0, before.getStock(), quantity, actor, reason.strip());
+            } else {
+                for (var option : before.getOptions()) {
+                    recordAdjustment(id, option.getId(), option.getStock(), options.get(option.getId()), actor, reason.strip());
+                }
+            }
+        });
+    }
+
+    private void recordAdjustment(long product, long variant, int before, int after, String actor, String reason) {
+        if (before == after) return;
+        jdbc.update("INSERT INTO stock_adjustments(product_id,variant_id,before_quantity,after_quantity,actor,reason) VALUES(?,?,?,?,?,?)",
+            product, variant, before, after, actor, reason);
+    }
+
+    public record Adjustment(long variant, int before, int after, String actor, String reason, java.time.LocalDateTime date) {}
+    public List<Adjustment> adjustments(long product) {
+        return jdbc.query("SELECT * FROM stock_adjustments WHERE product_id=? ORDER BY id DESC LIMIT 100",
+            (row, index) -> new Adjustment(row.getLong("variant_id"), row.getInt("before_quantity"),
+                row.getInt("after_quantity"), row.getString("actor"), row.getString("reason"),
+                row.getTimestamp("created_at").toLocalDateTime()), product);
     }
     public record Image(byte[] bytes,String type) {}
     public Optional<Image> image(String id) { return jdbc==null?Optional.empty():jdbc.query("SELECT image_data,content_type FROM catalogue_images WHERE id=?",(r,n)->new Image(r.getBytes(1),r.getString(2)),id).stream().findFirst(); }

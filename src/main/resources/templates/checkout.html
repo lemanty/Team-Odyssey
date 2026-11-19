@@ -7,7 +7,7 @@
 <title th:text="${storeText.text('Orders | Odyssey', zh)}">Orders | Odyssey</title>
 <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
 <link rel="stylesheet" th:href="@{/css/checkout-payment.css}">
-<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script></head>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script><script defer th:src="@{/js/checkout-network.js}"></script></head>
 <body class="chosen-design chosen-checkout">
 <header th:replace="~{fragments/layout :: header('orders')}">
 </header>
@@ -23,6 +23,16 @@
 </a>
 <p th:if="${#lists.isEmpty(bag.lines)}" th:text="${zh ? '购物车为空，请先添加商品。' : 'Your bag is empty. Add some products first.'}">
 </p>
+<div class="cart-feedback" th:if="${#lists.isEmpty(bag.lines) and lastCheckoutId != null}">
+    <p th:text="${zh ? '最近一次下单已成功，可查看订单详情。' : 'Your most recent order was placed. You can check its details.'}"></p>
+    <a th:href="@{/orders/{id}(id=${lastCheckoutId})}" th:text="${zh ? '查看最近订单' : 'View most recent order'}"></a>
+</div>
+<p th:unless="${#lists.isEmpty(bag.lines) and lastCheckoutId != null}">
+    <span th:text="${zh ? '提交后未看到确认信息？' : 'Submitted an order but missed the confirmation?'}"></span>
+    <a th:href="@{/orders}" th:text="${zh ? '先核对我的订单' : 'Check your orders first'}"></a>
+</p>
+<p id="checkout-network-status" class="cart-feedback" role="status" hidden
+   th:text="${zh?'网络已断开。请保持此页打开，恢复连接后再提交。':'You are offline. Keep this page open and submit when reconnected.'}"></p>
 <div class="order-grid" th:unless="${#lists.isEmpty(bag.lines)}">
 <section class="order-card checkout-summary">
 <h2 th:text="${zh ? '订单商品' : 'Your selection'}">
