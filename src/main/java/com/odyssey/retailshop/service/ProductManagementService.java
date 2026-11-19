@@ -182,7 +182,22 @@ public class ProductManagementService {
                 if(!ids.equals(options.keySet())) throw new IllegalArgumentException("Reload all options. / 请重新加载完整规格。");
                 for(var option:current.getOptions()) { stock(options.get(option.getId())); option.setStock(options.get(option.getId())); }
             }
-            save(current,null,null);
+            int total = current.getOptions().isEmpty() ? current.getStock() :
+                current.getOptions().stream().mapToInt(ProductEditForm.Option::getStock).sum();
+            stock(total);
+            for (var option : current.getOptions()) {
+                int before = jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=?",Integer.class,option.getId());
+                jdbc.update("UPDATE product_variants SET stock_quantity=? WHERE id=?",option.getStock(),option.getId());
+                if (before == 0 && option.getStock() > 0) {
+                    favorites.notifyRestock(id,option.getId(),option.getSize(),option.getColor());
+                }
+            }
+            int before = jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=?",Integer.class,id);
+            jdbc.update("UPDATE product_details SET stock_quantity=? WHERE product_id=?",total,id);
+            jdbc.update("UPDATE product_management SET revision=revision+1 WHERE product_id=?",id);
+            if (current.getOptions().isEmpty() && before == 0 && total > 0) {
+                favorites.notifyRestock(id,0L,"","");
+            }
         });
     }
     public void adjustStock(long id, String revision, Integer quantity, Map<Long,Integer> options,
