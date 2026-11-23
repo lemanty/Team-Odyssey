@@ -12,7 +12,13 @@
 
     const evidence = item.form.elements.namedItem('image');
     const chinese = document.documentElement.lang.startsWith('zh');
+    const summary = item.form.querySelector('[data-evidence-name]');
+    function showEvidence() {
+        summary.textContent = evidence.files[0]?.name || (chinese ? '未添加' : 'None attached');
+    }
+    showEvidence();
     evidence.addEventListener('change', () => {
+        showEvidence();
         const file = evidence.files[0];
         let error = '';
         if (file && file.size > 5 * 1024 * 1024) {
