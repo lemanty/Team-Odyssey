@@ -7,7 +7,7 @@
 
     // Load only the server-rendered editor, preserving validation, ownership and CSRF.
     layout.addEventListener('click', async (event) => {
-        const link = event.target.closest('.address-edit-link, .address-edit-cancel');
+        const link = event.target.closest('.address-edit-link, .address-edit-cancel, .address-new');
         if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const url = new URL(link.href);
         if (url.origin !== location.origin) return;
@@ -31,6 +31,7 @@
             editor = replacement;
             history.pushState(null, '', url);
             layout.querySelectorAll('.address-card').forEach(card => {
+                card.classList.remove('is-selected');
                 card.classList.toggle('is-editing', card.contains(link) && link.matches('.address-edit-link'));
             });
             document.querySelector('.address-page .cart-error')?.remove();
