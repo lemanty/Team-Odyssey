@@ -68,7 +68,7 @@
 <div id="manual-address">
 <label for="address" th:text="${zh ? '配送地址（自取无需填写）' : 'Delivery address (not needed for collection)'}">
 </label>
-<textarea id="address" name="address" maxlength="500" rows="3" th:text="${checkoutAddress != null ? checkoutAddress : ''}">
+<textarea id="address" name="address" autocomplete="shipping street-address" maxlength="500" rows="3" th:text="${checkoutAddress != null ? checkoutAddress : ''}">
 </textarea>
 </div>
 </div>
