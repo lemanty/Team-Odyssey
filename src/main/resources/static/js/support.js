@@ -101,7 +101,9 @@
     }
     bindHistory();
     const initial = document.querySelector('.support-messages');
-    initial.scrollTop = initial.scrollHeight;
+    if (initial.closest('#support-chat').dataset.older !== 'true') {
+        initial.scrollTop = initial.scrollHeight;
+    }
     acknowledge();
     async function refresh() {
         if (busy || document.hidden) return;
