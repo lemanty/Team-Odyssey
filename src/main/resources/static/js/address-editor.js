@@ -5,6 +5,21 @@
     let pending;
     let animation;
 
+    // Use delegation because selecting an address replaces the form.
+    function validateField(field) {
+        const zh = document.documentElement.lang.startsWith('zh');
+        field.setCustomValidity(field.value && !field.value.trim()
+            ? (zh ? '请填写此项。' : 'Enter a value for this field.') : '');
+    }
+    layout.addEventListener('input', event => {
+        if (event.target.matches('#address-editor [required]')) validateField(event.target);
+    });
+    layout.addEventListener('submit', event => {
+        if (event.target.id !== 'address-editor') return;
+        event.target.querySelectorAll('[required]').forEach(validateField);
+        if (!event.target.reportValidity()) event.preventDefault();
+    });
+
     // Load only the server-rendered editor, preserving validation, ownership and CSRF.
     layout.addEventListener('click', async (event) => {
         const link = event.target.closest('.address-edit-link, .address-edit-cancel, .address-new');
