@@ -69,7 +69,7 @@
     <div class="product-grid">
         <article class="product-card" th:each="product, status : ${products}"
                  th:id="${product.id == products.^[category == #vars.product.category].id} ? ${'category-' + #strings.toLowerCase(product.category)} : null">
-            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
+            <a class="product-card-link" th:href="@{/products/{id}(id=${product.id},catalogue=${catalogue})}" th:attr="aria-label=${(zh ? '查看' : 'View ') + storeText.productName(product, zh)}">
             <div class="product-art" th:classappend="${product.category != 'Household' ? 'clothing-art' : 'home-art'}">
                 <img th:if="${product.garmentImage != null}" th:src="@{${product.garmentImage}}" th:alt="${storeText.productName(product, zh)}" loading="lazy" width="600" height="800">
                 <span th:if="${product.garmentImage == null}" th:text="${zh ? (product.category != 'Household' ? '穿着' : '居家') : (product.category != 'Household' ? 'WEAR' : 'LIVE')}">GOODS</span>
@@ -81,7 +81,7 @@
                 <span class="card-detail-link"><span th:text="${storeText.text('Discover this piece', zh)}">Discover this piece</span> <span aria-hidden="true">↗</span></span>
             </div>
             </a>
-            <details class="product-disclosure" data-smooth-details><summary><span th:text="${zh?'商品信息':'Product information'}"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div class="disclosure-body"><p th:text="${storeText.productDescription(product,zh)}"></p><a th:href="@{/products/{id}(id=${product.id})}" th:text="${zh?'查看详情与规格 →':'Details & options →'}"></a></div></details>
+            <details class="product-disclosure" data-smooth-details><summary><span th:text="${zh?'商品信息':'Product information'}"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div class="disclosure-body"><p th:text="${storeText.productDescription(product,zh)}"></p><a th:href="@{/products/{id}(id=${product.id},catalogue=${catalogue})}" th:text="${zh?'查看详情与规格 →':'Details & options →'}"></a></div></details>
             <div class="product-purchase-actions" th:if="${!signedIn or product.category == 'Household'}">
             <a class="cart-button guest-cart-button" th:unless="${signedIn}" th:href="@{/login(cartRequired='true')}" th:text="${zh ? '加入购物车' : 'Add to bag'}"></a>
             <form th:if="${signedIn and product.category == 'Household'}" class="add-to-cart" method="post" th:action="@{/cart/add}">

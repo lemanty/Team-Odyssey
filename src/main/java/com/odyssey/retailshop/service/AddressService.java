@@ -20,7 +20,8 @@ public class AddressService {
  }
  private Address row(java.sql.ResultSet r,int n) throws java.sql.SQLException{return new Address(r.getLong("id"),r.getString("recipient"),r.getString("phone"),r.getString("address_line"),r.getBoolean("is_default"));}
  public List<Address> list(String email){return jdbc==null?List.of():jdbc.query("SELECT a.* FROM user_addresses a JOIN users u ON u.id=a.user_id WHERE u.email=? ORDER BY a.is_default DESC,a.id",this::row,email);}
- public Address get(String email,long id){return list(email).stream().filter(a->a.id()==id).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));}
+ public java.util.Optional<Address> find(String email,long id){return list(email).stream().filter(a->a.id()==id).findFirst();}
+ public Address get(String email,long id){return find(email,id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));}
  private long lock(String email){if(tx==null)throw new IllegalArgumentException("Addresses require database mode. / 地址功能需要数据库模式。");return jdbc.queryForObject("SELECT id FROM users WHERE email=? FOR UPDATE",Long.class,email);}
  private String clean(String text,int max){String s=text==null?"":text.strip();if(s.isBlank()||s.length()>max)throw new IllegalArgumentException("Complete all address fields within the length limits. / 请填写完整的收件人、电话和地址，且不要超过长度限制。");return s;}
  public void save(String email,Long id,String recipient,String phone,String line,boolean makeDefault){

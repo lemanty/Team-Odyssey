@@ -16,10 +16,11 @@ public record SupportImage(byte[] bytes, String type) {
             try {
                 String format=reader.getFormatName().toLowerCase(java.util.Locale.ROOT);
                 if(!format.equals("jpeg") && !format.equals("png")) throw invalid();
+                int orientation = format.equals("jpeg") ? JpegOrientation.read(input) : 1;
                 reader.setInput(input);
                 int width=reader.getWidth(0),height=reader.getHeight(0);
                 if(width<1 || height<1 || (long)width*height>16000000) throw invalid();
-                var image=reader.read(0);
+                var image=JpegOrientation.apply(reader.read(0), orientation);
                 var output=new ByteArrayOutputStream();
                 if(!ImageIO.write(image,format,output) || output.size()>8*1024*1024) throw invalid();
                 return new SupportImage(output.toByteArray(),format.equals("png")?"image/png":"image/jpeg");

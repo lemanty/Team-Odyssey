@@ -9,4 +9,24 @@
     };
     item.addEventListener('change', update);
     update();
+
+    const evidence = item.form.elements.namedItem('image');
+    const chinese = document.documentElement.lang.startsWith('zh');
+    const summary = item.form.querySelector('[data-evidence-name]');
+    function showEvidence() {
+        summary.textContent = evidence.files[0]?.name || (chinese ? '未添加' : 'None attached');
+    }
+    showEvidence();
+    evidence.addEventListener('change', () => {
+        showEvidence();
+        const file = evidence.files[0];
+        let error = '';
+        if (file && file.size > 5 * 1024 * 1024) {
+            error = chinese ? '请选择不超过 5 MB 的图片。' : 'Choose an image of 5 MB or less.';
+        } else if (file && file.type && !['image/jpeg', 'image/png'].includes(file.type)) {
+            error = chinese ? '请选择 JPG 或 PNG 图片。' : 'Choose a JPG or PNG image.';
+        }
+        evidence.setCustomValidity(error);
+        if (error) evidence.reportValidity();
+    });
 })();
