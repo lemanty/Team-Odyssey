@@ -62,7 +62,8 @@ public class OrderController {
             }
             if (token.equals(previous)) return "redirect:/orders";
             try {
-                String destination="DELIVERY".equals(fulfillment)&&addressId!=null ? addresses.get(user.getName(),addressId).formatted() : address;
+                String destination="DELIVERY".equals(fulfillment)&&addressId!=null ? addresses.find(user.getName(),addressId)
+                        .orElseThrow(() -> new IllegalArgumentException("This address is no longer available. Choose another address or enter one manually. / 该地址已不可用，请重新选择或手动填写。")).formatted() : address;
                 String id=orders.placeFromCart(user.getName(),token,fulfillment,destination,paymentMethod,couponCode,quotedTotal);
                 session.removeAttribute("checkoutToken");
                 session.setAttribute("lastCheckoutToken",token); session.setAttribute("lastCheckoutId",id);
