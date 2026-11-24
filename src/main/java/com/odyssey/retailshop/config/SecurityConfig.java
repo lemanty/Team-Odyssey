@@ -58,7 +58,9 @@ public class SecurityConfig {
                 .anyRequest().permitAll())
             .exceptionHandling(errors -> errors.accessDeniedHandler(new AuthCsrfAccessDeniedHandler()).defaultAuthenticationEntryPointFor(
                 new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login?cartRequired"),
-                request -> request.getServletPath().startsWith("/cart/")))
+                request -> request.getRequestURI().substring(request.getContextPath().length()).startsWith("/cart/")).defaultAuthenticationEntryPointFor(
+                new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login"),
+                request -> true))
             .formLogin(form -> form.loginPage("/login").usernameParameter("email")
                 .defaultSuccessUrl("/account", true).failureUrl("/login?error").permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/login?logout"));

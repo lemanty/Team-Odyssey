@@ -22,6 +22,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class CartTests {
+    @Test void protectedPagesDoNotShowCartInstructions() throws Exception {
+        for (String path : new String[]{"/account/favorites", "/orders", "/staff/reports/sales"}) {
+            mvc.perform(get(path)).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        }
+        mvc.perform(get("/login?expired&lang=zh"))
+            .andExpect(content().string(containsString("页面已过期")));
+    }
     @Autowired MockMvc mvc;
     @MockitoBean ProductService products;
     private void product(Integer stock) {

@@ -89,7 +89,8 @@
                 <button type="button" data-filter="clothing" aria-pressed="false" th:text="${zh ? '服装' : 'Clothing'}">Clothing</button>
                 <button type="button" data-filter="home" aria-pressed="false" th:text="${zh ? '家居' : 'Home'}">Home</button>
             </div>
-            <p class="sale-empty" data-sale-empty th:hidden="${!offers.isEmpty()}" th:text="${zh ? '此分类暂无特惠商品。' : 'No deals in this category yet.'}">No deals in this category yet.</p>
+            <p class="sale-empty" data-sale-empty th:hidden="${!offers.isEmpty()}" th:text="${offers.isEmpty() ? (zh ? '目前暂无特惠活动，可以先逛逛全部商品。' : 'No offers are available right now. Explore our full collection instead.') : (zh ? '此分类暂无特惠商品，请切换其他分类。' : 'No deals in this category. Try another category.')}">No deals in this category yet.</p>
+            <a class="sale-cta" th:if="${offers.isEmpty()}" th:href="@{/products}" th:text="${zh ? '浏览全部商品' : 'Explore all products'}"></a>
             <div class="sale-grid">
                 <article class="sale-card" th:each="offer : ${offers}" th:attr="data-sale-category=${offer.product.category == 'Household' ? 'home' : 'clothing'}">
                     <a th:href="${saleDemo} ? @{/products/{id}(id=${offer.product.id},sale=true)} : @{/products/{id}(id=${offer.product.id},sale=true,campaign=${offer.campaignId})}">
