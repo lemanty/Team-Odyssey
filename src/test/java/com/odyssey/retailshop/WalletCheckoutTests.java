@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class WalletCheckoutTests {
  @Autowired OrderService orders; @Autowired WalletService wallet; @Autowired OrderPaymentService payments;
  @Autowired JdbcTemplate jdbc; @Autowired MockMvc mvc;
+ @Autowired org.springframework.web.context.WebApplicationContext webContext;
  @BeforeEach void setup() throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
   for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","011-wallet.sql","013-product-management.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","024-review-images.sql","025-favorites-notifications.sql")) {
@@ -209,5 +210,117 @@ class WalletCheckoutTests {
   assertEquals(1, entries());
   assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments", Integer.class));
   assertTrue(orders.list("a@test.com", false).isEmpty());
+ }
+
+ @Test void lostCheckoutResponseCanBeReconciledAndRetriedWithoutAnotherCharge() throws Exception {
+  credit("100");
+  jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
+  var session = new MockHttpSession();
+  mvc.perform(get("/checkout").session(session).with(user("a@test.com")))
+      .andExpect(status().isOk());
+  String token = (String) session.getAttribute("checkoutToken");
+
+  // The server commits the order, then the transport fails before delivering its response.
+  jakarta.servlet.Filter loseResponse = (request, response, chain) -> {
+   chain.doFilter(request, response);
+   throw new java.io.IOException("Simulated lost checkout response");
+  };
+  var disconnectedMvc = org.springframework.test.web.servlet.setup.MockMvcBuilders
+      .webAppContextSetup(webContext)
+      .apply(org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity())
+      .addFilter(loseResponse, "/orders").build();
+  var failure = assertThrows(java.io.IOException.class, () -> disconnectedMvc.perform(
+      post("/orders").session(session).with(user("a@test.com")).with(csrf())
+          .param("token", token).param("fulfillment", "COLLECTION").param("paymentMethod", "WALLET")
+          .param("quotedTotal", "12.50")));
+  assertEquals("Simulated lost checkout response", failure.getMessage());
+
+  String orderId = orders.list("a@test.com", false).get(0).id();
+  mvc.perform(get("/orders").session(session).with(user("a@test.com")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString(orderId)));
+  mvc.perform(get("/orders/" + orderId).session(session).with(user("a@test.com")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("Paid")));
+  // Reopening checkout creates a fresh token, while the old submitted form can still retry.
+  mvc.perform(get("/checkout").session(session).with(user("a@test.com")))
+      .andExpect(status().isOk()).andExpect(content().string(containsString("/orders/" + orderId)));
+  assertNotEquals(token, session.getAttribute("checkoutToken"));
+  mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+      .param("token", token).param("fulfillment", "COLLECTION").param("paymentMethod", "WALLET")
+      .param("quotedTotal", "12.50"))
+      .andExpect(redirectedUrl("/orders"));
+  assertEquals(orderId, session.getAttribute("lastCheckoutId"));
+  assertEquals(orderId, orders.placeFromCart("a@test.com", token, "COLLECTION", "", "WALLET"));
+  assertEquals(1, orders.list("a@test.com", false).size());
+  assertEquals(new BigDecimal("87.50"), wallet.balance(1));
+  assertEquals(9, stock());
+  assertEquals(2, entries());
+  assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments", Integer.class));
+  assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM cart_items", Integer.class));
+ }
+
+ @org.junit.jupiter.params.ParameterizedTest
+ @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+ void twoCustomersCompetingForTheLastItemHaveOnePaidWinner(boolean useVariant) throws Exception {
+  credit("100");
+  jdbc.update("INSERT INTO wallet_entries(user_id,actor_id,request_token,amount,balance_after,note) VALUES (2,2,?,100,100,'Test funds')",
+      UUID.randomUUID().toString());
+  jdbc.update("UPDATE product_details SET stock_quantity=1 WHERE product_id=1");
+  if (useVariant) {
+   jdbc.update("INSERT INTO product_variants(id,product_id,size_label,color_label,stock_quantity) VALUES (101,1,'S','Natural',1)");
+   jdbc.update("INSERT INTO cart_variants VALUES (1,101,1),(2,101,1)");
+  } else {
+   jdbc.update("INSERT INTO cart_items VALUES (1,1,1),(2,1,1)");
+  }
+  var sessions = List.of(new MockHttpSession(), new MockHttpSession());
+  var emails = List.of("a@test.com", "b@test.com");
+  for (int index = 0; index < emails.size(); index++) {
+   mvc.perform(get("/checkout").session(sessions.get(index)).with(user(emails.get(index))))
+       .andExpect(status().isOk());
+  }
+  var start = new CountDownLatch(1);
+  var pool = Executors.newFixedThreadPool(2);
+  try {
+   List<Future<Boolean>> results = new ArrayList<>();
+   for (int index = 0; index < emails.size(); index++) {
+    String email = emails.get(index);
+    var session = sessions.get(index);
+    String token = (String) session.getAttribute("checkoutToken");
+    results.add(pool.submit(() -> {
+     start.await();
+     var result = mvc.perform(post("/orders").session(session).with(user(email)).with(csrf())
+         .param("token", token).param("fulfillment", "COLLECTION").param("paymentMethod", "WALLET")
+         .param("quotedTotal", "12.50"))
+         .andExpect(status().is3xxRedirection()).andReturn();
+     if ("/orders".equals(result.getResponse().getRedirectedUrl())) return true;
+     assertEquals("/checkout", result.getResponse().getRedirectedUrl());
+     assertTrue(((String) result.getFlashMap().get("orderError")).contains("库存不足"));
+     mvc.perform(get("/checkout?lang=zh").session(session).with(user(email))
+         .flashAttrs(result.getFlashMap()))
+         .andExpect(status().isOk()).andExpect(content().string(containsString("库存不足")));
+     return false;
+    }));
+   }
+   start.countDown();
+   boolean firstWon = results.get(0).get(15, TimeUnit.SECONDS);
+   boolean secondWon = results.get(1).get(15, TimeUnit.SECONDS);
+   assertNotEquals(firstWon, secondWon);
+   long winner = firstWon ? 1L : 2L;
+   long loser = firstWon ? 2L : 1L;
+   assertEquals(0, stock());
+   if (useVariant) {
+    assertEquals(0, jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=101", Integer.class));
+   }
+   assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM shop_orders", Integer.class));
+   assertEquals(winner, jdbc.queryForObject("SELECT user_id FROM shop_orders", Long.class));
+   assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments WHERE status='PAID'", Integer.class));
+   assertEquals(new BigDecimal("87.50"), wallet.balance(winner));
+   assertEquals(new BigDecimal("100.00"), wallet.balance(loser));
+   assertEquals(3, entries());
+   String cartTable = useVariant ? "cart_variants" : "cart_items";
+   assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM " + cartTable + " WHERE user_id=?", Integer.class, winner));
+   assertEquals(1, jdbc.queryForObject("SELECT quantity FROM " + cartTable + " WHERE user_id=?", Integer.class, loser));
+  } finally {
+   pool.shutdownNow();
+  }
  }
 }
