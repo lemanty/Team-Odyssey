@@ -27,6 +27,7 @@
                 uploadError.textContent = zh ? '请选择不超过5MB的JPG或PNG图片。' : 'Choose a JPG or PNG image up to 5 MB.';
                 file.value = ''; return;
             }
+            preview.querySelector('[data-image-name]').textContent = image.name;
             previewUrl = URL.createObjectURL(image);
             preview.querySelector('img').src = previewUrl; preview.hidden = false;
         });
