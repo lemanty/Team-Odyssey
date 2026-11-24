@@ -83,6 +83,9 @@
             }
         });
         window.addEventListener('pagehide', clearPreview);
+        window.addEventListener('pageshow', event => {
+            if (event.persisted && file.files.length) file.dispatchEvent(new Event('change'));
+        });
     }
     let busy = false;
     let acknowledged = 0;
