@@ -25,7 +25,7 @@ class ProductManagementTests {
  @Autowired ProductService products; @Autowired OrderService orders;
  @BeforeEach void schema() throws Exception {
   jdbc.execute("DROP ALL OBJECTS");
-  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","004-login-names.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","024-review-images.sql","025-favorites-notifications.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","013-product-management.sql")) {
+  for(String file:List.of("001-products.sql","002-product-details.sql","003-users.sql","004-login-names.sql","005-orders.sql","022-sale-campaigns.sql","023-sale-featured.sql","011-wallet.sql","014-wallet-checkout.sql","015_returns.sql","017-coupons.sql","018-product-reviews.sql","019-review-discussions.sql","024-review-images.sql","025-favorites-notifications.sql","006-account-cart.sql","009-membership.sql","010-variants-addresses.sql","013-product-management.sql","026-stock-adjustments.sql")) {
    String sql=Files.readString(Path.of("src/main/resources/db",file)).replace("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4","").replaceAll("(?m)^--.*$","");
    for(String statement:sql.split(";"))if(!statement.isBlank())jdbc.execute(statement);
   }
@@ -50,7 +50,7 @@ class ProductManagementTests {
    .andExpect(status().isForbidden());
   var original=manager.edit(id);
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
-   .param("productId",""+id).param("revision",original.getRevision()).param("quantity","7")
+   .param("reason","Verified delivery").param("productId",""+id).param("revision",original.getRevision()).param("quantity","7")
    .param("name","Hacked").param("price","0").param("published","false").param("options[0].size","XL"))
    .andExpect(status().isOk());
   var saved=manager.edit(id);assertEquals(7,saved.getStock());assertEquals(original.getName(),saved.getName());
@@ -63,8 +63,8 @@ class ProductManagementTests {
   var f=form();f.setCategory("Men");f.setSubcategory("tops");f.setAudience("Unisex");f.getOptions().add(option("M",2));f.getOptions().add(option("L",8));
   long id=manager.save(f,null,null);var original=manager.edit(id);
   mvc.perform(get("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER"))).andExpect(status().isForbidden());
-  mvc.perform(post("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER")).with(csrf()).param("productId",""+id).param("revision",original.getRevision())).andExpect(status().isForbidden());
-  mvc.perform(get("/staff/inventory").param("productId",""+id).with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk()).andExpect(content().string(containsString("stock_"+original.getOptions().get(0).getId())));
+  mvc.perform(post("/staff/inventory").with(user("customer@test.com").roles("CUSTOMER")).with(csrf()).param("reason","Verified delivery").param("productId",""+id).param("revision",original.getRevision())).andExpect(status().isForbidden());
+  mvc.perform(get("/staff/inventory").param("reason","Verified delivery").param("productId",""+id).with(user("staff@test.com").roles("STAFF"))).andExpect(status().isOk()).andExpect(content().string(containsString("stock_"+original.getOptions().get(0).getId())));
   var stocks=new HashMap<Long,Integer>();for(var o:original.getOptions()) stocks.put(o.getId(),6);
   manager.updateStock(id,original.getRevision(),null,stocks);assertEquals(12,manager.edit(id).getStock());
   assertThrows(IllegalArgumentException.class,()->manager.updateStock(id,original.getRevision(),null,stocks));
@@ -72,10 +72,10 @@ class ProductManagementTests {
   assertThrows(IllegalArgumentException.class,()->manager.updateStock(id,fresh.getRevision(),null,stocks));assertEquals(12,manager.edit(id).getStock());
   stocks.clear();assertThrows(IllegalArgumentException.class,()->manager.updateStock(id,fresh.getRevision(),null,stocks));
   long plain=manager.save(form(),null,null);
-  mvc.perform(post("/staff/inventory").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","19"))
+  mvc.perform(post("/staff/inventory").with(user("admin@test.com").roles("ADMIN")).with(csrf()).param("reason","Verified delivery").param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","19"))
     .andExpect(status().isOk()).andExpect(content().string(containsString("Stock saved")));
   assertEquals(19,manager.edit(plain).getStock());
-  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","20")).andExpect(status().isForbidden());
+  mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).param("reason","Verified delivery").param("productId",""+plain).param("revision",manager.edit(plain).getRevision()).param("quantity","20")).andExpect(status().isForbidden());
  }
  @Test void adminEmbeddedCreationAndWorkspaceRender() throws Exception {
   mvc.perform(get("/admin?section=inventory&lang=zh").with(user("admin@test.com").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("admin-sidebar"))).andExpect(content().string(containsString("data-stock-tools")));
@@ -159,7 +159,7 @@ class ProductManagementTests {
   var original=manager.edit(id);
   manager.updateStock(id,original.getRevision(),7,Map.of());
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
-   .param("productId",""+id).param("revision",original.getRevision()).param("quantity","9"))
+   .param("reason","Verified delivery").param("productId",""+id).param("revision",original.getRevision()).param("quantity","9"))
    .andExpect(status().isOk()).andExpect(content().string(containsString("Stock changed")));
   assertEquals(7,manager.edit(id).getStock());
  }
@@ -168,7 +168,7 @@ class ProductManagementTests {
   long id=manager.save(f,null,null);var o=manager.edit(id);
   long a=o.getOptions().get(0).getId(),b=o.getOptions().get(1).getId();
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
-   .param("productId",""+id).param("revision",o.getRevision()).param("stock_"+a,"5").param("stock_"+b,"3"))
+   .param("reason","Verified delivery").param("productId",""+id).param("revision",o.getRevision()).param("stock_"+a,"5").param("stock_"+b,"3"))
    .andExpect(status().isOk()).andExpect(content().string(containsString("Stock saved")));
   var saved=manager.edit(id);assertEquals(8,saved.getStock());
   assertEquals(5,saved.getOptions().get(0).getStock());assertEquals(3,saved.getOptions().get(1).getStock());
@@ -176,7 +176,7 @@ class ProductManagementTests {
  @Test void httpStockWithoutQuantityShowsError() throws Exception {
   long id=manager.save(form(),null,null);var o=manager.edit(id);
   mvc.perform(post("/staff/inventory").with(user("staff@test.com").roles("STAFF")).with(csrf())
-   .param("productId",""+id).param("revision",o.getRevision()))
+   .param("reason","Verified delivery").param("productId",""+id).param("revision",o.getRevision()))
    .andExpect(status().isOk()).andExpect(content().string(containsString("Stock must be")));
   assertEquals(4,manager.edit(id).getStock());
  }
@@ -190,5 +190,33 @@ class ProductManagementTests {
   var f=form();f.setCategory("Household");f.setSubcategory("bedroom");
   long id=manager.save(f,null,null);
   assertEquals("bedroom",manager.edit(id).getSubcategory());
+ }
+
+ @Test void inventoryReasonAndRevisionProtectAudit() {
+  long id=manager.save(form(),null,null);
+  var original=manager.edit(id);
+  assertThrows(IllegalArgumentException.class,()->manager.adjustStock(id,original.getRevision(),7,Map.of(),"staff@test.com",""));
+  assertTrue(manager.adjustments(id).isEmpty());
+  manager.adjustStock(id,original.getRevision(),7,Map.of(),"staff@test.com","Delivery checked");
+  assertEquals(1,manager.adjustments(id).size());
+  var entry=manager.adjustments(id).get(0);
+  assertEquals(original.getStock().intValue(),entry.before());
+  assertEquals(7,entry.after());
+  assertEquals("Delivery checked",entry.reason());
+  assertThrows(IllegalArgumentException.class,()->manager.adjustStock(id,original.getRevision(),8,Map.of(),"staff@test.com","Stale edit"));
+  assertEquals(1,manager.adjustments(id).size());
+  assertEquals(7,manager.edit(id).getStock());
+ }
+
+ @Test void inventoryAdjustmentPreservesIncompleteLegacyCatalogue() {
+  long id=manager.save(form(),null,null);
+  jdbc.update("UPDATE products SET subcategory='' WHERE id=?",id);
+  jdbc.update("UPDATE product_details SET garment_image='' WHERE product_id=?",id);
+  var original=manager.edit(id);
+  manager.adjustStock(id,original.getRevision(),9,Map.of(),"staff@test.com","Counted stock");
+  assertEquals(9,manager.edit(id).getStock());
+  assertEquals("",manager.edit(id).getImage());
+  assertEquals("",manager.edit(id).getSubcategory());
+  assertEquals(1,manager.adjustments(id).size());
  }
 }

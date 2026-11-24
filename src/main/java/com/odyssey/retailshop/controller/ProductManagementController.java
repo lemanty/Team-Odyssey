@@ -18,19 +18,23 @@ public class ProductManagementController {
         model.addAttribute("available",products.available());
         model.addAttribute("q",q);
         model.addAttribute("items",products.available()?products.list(q,"all"):java.util.List.of());
-        if(products.available() && productId!=null) model.addAttribute("stockForm",products.edit(productId));
+        if(products.available() && productId!=null) {
+            model.addAttribute("stockForm",products.edit(productId));
+            model.addAttribute("adjustments",products.adjustments(productId));
+        }
         return "fragments/stock-tools :: content";
     }
     @PostMapping("/staff/inventory")
     public String stock(@RequestParam long productId,@RequestParam String revision,
-            @RequestParam(required=false) Integer quantity,@RequestParam java.util.Map<String,String> params,Model model) {
+            @RequestParam(required=false) Integer quantity,@RequestParam java.util.Map<String,String> params,java.security.Principal actor,Model model) {
         try {
             var values=new java.util.HashMap<Long,Integer>();
             for(var entry:params.entrySet()) if(entry.getKey().startsWith("stock_"))
                 values.put(Long.valueOf(entry.getKey().substring(6)),Integer.valueOf(entry.getValue()));
-            products.updateStock(productId,revision,quantity,values);
+            products.adjustStock(productId,revision,quantity,values,actor.getName(),params.getOrDefault("reason",""));
             model.addAttribute("stockSuccess",true);
         } catch(IllegalArgumentException ex) {
+            model.addAttribute("adjustmentReason",params.getOrDefault("reason",""));
             model.addAttribute("stockError",ex instanceof NumberFormatException ? "Invalid quantity. / 数量格式无效。" : ex.getMessage());
         }
         return inventory(params.getOrDefault("q",""),productId,model);

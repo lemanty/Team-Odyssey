@@ -21,7 +21,10 @@
     notice.textContent=zh?'无法加载或保存，请刷新页面或重试。':'Unable to load or save. Refresh the page or retry.';
    } finally {busy=false;content.removeAttribute('aria-busy');buttons.forEach(b=>b.disabled=false);}
   }
-  load(panel.dataset.url);
+  const initialUrl = new URL(panel.dataset.url, location.origin);
+  const selectedProduct = new URLSearchParams(location.search).get('productId');
+  if (selectedProduct && /^\d+$/.test(selectedProduct)) initialUrl.searchParams.set('productId', selectedProduct);
+  load(initialUrl);
   content.addEventListener('submit',event=>{
    const form=event.target;if(!(form instanceof HTMLFormElement))return;
    event.preventDefault();const data=new URLSearchParams(new FormData(form));

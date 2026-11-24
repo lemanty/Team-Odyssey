@@ -29,6 +29,13 @@ public class AuthCsrfAccessDeniedHandler implements AccessDeniedHandler {
             response.setHeader("Location", AccountWindowConfig.url(destination, AccountWindowConfig.window(request)));
             return;
         }
+        if (exception instanceof CsrfException && "POST".equals(request.getMethod())
+                && "navigate".equals(request.getHeader("Sec-Fetch-Mode"))
+                && request.getUserPrincipal() == null) {
+            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+            response.setHeader("Location", AccountWindowConfig.url("/login?expired", AccountWindowConfig.window(request)));
+            return;
+        }
         fallback.handle(request, response, exception);
     }
 }
