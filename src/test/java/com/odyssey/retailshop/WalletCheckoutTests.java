@@ -106,4 +106,108 @@ class WalletCheckoutTests {
    .andExpect(redirectedUrl("/checkout")).andExpect(flash().attribute("checkoutAddress","My road")).andExpect(flash().attribute("orderError",containsString("余额不足")));
   assertThrows(IllegalArgumentException.class,()->orders.place("a@test.com",token,Map.of(1L,1),"COLLECTION","","CARD"));assertEquals(10,stock());
  }
+
+ @Test void concurrentHttpRetriesWithTheSameTokenChargeAndDeductStockOnce() throws Exception {
+  credit("100");
+  jdbc.update("INSERT INTO cart_items VALUES (1,1,2)");
+  String token = UUID.randomUUID().toString();
+  var firstSession = new MockHttpSession();
+  var secondSession = new MockHttpSession();
+  firstSession.setAttribute("checkoutToken", token);
+  secondSession.setAttribute("checkoutToken", token);
+  var start = new CountDownLatch(1);
+  var pool = Executors.newFixedThreadPool(2);
+  try {
+   List<Future<String>> results = new ArrayList<>();
+   for (var session : List.of(firstSession, secondSession)) {
+    results.add(pool.submit(() -> {
+     start.await();
+     mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+         .param("token", token).param("fulfillment", "COLLECTION").param("paymentMethod", "WALLET")
+         .param("quotedTotal", "25.00"))
+         .andExpect(redirectedUrl("/orders"));
+     return (String) session.getAttribute("lastCheckoutId");
+    }));
+   }
+   start.countDown();
+   String orderId = results.get(0).get(15, TimeUnit.SECONDS);
+   assertNotNull(orderId);
+   assertEquals(orderId, results.get(1).get(15, TimeUnit.SECONDS));
+   assertEquals(1, orders.list("a@test.com", false).size());
+   assertEquals(new BigDecimal("75.00"), wallet.balance(1));
+   assertEquals(8, stock());
+   assertEquals(2, entries());
+   assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments", Integer.class));
+   assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM cart_items", Integer.class));
+
+   // Replaying the successful HTTP request must also leave a newly filled cart intact.
+   jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");
+   mvc.perform(post("/orders").session(firstSession).with(user("a@test.com")).with(csrf())
+       .param("token", token).param("fulfillment", "COLLECTION").param("paymentMethod", "WALLET"))
+       .andExpect(redirectedUrl("/orders"));
+   assertEquals(1, jdbc.queryForObject("SELECT quantity FROM cart_items WHERE user_id=1", Integer.class));
+   assertEquals(new BigDecimal("75.00"), wallet.balance(1));
+   assertEquals(8, stock());
+   assertEquals(2, entries());
+  } finally {
+   pool.shutdownNow();
+  }
+ }
+
+ @Test void insufficientBalanceHttpRetriesPreserveCartStockAndTokenUntilFunded() throws Exception {
+  credit("5");
+  jdbc.update("INSERT INTO cart_items VALUES (1,1,2)");
+  var session = new MockHttpSession();
+  mvc.perform(get("/checkout").session(session).with(user("a@test.com")))
+      .andExpect(status().isOk());
+  String token = (String) session.getAttribute("checkoutToken");
+  for (int retry = 0; retry < 2; retry++) {
+   var result = mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+       .param("token", token).param("fulfillment", "DELIVERY").param("address", "My road")
+       .param("paymentMethod", "WALLET").param("quotedTotal", "25.00"))
+       .andExpect(redirectedUrl("/checkout"))
+       .andExpect(flash().attribute("orderError", containsString("余额不足")))
+       .andExpect(flash().attribute("selectedPayment", "WALLET"))
+       .andExpect(flash().attribute("checkoutAddress", "My road")).andReturn();
+   mvc.perform(get("/checkout?lang=zh").session(session).with(user("a@test.com"))
+       .flashAttrs(result.getFlashMap()))
+       .andExpect(status().isOk()).andExpect(content().string(containsString("储值余额不足")));
+   assertEquals(token, session.getAttribute("checkoutToken"));
+   assertEquals(new BigDecimal("5.00"), wallet.balance(1));
+   assertEquals(10, stock());
+   assertEquals(1, entries());
+   assertEquals(2, jdbc.queryForObject("SELECT quantity FROM cart_items WHERE user_id=1", Integer.class));
+   assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments", Integer.class));
+   assertTrue(orders.list("a@test.com", false).isEmpty());
+  }
+
+  jdbc.update("INSERT INTO wallet_entries(user_id,actor_id,request_token,amount,balance_after,note) VALUES (1,1,?,20,25,'Additional funds')",
+      UUID.randomUUID().toString());
+  for (int retry = 0; retry < 2; retry++) {
+   mvc.perform(post("/orders").session(session).with(user("a@test.com")).with(csrf())
+       .param("token", token).param("fulfillment", "DELIVERY").param("address", "My road")
+       .param("paymentMethod", "WALLET").param("quotedTotal", "25.00"))
+       .andExpect(redirectedUrl("/orders"));
+  }
+  assertEquals(1, orders.list("a@test.com", false).size());
+  assertEquals(new BigDecimal("0.00"), wallet.balance(1));
+  assertEquals(8, stock());
+  assertEquals(3, entries());
+  assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM cart_items", Integer.class));
+ }
+
+ @Test void insufficientBalanceRollsBackBothProductAndVariantStock() {
+  credit("5");
+  jdbc.update("INSERT INTO product_variants(id,product_id,size_label,color_label,stock_quantity) VALUES (101,1,'S','Natural',10)");
+  jdbc.update("INSERT INTO cart_variants VALUES (1,101,2)");
+  assertThrows(IllegalArgumentException.class, () -> orders.placeFromCart("a@test.com",
+      UUID.randomUUID().toString(), "COLLECTION", "", "WALLET"));
+  assertEquals(new BigDecimal("5.00"), wallet.balance(1));
+  assertEquals(10, stock());
+  assertEquals(10, jdbc.queryForObject("SELECT stock_quantity FROM product_variants WHERE id=101", Integer.class));
+  assertEquals(2, jdbc.queryForObject("SELECT quantity FROM cart_variants WHERE user_id=1", Integer.class));
+  assertEquals(1, entries());
+  assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM order_payments", Integer.class));
+  assertTrue(orders.list("a@test.com", false).isEmpty());
+ }
 }
