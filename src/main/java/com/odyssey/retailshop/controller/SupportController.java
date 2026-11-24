@@ -57,7 +57,7 @@ public class SupportController {
             return "redirect:"+destination;
         } catch(IllegalArgumentException e) {
             if(accept.contains("application/json")) return ResponseEntity.badRequest().body(Map.of("error",e.getMessage()));
-            flash.addFlashAttribute("supportError",e.getMessage()); flash.addFlashAttribute("draft",body); flash.addFlashAttribute("selectedOrder",orderId);
+            flash.addFlashAttribute("supportError",e.getMessage()); flash.addFlashAttribute("draft",body); flash.addFlashAttribute("selectedOrder",orderId); flash.addFlashAttribute("selectedReturn",returnId);
             return viewer.staff()?"redirect:/staff/support"+(id==null?"":"?id="+id):"redirect:/support";
         }
     }
