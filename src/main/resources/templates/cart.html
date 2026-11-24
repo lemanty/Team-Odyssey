@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${storeText.text('Your bag | Odyssey', zh)}">Your bag | Odyssey</title>
     <link rel="stylesheet" th:href="@{/css/style.css(v=options-1)}">
-<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script><script defer th:src="@{/js/cart-checkout.js}"></script></head>
+<link rel="stylesheet" th:href="@{/css/selected-design.css(v=full-product-3)}"><script defer th:src="@{/js/selected-design.js(v=1)}"></script><script defer th:src="@{/js/cart-checkout.js(v=2)}"></script></head>
 <body class="chosen-design chosen-cart">
 <header th:replace="~{fragments/layout :: header('cart')}"></header>
 <main class="cart-page">
@@ -17,7 +17,7 @@
     <section class="cart-empty" th:if="${#lists.isEmpty(bag.lines)}">
         <h2><span th:text="${storeText.text('Your next discovery is waiting.', zh)}">Your next discovery is waiting.</span></h2>
         <p><span th:text="${storeText.text('Your bag is empty. Explore the collection and find something for your everyday.', zh)}">Your bag is empty. Explore the collection and find something for your everyday.</span></p>
-        <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Explore products', zh)}">Explore products</span> <span aria-hidden="true">↗</span></a>
+        <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Explore products', zh)}">Explore products</span></a>
     </section>
     <div class="cart-layout" th:unless="${#lists.isEmpty(bag.lines)}">
         <section th:aria-label="${storeText.text('Items in your bag', zh)}">
@@ -59,10 +59,12 @@
             <h2><span th:text="${storeText.text('Bag summary', zh)}">Bag summary</span></h2>
             <div class="cart-total"><span><span th:text="${storeText.text('Subtotal', zh)}">Subtotal</span></span><strong th:text="'€' + ${#numbers.formatDecimal(bag.total, 1, 2)}">€0.00</strong></div>
             <p class="cart-summary-note"><span th:text="${zh?'购物车保存在你的账号中，加入购物车不会预留库存。':'Your bag is saved to your account. Adding items does not reserve stock.'}">Sign in to add items. Your bag is saved to your account. Adding to your bag does not reserve stock.</span></p>
-            <p id="cart-unsaved" role="alert" hidden th:text="${zh?'数量修改尚未保存，请先点击更新，再前往结算。':'Quantity changes are not saved. Select Update before proceeding to checkout.'}"></p>
+            <p id="cart-unsaved" role="alert" hidden
+               th:attr="data-storage-error=${zh?'当前浏览器无法保留其他商品的修改。请先恢复其他商品原数量，再逐项更新。':'This browser cannot keep other quantity edits. Reset those quantities and update each item separately.'}"
+               th:text="${zh?'数量修改尚未保存，请先点击更新，再前往结算。':'Quantity changes are not saved. Select Update before proceeding to checkout.'}"></p>
             <p th:unless="${checkoutReady}" role="alert" th:text="${zh?'请先调整缺货商品数量或移除不可购买的商品，再结算。':'Reduce unavailable quantities or remove unavailable items before checkout.'}"></p>
             <a th:if="${checkoutReady}" data-cart-checkout class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
-            <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
+            <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span></a>
         </aside>
     </div>
 </main>
