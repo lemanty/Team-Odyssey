@@ -23,6 +23,11 @@
         file.addEventListener('change', () => {
             clearPreview(); uploadError.textContent = '';
             const image = file.files[0]; if (!image) return;
+            if (image.size === 0) {
+                uploadError.textContent = zh ? '图片文件为空，请重新选择。' : 'This image file is empty. Choose another image.';
+                file.value = '';
+                return;
+            }
             if (image.size > 5 * 1024 * 1024 || !['image/jpeg','image/png'].includes(image.type)) {
                 uploadError.textContent = zh ? '请选择不超过5MB的JPG或PNG图片。' : 'Choose a JPG or PNG image up to 5 MB.';
                 file.value = ''; return;
