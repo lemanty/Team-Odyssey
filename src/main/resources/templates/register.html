@@ -10,7 +10,7 @@
         <p class="eyebrow"><span th:text="${storeText.text('BECOME PART OF THE STORY', zh)}">BECOME PART OF THE STORY</span></p><h2 id="auth-title" th:text="${zh ? '创建 ODYSSEY 账号' : 'Join Odyssey.'}"></h2>
         <p class="auth-intro" th:text="${zh ? '只需填写以下信息，即可开启旅程。' : 'A few details, and your journey begins.'}"></p>
         <div class="auth-alert" role="alert" th:if="${registrationError}" th:switch="${registrationError}">
-            <p th:case="'duplicate'" th:text="${zh ? '该邮箱已注册，请登录或使用其他邮箱。' : 'This email is already registered. Sign in or use another email.'}"></p>
+            <div th:case="'duplicate'"><p th:text="${zh ? '该邮箱已注册，请登录或使用其他邮箱。' : 'This email is already registered. Sign in or use another email.'}"></p><a th:href="@{/login}" th:text="${zh ? '去登录' : 'Sign in'}"></a></div>
             <p th:case="'validation'" th:text="${zh ? '请检查姓名、邮箱及密码。两次密码须一致，长度为 8–64 个字符，且最多 72 个 UTF-8 字节。' : 'Check your name, email and passwords. Passwords must match, contain 8–64 characters and use at most 72 UTF-8 bytes.'}"></p>
             <p th:case="*" th:text="${zh ? '请启动 MySQL 模式后再注册。' : 'Start the MySQL version of the website to register.'}"></p>
         </div>
