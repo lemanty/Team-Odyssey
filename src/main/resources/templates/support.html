@@ -80,7 +80,7 @@
             <form class="support-composer" enctype="multipart/form-data" th:if="${!staffView or selected != null}" method="post" th:action="@{${supportBase + '/messages'}}">
                 <input th:if="${selected != null}" type="hidden" name="id" th:value="${selected.id}"><input type="hidden" name="token" th:value="${sendToken}">
                 <label for="support-body" th:text="${staffView ? (zh ? '回复顾客' : 'Reply to customer') : (zh ? '你的消息' : 'Your message')}"></label>
-                <textarea id="support-body" name="body" maxlength="2000" rows="4" th:text="${draft}" th:placeholder="${zh ? '请输入消息…' : 'Write a message…'}"></textarea>
+                <textarea id="support-body" aria-describedby="support-length-help" name="body" maxlength="2000" rows="4" th:text="${draft}" th:placeholder="${zh ? '请输入消息…' : 'Write a message…'}"></textarea>
                 <div class="support-attachments">
                     <div class="support-upload">
                         <label for="support-image" th:text="${zh ? '添加图片' : 'Attach an image'}"></label>
@@ -99,7 +99,7 @@
                         <small th:if="${#lists.isEmpty(orderChoices)}" th:text="${zh ? '暂无已提交的订单，仍可发送文字或图片。' : 'No orders yet. You can still send text or an image.'}"></small>
                     </div>
                 </div>
-                <div><span th:text="${zh ? '最多2000字 · 换行请按 Enter' : 'Up to 2,000 characters · Enter inserts a new line'}"></span><button class="order-button" type="submit" th:text="${zh ? '发送消息 →' : 'Send message →'}"></button></div>
+                <div><span id="support-length-help" th:text="${zh ? '最多2000字 · 换行请按 Enter' : 'Up to 2,000 characters · Enter inserts a new line'}"></span><button class="order-button" type="submit" th:text="${zh ? '发送消息 →' : 'Send message →'}"></button></div>
             </form>
         </section>
     </div>

@@ -32,6 +32,15 @@
         });
         document.querySelector('[data-remove-image]').addEventListener('click', () => { file.value=''; clearPreview(); file.focus(); });
         const composer = document.querySelector('.support-composer');
+        const body = document.getElementById('support-body');
+        const lengthHelp = document.getElementById('support-length-help');
+        const updateLength = () => {
+            const remaining = body.maxLength - body.value.length;
+            lengthHelp.textContent = zh ? '还可输入 ' + remaining + ' 个字符 · Enter 换行'
+                : remaining + ' characters remaining · Enter inserts a new line';
+        };
+        body.addEventListener('input', updateLength);
+        updateLength();
         let sending = false;
         composer.addEventListener('submit', async event => {
             event.preventDefault();
