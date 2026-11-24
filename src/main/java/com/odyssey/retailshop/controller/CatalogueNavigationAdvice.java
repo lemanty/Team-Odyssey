@@ -1,6 +1,7 @@
 package com.odyssey.retailshop.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,10 +16,11 @@ public class CatalogueNavigationAdvice {
     @ModelAttribute("catalogue")
     public String catalogue(HttpServletRequest request) {
         var result = UriComponentsBuilder.fromPath("/products");
+        var values = new LinkedHashMap<String, String>();
         if (request.getRequestURI().equals(request.getContextPath() + "/products")) {
             for (String filter : FILTERS) {
                 String value = request.getParameter(filter);
-                if (value != null && value.length() <= 300) result.queryParam(filter, value);
+                if (value != null && value.length() <= 300) values.put(filter, value);
             }
         } else {
             String source = request.getParameter("catalogue");
@@ -28,7 +30,7 @@ public class CatalogueNavigationAdvice {
                     for (String filter : FILTERS) {
                         String value = query.getFirst(filter);
                         if (value != null && value.length() <= 900) {
-                            result.queryParam(filter, org.springframework.web.util.UriUtils.decode(value, java.nio.charset.StandardCharsets.UTF_8));
+                            values.put(filter, org.springframework.web.util.UriUtils.decode(value, java.nio.charset.StandardCharsets.UTF_8));
                         }
                     }
                 } catch (IllegalArgumentException ignored) {
@@ -36,6 +38,7 @@ public class CatalogueNavigationAdvice {
                 }
             }
         }
-        return result.build().encode().toUriString();
+        values.keySet().forEach(filter -> result.queryParam(filter, "{" + filter + "}"));
+        return result.encode().buildAndExpand(values).toUriString();
     }
 }
