@@ -17,7 +17,7 @@
     <section class="cart-empty" th:if="${#lists.isEmpty(bag.lines)}">
         <h2><span th:text="${storeText.text('Your next discovery is waiting.', zh)}">Your next discovery is waiting.</span></h2>
         <p><span th:text="${storeText.text('Your bag is empty. Explore the collection and find something for your everyday.', zh)}">Your bag is empty. Explore the collection and find something for your everyday.</span></p>
-        <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Explore products', zh)}">Explore products</span></a>
+        <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Explore products', zh)}">Explore products</span> <span aria-hidden="true">↗</span></a>
     </section>
     <div class="cart-layout" th:unless="${#lists.isEmpty(bag.lines)}">
         <section th:aria-label="${storeText.text('Items in your bag', zh)}">
@@ -64,7 +64,7 @@
                th:text="${zh?'数量修改尚未保存，请先点击更新，再前往结算。':'Quantity changes are not saved. Select Update before proceeding to checkout.'}"></p>
             <p th:unless="${checkoutReady}" role="alert" th:text="${zh?'请先调整缺货商品数量或移除不可购买的商品，再结算。':'Reduce unavailable quantities or remove unavailable items before checkout.'}"></p>
             <a th:if="${checkoutReady}" data-cart-checkout class="order-button" th:href="@{/checkout}" th:text="${zh ? '前往结算' : 'Proceed to checkout'}"></a>
-            <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span></a>
+            <a class="detail-back" th:href="@{/products}"><span th:text="${storeText.text('Continue exploring', zh)}">Continue exploring</span> <span aria-hidden="true">↗</span></a>
         </aside>
     </div>
 </main>
