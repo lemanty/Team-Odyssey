@@ -37,7 +37,8 @@
             event.preventDefault();
             if (sending) return;
             if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value && !document.getElementById('support-return').value) {
-                uploadError.textContent = zh ? '请填写消息、添加图片或选择订单。' : 'Add a message, image or order.';
+                uploadError.textContent = zh ? '请填写消息、添加图片、关联订单或关联售后申请。' : 'Add a message, attach an image, or link an order or return request.';
+                document.getElementById('support-body').focus();
                 return;
             }
             sending = true;
