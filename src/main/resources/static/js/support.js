@@ -137,6 +137,9 @@
             connection.textContent = zh ? '暂时无法更新，请检查网络或重新登录。输入中的消息已保留。' : 'Unable to update. Check your connection or sign in again. Your draft is preserved.';
         } finally { busy = false; }
     }
+    const refreshButton = root.querySelector('[data-refresh-chat]');
+    refreshButton.hidden = false;
+    refreshButton.addEventListener('click', refresh);
     setInterval(refresh, 8000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
