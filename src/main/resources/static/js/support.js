@@ -30,7 +30,7 @@
             previewUrl = URL.createObjectURL(image);
             preview.querySelector('img').src = previewUrl; preview.hidden = false;
         });
-        document.querySelector('[data-remove-image]').addEventListener('click', () => { file.value=''; clearPreview(); });
+        document.querySelector('[data-remove-image]').addEventListener('click', () => { file.value=''; clearPreview(); file.focus(); });
         const composer = document.querySelector('.support-composer');
         let sending = false;
         composer.addEventListener('submit', async event => {
