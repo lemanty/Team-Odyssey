@@ -21,7 +21,7 @@
             <small id="name-help" th:text="${zh ? '注册后可使用此昵称或邮箱登录；昵称重复时请使用邮箱。' : 'Sign in with this name or your email. If the name is shared, use your email.'}"></small>
             <label for="email" th:text="${zh ? '邮箱地址' : 'Email address'}"></label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" required th:value="${emailValue}" placeholder="you@example.com">
             <label for="password" th:text="${zh ? '密码' : 'Password'}"></label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="64" required aria-describedby="password-help">
-            <small id="password-help" th:text="${zh ? '使用 8–64 个字符。建议使用较长的独特密码。' : 'Use 8–64 characters. A long, unique passphrase works well.'}"></small>
+            <small id="password-help" th:text="${zh ? '使用 8–64 个字符，最多 72 个 UTF-8 字节。' : 'Use 8–64 characters, up to 72 UTF-8 bytes.'}"></small>
             <label for="confirmPassword" th:text="${zh ? '确认密码' : 'Confirm password'}"></label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="64" required>
             <button class="cart-button" type="submit" th:disabled="${!databaseAvailable}" th:text="${zh ? '创建账号' : 'Create account'}"></button>
         </form>
