@@ -46,6 +46,10 @@
         composer.addEventListener('submit', async event => {
             event.preventDefault();
             if (sending) return;
+            if (!navigator.onLine) {
+                uploadError.textContent = zh ? '当前离线。连接网络后可重试，草稿已保留。' : 'You are offline. Reconnect and retry. Your draft is preserved.';
+                return;
+            }
             if (!document.getElementById('support-body').value.trim() && !file.files.length && !document.getElementById('support-order').value && !document.getElementById('support-return').value) {
                 uploadError.textContent = zh ? '请填写消息、添加图片、关联订单或关联售后申请。' : 'Add a message, attach an image, or link an order or return request.';
                 document.getElementById('support-body').focus();
