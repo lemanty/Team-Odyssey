@@ -131,7 +131,8 @@
             const inbox = document.getElementById('support-inbox');
             const nextInbox = documentNext.getElementById('support-inbox');
             if (inbox && nextInbox && !inbox.contains(document.activeElement)) inbox.replaceWith(nextInbox);
-            connection.textContent = zh ? '对话已更新 · 每8秒自动同步' : 'Up to date · Refreshing every 8 seconds';
+            const status = zh ? '对话已更新 · 每8秒自动同步' : 'Up to date · Refreshing every 8 seconds';
+            if (connection.textContent !== status) connection.textContent = status;
             await acknowledge();
         } catch (_) {
             connection.textContent = zh ? '暂时无法更新，请检查网络或重新登录。输入中的消息已保留。' : 'Unable to update. Check your connection or sign in again. Your draft is preserved.';
