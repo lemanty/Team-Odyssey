@@ -161,6 +161,7 @@
     const refreshButton = root.querySelector('[data-refresh-chat]');
     refreshButton.hidden = false;
     refreshButton.addEventListener('click', refresh);
+    window.addEventListener('online', refresh);
     setInterval(refresh, 8000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
