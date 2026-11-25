@@ -37,6 +37,15 @@ class OrderTests {
     }
     String place(String mode) { return orders.place("a@test.com",UUID.randomUUID().toString(),Map.of(1L,2),mode,"Test address"); }
     int stock() { return jdbc.queryForObject("SELECT stock_quantity FROM product_details WHERE product_id=1",Integer.class); }
+    @Test void mixedBagIdentifiesUnavailableItemAndRemainingItemCanBeOrdered() {
+        var error = assertThrows(IllegalArgumentException.class, () ->
+                orders.place("a@test.com", UUID.randomUUID().toString(), Map.of(1L,1,2L,1), "COLLECTION", ""));
+        assertTrue(error.getMessage().contains("Insufficient stock for Coat"));
+        assertTrue(error.getMessage().contains("“Coat”库存不足"));
+        assertEquals(3, stock());
+        orders.place("a@test.com", UUID.randomUUID().toString(), Map.of(1L,1), "COLLECTION", "");
+        assertEquals(2, stock());
+    }
     @Test void selectedCustomerLayoutsRenderRealDataAndLeaveStaffUnstyled() throws Exception {
         String id=place("DELIVERY");
         jdbc.update("INSERT INTO cart_items VALUES (1,1,1)");

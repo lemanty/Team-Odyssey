@@ -28,6 +28,13 @@ public class OrderService {
         var transactionManager = manager.getIfAvailable();
         this.tx = transactionManager == null ? null : new TransactionTemplate(transactionManager);
     }
+    private static IllegalArgumentException insufficientStock(String label) {
+        String item = label.replace(" / ", "/");
+        return new IllegalArgumentException("Insufficient stock for " + item
+                + ". Reduce its quantity or remove it from your bag. / “" + item
+                + "”库存不足，请返回购物车减少数量或移除此商品。");
+    }
+
     public record Order(String id, long userId, String status, String fulfillment, String address, BigDecimal total, LocalDateTime createdAt) {}
     public record Item(long productId, String productName, BigDecimal unitPrice, int quantity, long variantId, String size, String color) {
         public Item(long productId,String productName,BigDecimal unitPrice,int quantity) {this(productId,productName,unitPrice,quantity,0,"","");}
@@ -146,16 +153,22 @@ public class OrderService {
                     var variant=variants.get(0);
                     productId=((Number)variant.get("product_id")).longValue();
                     size=(String)variant.get("size_label"); color=(String)variant.get("color_label");
-                    if(jdbc.update("UPDATE product_variants SET stock_quantity=stock_quantity-? WHERE id=? AND stock_quantity>=?",quantity,variantId,quantity)!=1)
-                        throw new IllegalArgumentException("Selected option is out of stock. / 所选尺码颜色库存不足。");
                 } else if(jdbc.queryForObject("SELECT COUNT(*) FROM product_variants WHERE product_id=?",Integer.class,productId)>0) {
                     throw new IllegalArgumentException("Please choose size and colour on the product page. / 请在商品详情选择尺码和颜色。");
                 }
                 final long pid=productId,vid=variantId; final String sz=size,cl=color;
                 var product = jdbc.query("SELECT name,price FROM products WHERE id=? AND NOT EXISTS (SELECT 1 FROM product_management m WHERE m.product_id=products.id AND m.published=FALSE) FOR UPDATE", (r,n) -> new Item(pid,r.getString("name"),r.getBigDecimal("price"),quantity,vid,sz,cl),productId);
-                if (product.isEmpty() || jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?",quantity,productId,quantity) != 1)
-                    throw new IllegalArgumentException("An item has insufficient stock. Please review your bag. / 商品库存不足，请检查购物车。");
+                if (product.isEmpty())
+                    throw new IllegalArgumentException("An item is no longer for sale. Remove it from your bag. / 商品已下架，请返回购物车移除。");
                 Item regular = product.get(0);
+                String label = regular.productName();
+                if (variantId > 0) {
+                    label += " (" + color + ", " + size + ")";
+                    if (jdbc.update("UPDATE product_variants SET stock_quantity=stock_quantity-? WHERE id=? AND stock_quantity>=?", quantity, variantId, quantity) != 1)
+                        throw insufficientStock(label);
+                }
+                if (jdbc.update("UPDATE product_details SET stock_quantity=stock_quantity-? WHERE product_id=? AND stock_quantity>=?", quantity, productId, quantity) != 1)
+                    throw insufficientStock(label);
                 BigDecimal unitPrice = prices.price(pid, regular.unitPrice());
                 Item priced = new Item(pid, regular.productName(), unitPrice, quantity, vid, sz, cl);
                 lines.add(priced);
